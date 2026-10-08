@@ -1,0 +1,73 @@
+from pathlib import Path
+
+from pyflowmap.analysis import FlowBuilder, simplify
+from pyflowmap.mermaid import to_mermaid
+from pyflowmap.project import load_project
+from pyflowmap.service import generate_diagram
+
+FIXTURE = Path(__file__).parent / "fixtures" / "sample_project"
+
+
+def test_pipeline_activity_and_decision(tmp_path):
+    result = generate_diagram(str(FIXTURE), entry="pipeline:main", max_nodes=8,
+                              output=str(tmp_path))
+    assert "Clean (Preprocessor)" in result["mermaid"]
+    assert "Load (DataLoader)" in result["mermaid"]
+    assert "Validate?" in result["mermaid"]
+    assert "Predict (Predictor)" in result["mermaid"]
+    assert "worker" not in result["mermaid"]
+    assert (tmp_path / "pipeline_main.mmd").exists()
+    assert (tmp_path / "pipeline_main.json").exists()
+
+
+def test_optional_branch_merge():
+    with load_project(FIXTURE) as project:
+        graph = FlowBuilder(project).build(project.entry("branching:task"))
+    decisions = [n for n in graph.nodes.values() if n.kind == "decision"]
+    assert len(decisions) == 1
+    decision = decisions[0]
+    assert any(e.source == decision.id and e.label == "No" for e in graph.edges)
+    assert any(e.source == decision.id and e.label == "Yes" for e in graph.edges)
+    assert "Save" in to_mermaid(graph)
+
+
+def test_loop_has_back_edge():
+    with load_project(FIXTURE) as project:
+        graph = FlowBuilder(project).build(project.entry("loops:run"))
+    loop = next(n for n in graph.nodes.values() if n.kind == "decision")
+    assert any(e.target == loop.id and e.label == "Next" for e in graph.edges)
+    assert any(e.source == loop.id and e.label == "No" for e in graph.edges)
+
+
+def test_topology_preserving_simplification():
+    with load_project(FIXTURE) as project:
+        graph = FlowBuilder(project).build(project.entry("pipeline:main"))
+    before = sum(n.kind == "decision" for n in graph.nodes.values())
+    simplify(graph, max_nodes=2)
+    assert sum(n.kind == "decision" for n in graph.nodes.values()) == before
+    assert all(e.source in graph.nodes and e.target in graph.nodes for e in graph.edges)
+    assert any("budget" in warning for warning in graph.warnings)
+
+
+def test_cross_module_symbol_resolution():
+    with load_project(FIXTURE) as project:
+        graph = FlowBuilder(project).build(project.entry("cross_module:orchestrate"))
+    symbols = [s for n in graph.nodes.values() for s in n.symbols]
+    assert "worker:fetch" in symbols
+    assert "worker:persist" in symbols
+
+
+def test_mermaid_escapes_special_chars():
+    from pyflowmap.models import FlowGraph
+    graph = FlowGraph(entry="demo:main")
+    graph.add('Load "name" < 4 & done')
+    result = to_mermaid(graph)
+    assert '&quot;' in result
+    assert '&lt;' in result
+    assert '&amp;' in result
+
+
+def test_direct_constructor_method_resolution():
+    with load_project(FIXTURE) as project:
+        graph = FlowBuilder(project).build(project.entry("pipeline:main"))
+    assert any("pipeline:Repository.save" in node.symbols for node in graph.nodes.values())
