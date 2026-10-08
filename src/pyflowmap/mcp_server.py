@@ -24,14 +24,27 @@ def inspect_project(project_path: str, scope: str | None = None) -> dict:
 
 def generate_diagram(project_path: str, entry_point: str | None = None,
                      scope: str | None = None, max_nodes: int = 8, max_depth: int = 2,
-                     format: str = "mmd", output_path: str | None = None) -> dict:
+                     format: str = "mmd", output_path: str | None = None,
+                     language: str = "en", renderer: str = "auto",
+                     diagram_type: str = "activity") -> dict:
     """Generate a simplified Python activity diagram (.mmd and optional SVG/PNG)."""
     src = _allowed(project_path)
     source_path = Path(src)
     default_output = (source_path if source_path.is_dir() else source_path.parent) / "pyflowmap-output"
     destination = _allowed(output_path) if output_path else _allowed(str(default_output))
     return _generate_diagram(src, entry=entry_point, scope=scope, max_nodes=max_nodes,
-                             max_depth=max_depth, format=format, output=destination)
+                             max_depth=max_depth, format=format, output=destination,
+                             language=language, renderer=renderer, diagram_type=diagram_type)
+
+
+def generate_activity_diagram(project_path: str, entry_point: str | None = None,
+                              scope: str | None = None, max_nodes: int = 8,
+                              format: str = "mmd", output_path: str | None = None,
+                              language: str = "en", renderer: str = "auto") -> dict:
+    """MCP-specific shortcut for UML-inspired activity diagrams."""
+    return generate_diagram(project_path, entry_point=entry_point, scope=scope,
+                            max_nodes=max_nodes, format=format, output_path=output_path,
+                            language=language, renderer=renderer)
 
 
 def make_server():
@@ -45,6 +58,7 @@ def make_server():
     mcp = MCPServer("PyFlowMap")
     mcp.tool()(inspect_project)
     mcp.tool()(generate_diagram)
+    mcp.tool()(generate_activity_diagram)
     return mcp
 
 

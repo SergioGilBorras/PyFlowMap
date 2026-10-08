@@ -94,10 +94,23 @@ class ProjectIndex:
         if isinstance(node, ast.Import):
             for alias in node.names:
                 module.imports[alias.asname or alias.name.split(".")[0]] = alias.name
-        elif node.level == 0 and node.module:
+        else:
+            # A single leading dot is relative to the current package.
+            # Example: planning.coordinator `from .agents import Agent`.
+            package = module.name.split(".")[:-1]
+            if node.level:
+                if node.level > len(package):
+                    self.warnings.append(f"Unresolved relative import in {module.path}:{node.lineno}")
+                    return
+                prefix = package[:len(package) - node.level + 1]
+                imported_module = ".".join([*prefix, *(node.module.split(".") if node.module else [])])
+            else:
+                imported_module = node.module or ""
             for alias in node.names:
-                module.imports[alias.asname or alias.name] = f"{node.module}:{alias.name}"
-        # Relative imports and dynamically imported symbols remain unresolved.
+                if node.module:
+                    module.imports[alias.asname or alias.name] = f"{imported_module}:{alias.name}"
+                else:
+                    module.imports[alias.asname or alias.name] = imported_module + "." + alias.name
 
     def candidates(self, scope: str | None = None) -> list[Symbol]:
         if scope is None:
@@ -130,8 +143,38 @@ class ProjectIndex:
     def class_id(self, name: str, module: str) -> str | None:
         record = self.modules[module]
         imported = record.imports.get(name, "")
-        match = [s for s in self.classes if s == f"{module}:{name}" or s == imported or s.endswith(":" + name) and imported and s.endswith(imported)]
+        match = [s for s in self.classes if s == f"{module}:{name}" or s == imported]
         return match[0] if len(match) == 1 else None
+
+    def instance_types(self, current: Symbol) -> dict[str, str]:
+        """Conservatively infer default-instantiated `self.attribute` classes.
+
+        A caller can inject a different implementation, so this is a default
+        constructor hint, not a guarantee about runtime dispatch.
+        """
+        if not current.owner:
+            return {}
+        init = self.symbols.get(f"{current.module}:{current.owner}.__init__")
+        if init is None:
+            return {}
+        inferred = {}
+        for stmt in init.node.body:
+            if not isinstance(stmt, (ast.Assign, ast.AnnAssign)):
+                continue
+            targets = stmt.targets if isinstance(stmt, ast.Assign) else [stmt.target]
+            candidate_calls = [n for n in ast.walk(stmt.value) if isinstance(n, ast.Call)]
+            constructors = {
+                found for call in candidate_calls
+                if isinstance(call.func, ast.Name)
+                if (found := self.class_id(call.func.id, init.module))
+            }
+            if len(constructors) != 1:
+                continue
+            for target in targets:
+                if (isinstance(target, ast.Attribute) and isinstance(target.value, ast.Name)
+                        and target.value.id == "self"):
+                    inferred[f"self.{target.attr}"] = next(iter(constructors))
+        return inferred
 
     def resolve_call(self, call: ast.Call, current: Symbol, types: dict[str, str]) -> Symbol | None:
         func = call.func
@@ -157,6 +200,11 @@ class ProjectIndex:
                         candidates = [f"{imported}.{func.attr}"]
                     else:
                         candidates = [f"{imported}:{func.attr}"]
+        elif (isinstance(func, ast.Attribute) and isinstance(func.value, ast.Attribute)
+              and isinstance(func.value.value, ast.Name) and func.value.value.id == "self"):
+            cls = types.get(f"self.{func.value.attr}")
+            if cls:
+                candidates = [f"{cls}.{func.attr}"]
         if isinstance(func, ast.Attribute) and isinstance(func.value, ast.Call):
             # ClassName().method(...) without an intermediate local variable.
             called = func.value.func

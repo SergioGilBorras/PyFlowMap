@@ -21,8 +21,17 @@ def words(value: str) -> str:
     return re.sub(r"[_\s]+", " ", value).strip().capitalize()
 
 
-def display_call(call: ast.Call, target: Symbol | None) -> str:
+def display_call(call: ast.Call, target: Symbol | None, language: str = "en") -> str:
     if target:
+        if language == "es":
+            known = {
+                "RequirementAnalysisAgent.analyze": "Analizar requisitos",
+                "ReuseResearchAgent.research": "Examinar reutilización",
+                "DecompositionAgent.decompose": "Descomponer trabajo",
+                "TechnicalPlanningAgent.plan": "Preparar plan técnico",
+            }
+            if f"{target.owner}.{target.name}" in known:
+                return known[f"{target.owner}.{target.name}"]
         return f"{words(target.name)} ({target.owner})" if target.owner else words(target.name)
     func = call.func
     if isinstance(func, ast.Name):
@@ -50,21 +59,39 @@ def expr_text(expr: ast.AST, limit: int = 54) -> str:
 
 
 class FlowBuilder:
-    def __init__(self, index: ProjectIndex, max_depth: int = 2):
+    def __init__(self, index: ProjectIndex, max_depth: int = 2, language: str = "en"):
         if max_depth < 0 or max_depth > 10:
             raise ValueError("max_depth must be between 0 and 10")
         self.index = index
         self.max_depth = max_depth
+        if language not in ("en", "es"):
+            raise ValueError("language must be 'en' or 'es'")
+        self.language = language
         self.graph: FlowGraph | None = None
         self.total_steps = 0
+        self._return_frames: list[list[tuple[str, str]]] = []
+        self._exception_tails: list[tuple[str, str]] = []
 
     def build(self, entry: Symbol) -> FlowGraph:
         self.graph = FlowGraph(entry=entry.id, warnings=list(self.index.warnings))
         self.total_steps = 0
-        self._block(entry.node.body, [], entry, {}, (entry.id,))
-        if not self.graph.nodes:
-            self._emit(words(entry.name), [], entry, entry.node)
+        self._return_frames = [[]]
+        self._exception_tails = []
+        start = self.graph.add("", "initial")
+        tails = self._block(entry.node.body, [(start, "")], entry,
+                            self.index.instance_types(entry), (entry.id,))
+        if len(self.graph.nodes) == 1:
+            tails = self._emit(words(entry.name), tails, entry, entry.node)
             self.graph.warnings.append("No significant calls; represented the entry as one activity")
+        returned = self._return_frames.pop()
+        # A return from either branch is the same *operation*, not two
+        # independent boxes. The branches converge before the activity final.
+        if returned:
+            result_label = "Devolver resultado" if self.language == "es" else "Return result"
+            returned = self._emit(result_label, returned, entry, entry.node, kind="result")
+        end = self.graph.add("", "final")
+        for source, label in tails + returned + self._exception_tails:
+            self.graph.connect(source, end, label)
         return self.graph
 
     def _emit(self, label: str, prior: list[tuple[str, str]], current: Symbol,
@@ -87,15 +114,16 @@ class FlowBuilder:
 
     def _inlineable(self, target: Symbol) -> bool:
         """Only inline orchestrators, not ordinary implementation-detail methods."""
-        significant_calls = 0
-        for stmt in target.node.body:
-            if isinstance(stmt, (ast.If, ast.For, ast.While, ast.AsyncFor, ast.Try)):
-                return True
-            if isinstance(stmt, (ast.Assign, ast.AnnAssign, ast.Expr, ast.Return)):
-                expression = getattr(stmt, "value", None)
-                if isinstance(expression, ast.Call) and call_name(expression).split(".")[-1] not in NOISE:
-                    significant_calls += 1
-        return significant_calls >= 2
+        if target.name in {"from_dict", "to_dict", "validate", "__post_init__"}:
+            return False
+        significant_calls = {
+            (call_name(call), call.lineno)
+            for stmt in target.node.body
+            for call in ast.walk(stmt)
+            if isinstance(call, ast.Call)
+            and call_name(call).split(".")[-1] not in NOISE
+        }
+        return len(significant_calls) >= 2
 
     def _call(self, call: ast.Call, prior: list[tuple[str, str]], current: Symbol,
               types: dict[str, str], stack: tuple[str, ...]) -> list[tuple[str, str]]:
@@ -104,8 +132,12 @@ class FlowBuilder:
             return prior
         target = self.index.resolve_call(call, current, types)
         if target and target.id not in stack and len(stack) - 1 < self.max_depth and self._inlineable(target):
-            return self._block(target.node.body, prior, target, {}, stack + (target.id,))
-        return self._emit(display_call(call, target), prior, current, call, symbol=target)
+            self._return_frames.append([])
+            end = self._block(target.node.body, prior, target, self.index.instance_types(target),
+                              stack + (target.id,))
+            return end + self._return_frames.pop()
+        return self._emit(display_call(call, target, self.language), prior, current, call,
+                          symbol=target)
 
     def _block(self, statements: list[ast.stmt], prior: list[tuple[str, str]],
                current: Symbol, types: dict[str, str], stack: tuple[str, ...]) -> list[tuple[str, str]]:
@@ -133,15 +165,19 @@ class FlowBuilder:
                     prior = self._call(value, prior, current, types, stack)
             elif isinstance(stmt, (ast.Expr, ast.Return, ast.Raise, ast.AugAssign)):
                 value = getattr(stmt, "value", None)
-                if isinstance(value, ast.Call):
+                if isinstance(value, ast.Call) and not (
+                    isinstance(stmt, ast.Return) and self.index.class_id(
+                        call_name(value).split(".")[-1], current.module)
+                ):
                     prior = self._call(value, prior, current, types, stack)
                 if isinstance(stmt, ast.Return):
-                    if value is not None and not isinstance(value, ast.Call):
-                        prior = self._emit("Return result", prior, current, stmt)
-                    # Return terminates only the current branch, never jumps into the next activity.
+                    # An inlined callee returns to its caller, not the overall
+                    # activity final. Each call has its own return frame.
+                    self._return_frames[-1].extend(prior)
                     return []
                 if isinstance(stmt, ast.Raise):
-                    self._emit("Raise exception", prior, current, stmt)
+                    failure = self._emit("Raise exception", prior, current, stmt)
+                    self._exception_tails.extend(failure)
                     return []
             elif isinstance(stmt, ast.Match):
                 # Explicit conservative fallback: don't fabricate edges for match/case.
@@ -152,23 +188,42 @@ class FlowBuilder:
 
     def _branch(self, stmt: ast.If, prior: list[tuple[str, str]], current: Symbol,
                 types: dict[str, str], stack: tuple[str, ...]) -> list[tuple[str, str]]:
-        decision = self._emit(f"{expr_text(stmt.test)}?", prior, current, stmt, kind="decision")[0][0]
-        yes = self._block(stmt.body, [(decision, "Yes")], current, types.copy(), stack)
-        no = self._block(stmt.orelse, [(decision, "No")], current, types.copy(), stack) if stmt.orelse else [(decision, "No")]
+        condition, yes_text, no_text = self._describe_condition(stmt.test)
+        decision = self._emit(condition, prior, current, stmt, kind="decision")[0][0]
+        yes = self._block(stmt.body, [(decision, yes_text)], current, types.copy(), stack)
+        no = (self._block(stmt.orelse, [(decision, no_text)], current, types.copy(), stack)
+              if stmt.orelse else [(decision, no_text)])
         return yes + no
+
+    def _describe_condition(self, test: ast.AST) -> tuple[str, str, str]:
+        true_label, false_label = (("Sí", "No") if self.language == "es"
+                                   else ("Yes", "No"))
+        # Explicitly invert the guard when changing from the negative status
+        # test to a positively phrased question. Never reverse edges alone.
+        if (isinstance(test, ast.Compare) and len(test.ops) == 1
+                and isinstance(test.ops[0], (ast.Eq, ast.NotEq))
+                and any(isinstance(part, ast.Constant) and part.value == "NEEDS_CLARIFICATION"
+                        for part in [test.left, *test.comparators])):
+            is_eq = isinstance(test.ops[0], ast.Eq)
+            question = ("¿Información suficiente?" if self.language == "es"
+                        else "Is information sufficient?")
+            return (question, false_label, true_label) if is_eq else (
+                question, true_label, false_label)
+        return f"{expr_text(test)}?", true_label, false_label
 
     def _loop(self, stmt: ast.For | ast.AsyncFor | ast.While,
               prior: list[tuple[str, str]], current: Symbol, types: dict[str, str],
               stack: tuple[str, ...]) -> list[tuple[str, str]]:
         condition = f"More items in {expr_text(stmt.iter, 30)}?" if isinstance(stmt, (ast.For, ast.AsyncFor)) else f"{expr_text(stmt.test)}?"
         identifier = self._emit(condition, prior, current, stmt, kind="decision")[0][0]
-        tail = self._block(stmt.body, [(identifier, "Yes")], current, types.copy(), stack)
+        yes, no = (("Sí", "No") if self.language == "es" else ("Yes", "No"))
+        tail = self._block(stmt.body, [(identifier, yes)], current, types.copy(), stack)
         assert self.graph is not None
         for end, _ in tail:
             self.graph.connect(end, identifier, "Next")
         if stmt.orelse:
             self.graph.warnings.append(f"loop-else approximated at {current.path}:{stmt.lineno}")
-        return [(identifier, "No")]
+        return [(identifier, no)]
 
     def _try(self, stmt: ast.Try, prior: list[tuple[str, str]], current: Symbol,
              types: dict[str, str], stack: tuple[str, ...]) -> list[tuple[str, str]]:

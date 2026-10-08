@@ -21,6 +21,9 @@ def main(argv: list[str] | None = None) -> int:
     analyze.add_argument("--max-nodes", type=int, default=8)
     analyze.add_argument("--max-depth", type=int, default=2)
     analyze.add_argument("--direction", choices=["TD", "LR"], default="TD")
+    analyze.add_argument("--diagram-type", default="activity", help="Diagram type (activity only in V1.1)")
+    analyze.add_argument("--language", choices=["en", "es"], default="en")
+    analyze.add_argument("--renderer", choices=["auto", "mermaid", "graphviz"], default="auto")
     analyze.add_argument("--format", choices=["mmd", "svg", "png", "all"], default="mmd")
     analyze.add_argument("--output", help="Output directory or diagram filename")
     args = parser.parse_args(argv)
@@ -30,7 +33,9 @@ def main(argv: list[str] | None = None) -> int:
         else:
             result = generate_diagram(args.source, entry=args.entry, scope=args.scope,
                                       max_nodes=args.max_nodes, max_depth=args.max_depth,
-                                      direction=args.direction, format=args.format, output=args.output)
+                                      direction=args.direction, format=args.format, output=args.output,
+                                      diagram_type=args.diagram_type, language=args.language,
+                                      renderer=args.renderer)
             result.pop("mermaid")  # Mermaid is in the .mmd file; keep CLI output concise.
         print(json.dumps(result, indent=2, ensure_ascii=False))
         return 0

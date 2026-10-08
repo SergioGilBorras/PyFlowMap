@@ -15,7 +15,13 @@ def to_mermaid(graph: FlowGraph, direction: str = "TD") -> str:
     lines = [f"flowchart {direction}"]
     for node in graph.nodes.values():
         label = _safe(node.label)
-        if node.kind == "decision":
+        if node.kind == "initial":
+            lines.append(f"    {node.id}(( ))")
+            lines.append(f"    style {node.id} fill:#000000,stroke:#000000,color:#000000")
+        elif node.kind == "final":
+            lines.append(f"    {node.id}((( )))")
+            lines.append(f"    style {node.id} fill:#000000,stroke:#000000,color:#000000")
+        elif node.kind == "decision":
             lines.append(f'    {node.id}{{"{label}"}}')
         else:
             lines.append(f'    {node.id}["{label}"]')
