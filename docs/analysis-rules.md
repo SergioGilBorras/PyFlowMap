@@ -18,3 +18,11 @@
 - Complex `try/except/finally` paths are approximated.
 
 Please judge outputs against curated ideal diagrams (semantic faithfulness, readability and preserved decisions), not only Mermaid syntax validity.
+
+## Activity labels and rendering (V1.2)
+
+- The first line of each action is its **human-readable activity label**. The current engine uses deterministic identifier normalization and a small P4-specific label mapping; **no LLM or AI translation is integrated yet**. General labels can be imperfect on unfamiliar projects.
+- The second line shows `(Class.method)` or `(module.function)` as a smaller source reference. Long captions are visually truncated with `…`. The JSON always keeps full `symbols` and `locations` unchanged.
+- For grouped activities, the caption names the first mapped symbol and adds the number of additional symbols. Refer to the JSON for the complete set.
+- Graphviz SVG/PNG uses HTML-like labels with a smaller gray second line. Graphviz `headlabel`, `labeldistance` and `labelfontsize` position decision labels away from the arrow tips and enlarge them. Mermaid text uses a line break with `<small>` and a 16 px base font; exact placement is renderer-dependent.
+- Future optional LLM labels should be constrained to names/descriptions of graph nodes; **never** add, delete or reverse edges. Record both original and proposed labels with provenance and a no-AI fallback.

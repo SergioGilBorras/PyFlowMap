@@ -2,6 +2,7 @@
 
 from html import escape
 
+from .diagrams.activity_labels import source_caption
 from .models import FlowGraph
 
 
@@ -12,7 +13,13 @@ def _safe(text: str) -> str:
 def to_mermaid(graph: FlowGraph, direction: str = "TD") -> str:
     if direction not in ("TD", "LR"):
         raise ValueError("direction must be TD or LR")
-    lines = [f"flowchart {direction}"]
+    # The bigger base font also benefits Yes/No edge labels. Keep edge labels
+    # as Mermaid text, and rely on the layout engine for their placement.
+    lines = [
+        '%%{init: {"theme": "base", "themeVariables": '
+        '{"fontSize": "16px", "edgeLabelBackground": "#ffffff"}}}%%',
+        f"flowchart {direction}",
+    ]
     for node in graph.nodes.values():
         label = _safe(node.label)
         if node.kind == "initial":
@@ -24,6 +31,9 @@ def to_mermaid(graph: FlowGraph, direction: str = "TD") -> str:
         elif node.kind == "decision":
             lines.append(f'    {node.id}{{"{label}"}}')
         else:
+            caption = source_caption(node)
+            if caption:
+                label += f'<br/><small>{_safe(caption)}</small>'
             lines.append(f'    {node.id}["{label}"]')
     for edge in graph.edges:
         if edge.label:
