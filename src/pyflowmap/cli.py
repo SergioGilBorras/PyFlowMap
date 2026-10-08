@@ -24,7 +24,7 @@ def main(argv: list[str] | None = None) -> int:
     analyze.add_argument("--diagram-type", default="activity", help="Diagram type (activity only in V1.1)")
     analyze.add_argument("--language", choices=["en", "es"], default="en")
     analyze.add_argument("--renderer", choices=["auto", "mermaid", "graphviz"], default="auto")
-    analyze.add_argument("--format", choices=["mmd", "svg", "png", "all"], default="mmd")
+    analyze.add_argument("--format", choices=["mmd", "svg", "png", "images", "all"], default="mmd")
     analyze.add_argument("--output", help="Output directory or diagram filename")
     args = parser.parse_args(argv)
     try:

@@ -8,8 +8,9 @@ from .diagrams.activity import analyze as analyze_activity
 from .mermaid import to_mermaid
 from .project import load_project
 from .render import render
+from .semantic import SemanticLabelProvider, enrich_activity_labels
 
-FORMATS = {"mmd", "svg", "png", "all"}
+FORMATS = {"mmd", "svg", "png", "images", "all"}
 
 
 def inspect_project(source: str, scope: str | None = None) -> dict:
@@ -28,7 +29,8 @@ def generate_diagram(source: str, *, entry: str | None = None, scope: str | None
                      max_nodes: int = 8, max_depth: int = 2, format: str = "mmd",
                      output: str | None = None, direction: str = "TD",
                      diagram_type: str = "activity", language: str = "en",
-                     renderer: str = "auto") -> dict:
+                     renderer: str = "auto",
+                     label_provider: SemanticLabelProvider | None = None) -> dict:
     if format not in FORMATS:
         raise ValueError(f"format must be one of {', '.join(sorted(FORMATS))}")
     if diagram_type != "activity":
@@ -39,13 +41,15 @@ def generate_diagram(source: str, *, entry: str | None = None, scope: str | None
         symbol = project.entry(entry, scope)
         graph = analyze_activity(project, symbol, max_nodes=max_nodes, max_depth=max_depth,
                                  language=language)
+        if label_provider is not None:
+            enrich_activity_labels(graph, project, label_provider, language)
     mermaid = to_mermaid(graph, direction=direction)
     label = re.sub(r"[^a-zA-Z0-9_-]+", "_", symbol.id).strip("_")[:100] or "flow"
     target = Path(output).expanduser() if output else Path.cwd() / "pyflowmap-output"
     # --output supports an explicit file when there is one output format, or a directory.
     if target.suffix.lower() in (".mmd", ".svg", ".png", ".json"):
-        if format == "all":
-            raise ValueError("Use an output directory for --format all")
+        if format in ("all", "images"):
+            raise ValueError("Use an output directory for --format all or images")
         base = target.with_suffix("")
     else:
         base = target / label
@@ -56,7 +60,7 @@ def generate_diagram(source: str, *, entry: str | None = None, scope: str | None
     json_path.write_text(json.dumps(graph.to_dict(), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     paths = {"mmd": str(mmd_path.resolve()), "json": str(json_path.resolve())}
     backend = None
-    for extension in (("svg", "png") if format == "all" else (format,)):
+    for extension in (("svg", "png") if format in ("all", "images") else (format,)):
         if extension != "mmd":
             path, backend = render(mmd_path, base.with_suffix("." + extension), graph,
                                    renderer=renderer, direction=direction)

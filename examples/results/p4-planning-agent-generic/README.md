@@ -1,27 +1,20 @@
-# P4 Planning Agent: generic labeling regression
+# P4 Planning Agent — generic activity labels
 
-This is a **read-only test case**, not a P4 customization. It pins source code from
-`SergioGilBorras/P4-Planning-Agent` to commit
-`8e68c720bef75e24acd6b3ed8a237b41fa3a838d`.
+Pinned read-only source: `SergioGilBorras/P4-Planning-Agent`, commit `8e68c720bef75e24acd6b3ed8a237b41fa3a838d`. **No P4-specific label mappings.**
 
-Generated with:
+![Generic activity diagram](planning_coordinator_PlanningCoordinator_plan.svg)
+
+[PNG](planning_coordinator_PlanningCoordinator_plan.png) · [SVG](planning_coordinator_PlanningCoordinator_plan.svg) · [Mermaid (.mmd)](planning_coordinator_PlanningCoordinator_plan.mmd) · [Mermaid text (.txt)](planning_coordinator_PlanningCoordinator_plan.txt) · [JSON](planning_coordinator_PlanningCoordinator_plan.json)
+
+Reproduce using the pinned reference fixture:
 
 ```bash
 pyflowmap analyze tests/fixtures/references/p4-planning-agent-v1 \
   --entry planning.coordinator:PlanningCoordinator.plan \
-  --language es --format all --renderer graphviz \
+  --language es --format images --renderer graphviz \
   --output examples/results/p4-planning-agent-generic
 ```
 
-The `.mmd`/`.json`/`.svg` files are machine-generated. Their labels now come from a
-**generic** action-verb vocabulary, CamelCase/snake_case decomposition, and optional
-docstrings. There are **no mappings for `RequirementAnalysisAgent`, P4, or any status
-literal**. Decisions show the actual predicate and preserve true → Sí, false → No.
+These are deterministic labels based on function names, class identifiers and docstrings. Unknown technical nouns may remain untranslated (`Analizar requirement`); optional semantic labeling is a separate opt-in provider and is **not** enabled for this example. Decisions preserve actual predicate truth values (Sí=true, No=false).
 
-The limitation is intentional and visible: unknown nouns from class names are not
-translated to Spanish (`Analizar requirement`, `Investigar reuse`). Fully natural
-language would require a general translation/LLM stage, not repository-specific
-exceptions. All source symbols are retained exactly in the JSON output.
-
-The earlier `p4-planning-agent-v1-1` example remains as historical output for
-before/after comparison; do not treat it as the current label-generation behavior.
+The earlier baseline and V1.1 examples remain available for before/after comparison.

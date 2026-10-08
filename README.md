@@ -32,6 +32,8 @@ npm install -g @mermaid-js/mermaid-cli
 pyflowmap analyze ./my_project --entry app:main --format svg
 pyflowmap analyze ./my_project --entry app:main --format png
 pyflowmap analyze ./my_project --entry app:main --format all
+# Or request both image formats explicitly (also saves editable .mmd + .json)
+pyflowmap analyze ./my_project --entry app:main --format images
 ```
 
 Every analysis saves an editable `.mmd` **and** a `.json` intermediate graph; SVG/PNG is optional. If `mmdc` is unavailable, the image command fails with a clear diagnostic while retaining `.mmd` and `.json`.
@@ -73,7 +75,7 @@ pyflowmap inspect SOURCE [--scope RELATIVE_PATH]
 pyflowmap analyze SOURCE [--entry MODULE:FUNCTION_OR_CLASS.METHOD]
                          [--scope RELATIVE_PATH] [--max-nodes 8]
                          [--max-depth 2] [--direction TD|LR]
-                         [--format mmd|svg|png|all] [--output DIR_OR_FILE]
+                         [--format mmd|svg|png|images|all] [--output DIR_OR_FILE]
 ```
 
 For example, `--entry pipeline:main` analyzes the `main` function in `pipeline.py`. `--scope` limits **entry-point discovery**, while imported dependencies can still be examined outside the scope when statically resolvable.
@@ -116,3 +118,36 @@ See [analysis rules](docs/analysis-rules.md) for limitations and future AI label
 ## License
 
 MIT.
+
+
+## Optional semantic labels (library extension; no provider bundled)
+
+The default diagram is deterministic and has no AI/network dependencies. An external
+provider can optionally replace **only the text** of existing activity nodes.
+It receives a bounded method source snippet (up to 3,000 characters), the first
+350 characters of its docstring, the symbol identifiers, original label, file
+path, language, and adjacent activity labels. A name alone is often ambiguous:
+").run()" might mean execute a query, start a task, or handle an event.
+
+The provider is a plain Python object, **not** a required microservice or agent.
+For example, you can adapt an existing Codex wrapper later:
+
+```python
+from pyflowmap.service import generate_diagram
+
+class MyLabeler:
+    def label(self, request):
+        # Integrate your wrapper here. Return one string or None.
+        # Never send code externally without explicit authorization.
+        return None
+
+generate_diagram("./my_project", entry="module:main",
+                 label_provider=MyLabeler(), format="images")
+```
+
+This injection point is currently exposed through the Python library only;
+CLI/MCP provider configuration is deferred until we have an actual wrapper to integrate.
+If the provider is unavailable or fails validation, PyFlowMap keeps the
+deterministic label. Decision/Yes/No and all graph edges are immutable to labeling.
+
+See [semantic integration design](docs/semantic-labeling.md).

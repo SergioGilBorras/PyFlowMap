@@ -10,6 +10,7 @@ class Node:
     kind: str = "activity"
     symbols: list[str] = field(default_factory=list)
     locations: list[str] = field(default_factory=list)
+    label_source: str = "deterministic"
 
 
 @dataclass
