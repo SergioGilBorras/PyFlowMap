@@ -27,7 +27,8 @@ def test_semantic_context_and_invariant(tmp_path):
                                 output=str(tmp_path / "base"))
 
     class Spy:
-        requests = []
+        def __init__(self):
+            self.requests = []
 
         def label(self, request):
             self.requests.append(request)
