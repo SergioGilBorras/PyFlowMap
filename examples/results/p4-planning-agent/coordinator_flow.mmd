@@ -1,0 +1,14 @@
+flowchart TD
+    n1["Analyze"]
+    n2{"req[&#x27;status&#x27;] == &#x27;NEEDS_CLARIFICATION&#x27;?"}
+    n3["Planning result"]
+    n4["Research"]
+    n5["Decompose"]
+    n6["Plan"]
+    n7["Planning result"]
+    n1 --> n2
+    n2 -->|Yes| n3
+    n2 -->|No| n4
+    n4 --> n5
+    n5 --> n6
+    n6 --> n7
