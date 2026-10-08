@@ -6,10 +6,10 @@ from pathlib import Path
 import pytest
 
 from pyflowmap.cli import main
+from pyflowmap.diagrams.activity import analyze
 from pyflowmap.mcp_server import generate_activity_diagram
 from pyflowmap.project import load_project
 from pyflowmap.service import generate_diagram
-from pyflowmap.diagrams.activity import analyze
 
 P4 = Path(__file__).parent / "fixtures" / "references" / "p4-planning-agent-v1"
 ENTRY = "planning.coordinator:PlanningCoordinator.plan"
