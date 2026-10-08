@@ -11,10 +11,10 @@ FIXTURE = Path(__file__).parent / "fixtures" / "sample_project"
 def test_pipeline_activity_and_decision(tmp_path):
     result = generate_diagram(str(FIXTURE), entry="pipeline:main", max_nodes=8,
                               output=str(tmp_path))
-    assert "Clean (Preprocessor)" in result["mermaid"]
-    assert "Load (DataLoader)" in result["mermaid"]
+    assert "Clean" in result["mermaid"]
+    assert "Load data" in result["mermaid"]
     assert "Validate?" in result["mermaid"]
-    assert "Predict (Predictor)" in result["mermaid"]
+    assert "Predict" in result["mermaid"]
     assert "worker" not in result["mermaid"]
     assert (tmp_path / "pipeline_main.mmd").exists()
     assert (tmp_path / "pipeline_main.json").exists()

@@ -1,0 +1,128 @@
+{
+  "entry": "planning.coordinator:PlanningCoordinator.plan",
+  "nodes": [
+    {
+      "id": "n1",
+      "label": "",
+      "kind": "initial",
+      "symbols": [],
+      "locations": []
+    },
+    {
+      "id": "n2",
+      "label": "Analizar requirement",
+      "kind": "activity",
+      "symbols": [
+        "planning.requirement_agent:RequirementAnalysisAgent.analyze"
+      ],
+      "locations": [
+        "planning/requirement_agent.py:15"
+      ]
+    },
+    {
+      "id": "n3",
+      "label": "¿req['status'] es 'NEEDS_CLARIFICATION'?",
+      "kind": "decision",
+      "symbols": [
+        "planning.coordinator:PlanningCoordinator.plan"
+      ],
+      "locations": [
+        "planning/coordinator.py:16"
+      ]
+    },
+    {
+      "id": "n4",
+      "label": "Investigar reuse",
+      "kind": "activity",
+      "symbols": [
+        "planning.reuse_research_agent:ReuseResearchAgent.research"
+      ],
+      "locations": [
+        "planning/reuse_research_agent.py:19"
+      ]
+    },
+    {
+      "id": "n5",
+      "label": "Descomponer",
+      "kind": "activity",
+      "symbols": [
+        "planning.decomposition_agent:DecompositionAgent.decompose"
+      ],
+      "locations": [
+        "planning/decomposition_agent.py:20"
+      ]
+    },
+    {
+      "id": "n6",
+      "label": "Planificar technical",
+      "kind": "activity",
+      "symbols": [
+        "planning.technical_planning_agent:TechnicalPlanningAgent.plan"
+      ],
+      "locations": [
+        "planning/technical_planning_agent.py:21"
+      ]
+    },
+    {
+      "id": "n7",
+      "label": "Devolver resultado",
+      "kind": "result",
+      "symbols": [
+        "planning.coordinator:PlanningCoordinator.plan"
+      ],
+      "locations": [
+        "planning/coordinator.py:14"
+      ]
+    },
+    {
+      "id": "n8",
+      "label": "",
+      "kind": "final",
+      "symbols": [],
+      "locations": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "n1",
+      "target": "n2",
+      "label": ""
+    },
+    {
+      "source": "n2",
+      "target": "n3",
+      "label": ""
+    },
+    {
+      "source": "n3",
+      "target": "n4",
+      "label": "No"
+    },
+    {
+      "source": "n4",
+      "target": "n5",
+      "label": ""
+    },
+    {
+      "source": "n5",
+      "target": "n6",
+      "label": ""
+    },
+    {
+      "source": "n3",
+      "target": "n7",
+      "label": "Sí"
+    },
+    {
+      "source": "n6",
+      "target": "n7",
+      "label": ""
+    },
+    {
+      "source": "n7",
+      "target": "n8",
+      "label": ""
+    }
+  ],
+  "warnings": []
+}

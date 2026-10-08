@@ -45,14 +45,14 @@ def test_p4_diagram_two_lines_and_larger_branch_typography(tmp_path):
     result = generate_diagram(str(P4), entry=ENTRY, language="es", format="mmd",
                               output=str(tmp_path))
     text = Path(result["files"]["mmd"]).read_text(encoding="utf-8")
-    assert 'Analizar requisitos<br/><small>(RequirementAnalysisAgent.analyze)</small>' in text
-    assert 'Examinar reutilización<br/><small>(ReuseResearchAgent.research)</small>' in text
+    assert 'Analizar requirement<br/><small>(RequirementAnalysisAgent.analyze)</small>' in text
+    assert 'Investigar reuse<br/><small>(ReuseResearchAgent.research)</small>' in text
     assert '"fontSize": "18px"' in text
     assert "-->|Sí|" in text and "-->|No|" in text
     assert text.count('n7["Devolver resultado"]') == 1
     assert text.count('((( )))') == 1
     doc = json.loads(Path(result["files"]["json"]).read_text(encoding="utf-8"))
-    requirements = next(n for n in doc["nodes"] if n["label"] == "Analizar requisitos")
+    requirements = next(n for n in doc["nodes"] if n["label"] == "Analizar requirement")
     assert requirements["symbols"] == ["planning.requirement_agent:RequirementAnalysisAgent.analyze"]
 
 
@@ -64,4 +64,4 @@ def test_graphviz_svg_contains_separate_font_sizes(tmp_path):
     assert "RequirementAnalysisAgent.analyze" in svg
     assert "font-size=\"10.00\"" in svg
     assert "font-size=\"14.00\"" in svg
-    assert "Información suficiente" in svg
+    assert "NEEDS_CLARIFICATION" in svg

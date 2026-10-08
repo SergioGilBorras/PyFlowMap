@@ -6,10 +6,10 @@ from pathlib import Path
 import pytest
 
 from pyflowmap.cli import main
-from pyflowmap.diagrams.activity import analyze
 from pyflowmap.mcp_server import generate_activity_diagram
 from pyflowmap.project import load_project
 from pyflowmap.service import generate_diagram
+from pyflowmap.diagrams.activity import analyze
 
 P4 = Path(__file__).parent / "fixtures" / "references" / "p4-planning-agent-v1"
 ENTRY = "planning.coordinator:PlanningCoordinator.plan"
@@ -24,12 +24,13 @@ def test_pinned_p4_conditional_polality_shared_return_and_uml_markers():
     assert kinds.count("result") == 1
     assert len([n for n in graph.nodes.values() if n.kind == "decision"]) == 1
     lookup = {n.label: n.id for n in graph.nodes.values()}
-    decision = lookup["¿Información suficiente?"]
+    decision = next(n.id for n in graph.nodes.values() if n.kind == "decision"
+                    and "NEEDS_CLARIFICATION" in n.label)
     results = lookup["Devolver resultado"]
-    assert any(e.source == decision and e.label == "No" and e.target == results
+    assert any(e.source == decision and e.label == "Sí" and e.target == results
                for e in graph.edges)
-    assert any(e.source == decision and e.label == "Sí" and
-               graph.nodes[e.target].label == "Examinar reutilización" for e in graph.edges)
+    assert any(e.source == decision and e.label == "No" and
+               graph.nodes[e.target].label == "Investigar reuse" for e in graph.edges)
     assert len([e for e in graph.edges if e.target == results]) == 2
     assert len([e for e in graph.edges if e.source == results]) == 1
     assert graph.nodes[graph.edges[-1].target].kind == "final"
@@ -43,7 +44,7 @@ def test_activity_from_pinned_p4_export_and_renderer(tmp_path):
         assert Path(result["files"][extension]).is_file()
     text = Path(result["files"]["mmd"]).read_text(encoding="utf-8")
     assert "(( ))" in text and "((( )))" in text
-    assert "¿Información suficiente?" in text
+    assert "NEEDS_CLARIFICATION" in text
     assert "Sí" in text and "No" in text
     graph = json.loads(Path(result["files"]["json"]).read_text(encoding="utf-8"))
     assert any(n["kind"] == "final" for n in graph["nodes"])
@@ -59,7 +60,7 @@ def test_single_entry_cli_and_per_type_mcp(tmp_path, capsys, monkeypatch):
     generated = generate_activity_diagram(str(P4), entry_point=ENTRY, language="es",
                                            output_path=str(target), renderer="graphviz")
     assert generated["diagram_type"] == "activity"
-    assert "¿Información suficiente?" in generated["mermaid"]
+    assert "NEEDS_CLARIFICATION" in generated["mermaid"]
 
 
 def test_other_diagram_types_rejected_explicitly(tmp_path):

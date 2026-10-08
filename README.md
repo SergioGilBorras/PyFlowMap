@@ -2,7 +2,7 @@
 
 **Python source → simplified Mermaid activity diagrams.** PyFlowMap extracts conservative, static control-flow sketches from Python functions/methods. The goal is **readability over exhaustive call graphs**: hide implementation noise, retain important decisions, and keep links back to the original code.
 
-> **Early preview (0.1.1).** Not a compiler, full CFG or runtime tracer. Python code is **never executed**. Dynamic dispatch, decorators, reflection, imports and exception flows may be incomplete or approximated; inspect the JSON warnings and source locations.
+> **Early preview (0.1.0).** Not a compiler, full CFG or runtime tracer. Python code is **never executed**. Dynamic dispatch, decorators, reflection, imports and exception flows may be incomplete or approximated; inspect the JSON warnings and source locations.
 
 ## Quick start
 
@@ -34,7 +34,7 @@ pyflowmap analyze ./my_project --entry app:main --format png
 pyflowmap analyze ./my_project --entry app:main --format all
 ```
 
-Every analysis saves an editable `.mmd` **and** a `.json` intermediate graph; SVG/PNG is optional. When `mmdc` is unavailable, image export can use an installed Graphviz `dot` executable. Select with `--renderer graphviz` or use `--renderer auto` (Mermaid CLI first, Graphviz fallback). If neither is available, the `.mmd` and `.json` remain.
+Every analysis saves an editable `.mmd` **and** a `.json` intermediate graph; SVG/PNG is optional. If `mmdc` is unavailable, the image command fails with a clear diagnostic while retaining `.mmd` and `.json`.
 
 ### Run as an MCP server
 
@@ -43,7 +43,7 @@ pip install -e '.[mcp]'
 PYFLOWMAP_ALLOWED_ROOTS="$PWD" pyflowmap-mcp
 ```
 
-The local **stdio** MCP server offers `inspect_project`, `generate_diagram` and `generate_activity_diagram` tools. A generic MCP client can configure it like this:
+The local **stdio** MCP server offers `inspect_project` and `generate_diagram` tools. A generic MCP client can configure it like this:
 
 ```json
 {
@@ -56,15 +56,15 @@ The local **stdio** MCP server offers `inspect_project`, `generate_diagram` and 
 }
 ```
 
-`generate_diagram` accepts `project_path`, `entry_point`, `scope`, `max_nodes`, `max_depth`, `format`, `language`, `renderer`, `diagram_type` and `output_path`. Currently `activity` is the only supported diagram type; unsupported values fail clearly. It returns the Mermaid source, warnings, and absolute output filenames. MCP file paths must stay under `PYFLOWMAP_ALLOWED_ROOTS` (defaults to the server's current working directory). Run this only against workspaces you trust; although it doesn't execute Python, image rendering invokes an installed local executable.
+`generate_diagram` accepts `project_path`, `entry_point`, `scope`, `max_nodes`, `max_depth`, `format`, and `output_path`. It returns the Mermaid source, warnings, and absolute output filenames. MCP file paths must stay under `PYFLOWMAP_ALLOWED_ROOTS` (defaults to the server's current working directory). Run this only against workspaces you trust; although it doesn't execute Python, image rendering invokes an installed local executable.
 
 ## How it works
 
 1. Parse `.py` files with the standard-library `ast` module (without importing them).
-2. Index top-level functions, classes, and methods; resolve simple calls, relative imports, local constructors and default-instantiated `self` attributes.
+2. Index top-level functions, classes, and methods; resolve simple calls and local constructor receivers.
 3. Build a sequence with simple `if/else` branches and `for`/`while` loops, expanding small local orchestrators when useful.
 4. Contract only **linear activities** until `--max-nodes` is reached, retaining branching topology. If this isn't possible, warn and preserve the extra nodes rather than silently misrepresenting the code.
-5. Serialize to Mermaid `flowchart`, write provenance JSON, and optionally use Mermaid CLI or Graphviz for SVG/PNG. The activity diagram includes UML-inspired initial/final nodes and shared returns.
+5. Serialize to Mermaid `flowchart`, write provenance JSON, and optionally invoke `mmdc` for SVG/PNG.
 
 ## Usage
 
@@ -73,8 +73,6 @@ pyflowmap inspect SOURCE [--scope RELATIVE_PATH]
 pyflowmap analyze SOURCE [--entry MODULE:FUNCTION_OR_CLASS.METHOD]
                          [--scope RELATIVE_PATH] [--max-nodes 8]
                          [--max-depth 2] [--direction TD|LR]
-                         [--diagram-type activity] [--language en|es]
-                         [--renderer auto|mermaid|graphviz]
                          [--format mmd|svg|png|all] [--output DIR_OR_FILE]
 ```
 
@@ -88,30 +86,33 @@ pytest -q
 ruff check src tests
 ```
 
-See [architecture](docs/architecture.md), [analysis rules](docs/analysis-rules.md), and [roadmap](docs/roadmap.md). The tests include a sample multi-file project and an **immutable, commit-pinned P4-Planning-Agent** regression snapshot. See [reference testing](docs/reference-testing.md) and [P4 V1.1 diagrams](examples/results/p4-planning-agent-v1-1/README.md).
+See [architecture](docs/architecture.md), [analysis rules](docs/analysis-rules.md), and [roadmap](docs/roadmap.md). The tests include a sample multi-file project.
 
 ## Important limitations
 
 - A diagram illustrates **possible static control flow**, not a verified runtime trace.
 - Calls made through reflection, dynamic imports, abstract dispatch, higher-order functions, and decorators cannot always be resolved. For ambiguous symbols, choose an explicit entry.
-- `try/except` is approximated and marked with a warning. `match/case` is collapsed. Dynamic imports, unusual relative imports and injected class instances may still be unresolved.
+- `try/except` is approximated and marked with a warning. `match/case` is collapsed. Relative imports aren't fully resolved.
 - `max_nodes` is a **soft limit** if lowering further would destroy topology.
-- Image export needs either Mermaid CLI (`mmdc`) or Graphviz (`dot`). The core parser and `.mmd` output have no external runtime dependencies.
+- Rendering requires a separately installed `mmdc`. The core parser and `.mmd` output have no external runtime dependencies.
 - ZIP input is restricted by size and path safety checks; nested ZIP archives and non-Python files are ignored.
+
+
+## Generic activity labels (no project-specific dictionaries)
+
+Labels are derived from method/function identifiers and optional docstrings. For methods,
+common verb names and CamelCase class words provide context. This is deterministic and
+works independently of the project. For instance, `GalaxyAnalysisAgent.analyze` becomes
+`Analyze galaxy` or `Analizar galaxy` with `--language es`. The source symbol is displayed
+in a smaller second line and kept in full in the JSON graph.
+
+**No AI and no full natural-language translator are included.** Generic action verbs can
+be localized, but unknown domain-specific nouns stay in their original language rather
+than being replaced by hard-coded project aliases. The actual condition predicate appears
+in each decision node, so Yes/No (Sí/No) always retain their logical truth values.
+
+See [analysis rules](docs/analysis-rules.md) for limitations and future AI labeling options.
 
 ## License
 
 MIT.
-
-## Current activity output and future diagram families
-
-The sole CLI entry point is `pyflowmap analyze`, dispatching through `--diagram-type activity` to `pyflowmap.diagrams.activity`. The MCP service also exposes a dedicated `generate_activity_diagram` tool. New UML families (class, sequence, package, etc.) will have **separate analyzers and representations**, but share the public CLI and output machinery. The REST API/desktop UI remain future interfaces. See [diagram types](docs/diagram-types.md).
-
-Example for the immutable P4 case:
-
-```bash
-pyflowmap analyze tests/fixtures/references/p4-planning-agent-v1 \\
-  --entry planning.coordinator:PlanningCoordinator.plan \\
-  --diagram-type activity --language es --format all --renderer graphviz \\
-  --output ./results/p4-v1
-```

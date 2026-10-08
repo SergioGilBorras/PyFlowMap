@@ -1,9 +1,9 @@
 """Conservative static activity-flow extraction and topology-safe contraction."""
 
 import ast
-import re
 from collections import Counter
 
+from .diagrams.labeling import describe_symbol, describe_unresolved, words
 from .models import Edge, FlowGraph
 from .project import ProjectIndex, Symbol
 
@@ -16,29 +16,15 @@ NOISE = {
 }
 
 
-def words(value: str) -> str:
-    value = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", value)
-    return re.sub(r"[_\s]+", " ", value).strip().capitalize()
-
-
 def display_call(call: ast.Call, target: Symbol | None, language: str = "en") -> str:
     if target:
-        if language == "es":
-            known = {
-                "RequirementAnalysisAgent.analyze": "Analizar requisitos",
-                "ReuseResearchAgent.research": "Examinar reutilización",
-                "DecompositionAgent.decompose": "Descomponer trabajo",
-                "TechnicalPlanningAgent.plan": "Preparar plan técnico",
-            }
-            if f"{target.owner}.{target.name}" in known:
-                return known[f"{target.owner}.{target.name}"]
-        return f"{words(target.name)} ({target.owner})" if target.owner else words(target.name)
+        return describe_symbol(target, language)
     func = call.func
     if isinstance(func, ast.Name):
-        return words(func.id)
+        return describe_unresolved(func.id, language)
     if isinstance(func, ast.Attribute):
-        return words(func.attr)
-    return "Dynamic call"
+        return describe_unresolved(func.attr, language)
+    return "Dynamic call" if language == "en" else "Llamada dinámica"
 
 
 def call_name(call: ast.Call) -> str:
@@ -196,20 +182,24 @@ class FlowBuilder:
         return yes + no
 
     def _describe_condition(self, test: ast.AST) -> tuple[str, str, str]:
+        # Render the predicate's actual truth value. Do not rewrite a domain
+        # status to an inverted business question (which reversed Yes/No).
         true_label, false_label = (("Sí", "No") if self.language == "es"
                                    else ("Yes", "No"))
-        # Explicitly invert the guard when changing from the negative status
-        # test to a positively phrased question. Never reverse edges alone.
-        if (isinstance(test, ast.Compare) and len(test.ops) == 1
-                and isinstance(test.ops[0], (ast.Eq, ast.NotEq))
-                and any(isinstance(part, ast.Constant) and part.value == "NEEDS_CLARIFICATION"
-                        for part in [test.left, *test.comparators])):
-            is_eq = isinstance(test.ops[0], ast.Eq)
-            question = ("¿Información suficiente?" if self.language == "es"
-                        else "Is information sufficient?")
-            return (question, false_label, true_label) if is_eq else (
-                question, true_label, false_label)
-        return f"{expr_text(test)}?", true_label, false_label
+        if isinstance(test, ast.Compare) and len(test.ops) == len(test.comparators) == 1:
+            op = test.ops[0]
+            if isinstance(op, (ast.Eq, ast.NotEq)):
+                left = expr_text(test.left, 32)
+                right = expr_text(test.comparators[0], 32)
+                if self.language == "es":
+                    predicate = f"{left} {'es' if isinstance(op, ast.Eq) else 'es distinto de'} {right}"
+                    return f"¿{predicate}?", true_label, false_label
+                relation = "equal to" if isinstance(op, ast.Eq) else "different from"
+                return f"Is {left} {relation} {right}?", true_label, false_label
+        condition = expr_text(test)
+        if self.language == "es":
+            return f"¿{condition}?", true_label, false_label
+        return f"{condition}?", true_label, false_label
 
     def _loop(self, stmt: ast.For | ast.AsyncFor | ast.While,
               prior: list[tuple[str, str]], current: Symbol, types: dict[str, str],
