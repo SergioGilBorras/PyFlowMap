@@ -34,3 +34,23 @@ Full language-level dataflow, precise type inference, exact exception semantics,
 - Conservative: when simplification cannot retain decision topology, keep nodes above budget and warn.
 - Traceable: stable intermediate graph plus original file/line references.
 - Safe by default: inspect source as text, refuse ZIP traversal, keep MCP filesystem operations inside configured workspace roots.
+
+## Extension point: multiple diagram types (planned, not implemented)
+
+Keep the current activity pipeline unchanged while V1.1 improves its UML-like semantics. Future `diagram_type` selection should happen at the application service boundary (and be exposed identically by CLI and MCP). A selected analyzer produces a **diagram-specific intermediate representation** with source provenance; an associated serializer generates suitable Mermaid syntax (or another renderer if necessary). Do not force class, sequence and package models through the activity-only `FlowGraph` structure.
+
+```mermaid
+flowchart TD
+    API["CLI / MCP / Python service"] --> Type{"diagram_type (future)"}
+    Type -->|activity| CFG["Control-flow model (current)"]
+    Type -->|class| Classes["Class relationship model (future)"]
+    Type -->|package| Packages["Import dependency model (future)"]
+    Type -->|sequence| Calls["Interaction trace model (future)"]
+    CFG --> Render["Type-aware Mermaid serializer"]
+    Classes --> Render
+    Packages --> Render
+    Calls --> Render
+    Render --> Artifacts[".mmd / optional SVG or PNG"]
+```
+
+See [diagram types](diagram-types.md). Unsupported types should fail with a clear error until actually implemented.
