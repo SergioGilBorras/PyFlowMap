@@ -1,12 +1,12 @@
 """Safe source loading and a small Python symbol index (no execution/imports)."""
 
 import ast
+import stat
+import tempfile
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
-import stat
-import tempfile
-from typing import Iterator
 from zipfile import ZipFile
 
 SKIP_DIRS = {".git", ".venv", "venv", "__pycache__", "node_modules", "site-packages", ".tox", "build", "dist"}

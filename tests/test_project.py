@@ -34,14 +34,12 @@ def test_zip_rejects_traversal(tmp_path):
     archive = tmp_path / "code.zip"
     with ZipFile(archive, "w") as z:
         z.writestr("../attack.py", "print('bad')")
-    with pytest.raises(ValueError, match="Unsafe path"):
-        with load_project(archive):
-            pass
+    with pytest.raises(ValueError, match="Unsafe path"), load_project(archive):
+        pass
     assert not (tmp_path / "attack.py").exists()
 
 
 def test_ambiguous_point_of_entry(tmp_path):
     (tmp_path / "many.py").write_text("def alpha(): pass\ndef beta(): pass\n")
-    with load_project(tmp_path) as project:
-        with pytest.raises(ValueError, match="No unambiguous"):
-            project.entry(None)
+    with load_project(tmp_path) as project, pytest.raises(ValueError, match="No unambiguous"):
+        project.entry(None)

@@ -1,8 +1,8 @@
 """Public application service used identically by CLI and MCP."""
 
 import json
-from pathlib import Path
 import re
+from pathlib import Path
 
 from .analysis import FlowBuilder, simplify
 from .mermaid import to_mermaid
