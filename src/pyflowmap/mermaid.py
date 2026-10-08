@@ -17,7 +17,7 @@ def to_mermaid(graph: FlowGraph, direction: str = "TD") -> str:
     # as Mermaid text, and rely on the layout engine for their placement.
     lines = [
         '%%{init: {"theme": "base", "themeVariables": '
-        '{"fontSize": "16px", "edgeLabelBackground": "#ffffff"}}}%%',
+        '{"fontSize": "18px", "edgeLabelBackground": "#ffffff"}}}%%',
         f"flowchart {direction}",
     ]
     for node in graph.nodes.values():

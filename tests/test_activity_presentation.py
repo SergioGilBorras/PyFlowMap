@@ -47,7 +47,7 @@ def test_p4_diagram_two_lines_and_larger_branch_typography(tmp_path):
     text = Path(result["files"]["mmd"]).read_text(encoding="utf-8")
     assert 'Analizar requisitos<br/><small>(RequirementAnalysisAgent.analyze)</small>' in text
     assert 'Examinar reutilización<br/><small>(ReuseResearchAgent.research)</small>' in text
-    assert '"fontSize": "16px"' in text
+    assert '"fontSize": "18px"' in text
     assert "-->|Sí|" in text and "-->|No|" in text
     assert text.count('n7["Devolver resultado"]') == 1
     assert text.count('((( )))') == 1
