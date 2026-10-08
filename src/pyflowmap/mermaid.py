@@ -16,8 +16,8 @@ def to_mermaid(graph: FlowGraph, direction: str = "TD") -> str:
     # The bigger base font also benefits Yes/No edge labels. Keep edge labels
     # as Mermaid text, and rely on the layout engine for their placement.
     lines = [
-        '%%{init: {"theme": "base", "themeVariables": '
-        '{"fontSize": "18px", "edgeLabelBackground": "#ffffff"}}}%%',
+        ('%%{init: {"theme": "base", "themeVariables": '
+         '{"fontSize": "18px", "edgeLabelBackground": "#ffffff"}}}%%'),
         f"flowchart {direction}",
     ]
     for node in graph.nodes.values():
