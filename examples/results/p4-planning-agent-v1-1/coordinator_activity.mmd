@@ -1,0 +1,19 @@
+flowchart TD
+    n1(( ))
+    style n1 fill:#000000,stroke:#000000,color:#000000
+    n2["Analizar requisitos"]
+    n3{"¿Información suficiente?"}
+    n4["Examinar reutilización"]
+    n5["Descomponer trabajo"]
+    n6["Preparar plan técnico"]
+    n7["Devolver resultado"]
+    n8((( )))
+    style n8 fill:#000000,stroke:#000000,color:#000000
+    n1 --> n2
+    n2 --> n3
+    n3 -->|Sí| n4
+    n4 --> n5
+    n5 --> n6
+    n3 -->|No| n7
+    n6 --> n7
+    n7 --> n8
