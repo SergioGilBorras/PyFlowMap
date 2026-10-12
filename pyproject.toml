@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyflowmap"
-version = "0.1.1"
+version = "0.1.2"
 description = "Deterministic Python activity-flow extraction with Mermaid, image export, and MCP"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -17,6 +17,9 @@ dependencies = []
 [project.optional-dependencies]
 mcp = ["mcp>=1.10,<3"]
 dev = ["pytest>=8", "ruff>=0.6"]
+# GitHub tag dependency is OPTIONAL; Codex is never installed by default.
+labeler = ["p4-semantic-labeler @ git+https://github.com/SergioGilBorras/P4-Semantic-Labeler.git@v0.1.0"]
+labeler-codex = ["p4-semantic-labeler[codex] @ git+https://github.com/SergioGilBorras/P4-Semantic-Labeler.git@v0.1.0"]
 
 [project.scripts]
 pyflowmap = "pyflowmap.cli:main"

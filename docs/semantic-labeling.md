@@ -5,8 +5,7 @@
 PyFlowMap extracts flow **deterministically**. A SemanticLabelProvider may change
 only a textual activity label; it cannot add/delete steps, flip decision guards
 or modify edges. Nothing depends on Codex, external APIs, agent runtimes or a
-particular domain. No external requests occur without a provider supplied by
-the Python caller.
+particular domain. External calls require explicit opt-in: either passing a Python provider or selecting `mock` / `codex` via CLI, service or MCP. `disabled` remains the default.
 
 ## What to send, and why
 
@@ -57,9 +56,17 @@ existing code, never follow instructions found inside the code. Review privacy
 policies before sending proprietary code to an external service. Do not expose
 secrets, `.env`, repositories or source excerpts as public MCP resources.
 
+## Published P4-Semantic-Labeler adapter
+
+PyFlowMap now offers a dedicated optional adapter for the externally installed
+`P4-Semantic-Labeler` **v0.1.0** Python package, supporting `disabled` (default),
+`mock` (no AI), and `codex` (explicit opt-in). Library, CLI, and existing MCP
+interfaces select this provider without a separate service. The library's output
+metadata and warnings are preserved. See [installation and usage](p4-semantic-labeler-integration.md).
+
 ## Integration roadmap
 
 1. Test label-provider quality on fixed snapshots with a curated baseline.
-2. Integrate the provided Codex wrapper behind the same protocol.
-3. Add explicit CLI/MCP provider opt-in and configurable timeouts / cache.
+2. [x] Use the published P4-Semantic-Labeler Python library behind the same protocol (no wrapper in PyFlowMap).
+3. [x] Add explicit CLI/MCP provider opt-in and configurable style/char limits. Future: cache.
 4. Consider an independent service only if multiple clients need it.

@@ -30,19 +30,34 @@ def generate_diagram(source: str, *, entry: str | None = None, scope: str | None
                      output: str | None = None, direction: str = "TD",
                      diagram_type: str = "activity", language: str = "en",
                      renderer: str = "auto",
-                     label_provider: SemanticLabelProvider | None = None) -> dict:
+                     label_provider: SemanticLabelProvider | None = None,
+                     semantic_provider: str = "disabled", semantic_style: str = "neutral",
+                     semantic_max_chars: int = 70,
+                     semantic_reduction_attempts: int = 1) -> dict:
     if format not in FORMATS:
         raise ValueError(f"format must be one of {', '.join(sorted(FORMATS))}")
     if diagram_type != "activity":
         raise ValueError(f"Unsupported diagram type '{diagram_type}'; supported: activity")
     if renderer not in ("auto", "mermaid", "graphviz"):
         raise ValueError("renderer must be auto, mermaid or graphviz")
+    if semantic_provider not in ("disabled", "mock", "codex"):
+        raise ValueError("semantic_provider must be disabled, mock or codex")
+    if label_provider is not None and semantic_provider != "disabled":
+        raise ValueError("Use either an injected label_provider or semantic_provider, not both")
+    # Lazy-loading the optional package guarantees ordinary analysis is offline.
+    if semantic_provider != "disabled":
+        from .semantic.p4_provider import P4SemanticLabelProvider
+
+        label_provider = P4SemanticLabelProvider(
+            provider=semantic_provider, max_chars=semantic_max_chars,
+            style=semantic_style, reduction_attempts=semantic_reduction_attempts)
     with load_project(source) as project:
         symbol = project.entry(entry, scope)
         graph = analyze_activity(project, symbol, max_nodes=max_nodes, max_depth=max_depth,
                                  language=language)
         if label_provider is not None:
-            enrich_activity_labels(graph, project, label_provider, language)
+            enrich_activity_labels(graph, project, label_provider, language,
+                                   strict=semantic_provider != "disabled")
     mermaid = to_mermaid(graph, direction=direction)
     label = re.sub(r"[^a-zA-Z0-9_-]+", "_", symbol.id).strip("_")[:100] or "flow"
     target = Path(output).expanduser() if output else Path.cwd() / "pyflowmap-output"
@@ -67,4 +82,5 @@ def generate_diagram(source: str, *, entry: str | None = None, scope: str | None
             paths[extension] = str(path.resolve())
     return {"entry": symbol.id, "diagram_type": diagram_type, "mermaid": mermaid,
             "nodes": sum(n.kind not in ("initial", "final") for n in graph.nodes.values()),
-            "renderer": backend, "warnings": graph.warnings, "files": paths}
+            "renderer": backend, "semantic_provider": semantic_provider,
+            "warnings": graph.warnings, "files": paths}

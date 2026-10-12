@@ -5,7 +5,7 @@ import re
 
 from ..models import FlowGraph
 from ..project import ProjectIndex
-from .contracts import LabelRequest, SemanticLabelProvider
+from .contracts import LabelRequest, SemanticLabelOutcome, SemanticLabelProvider
 
 MAX_SOURCE_CHARS = 3000
 MAX_DOCSTRING_CHARS = 350
@@ -36,11 +36,12 @@ def _valid_label(label: object) -> bool:
 
 
 def enrich_activity_labels(graph: FlowGraph, index: ProjectIndex,
-                           provider: SemanticLabelProvider, language: str) -> None:
-    """Call provider only for resolved activities; preserve decisions/merges/edges.
+                           provider: SemanticLabelProvider, language: str, *,
+                           strict: bool = False) -> None:
+    """Change activity labels only. Provider errors propagate if strict=True.
 
-    User project code is sent to the provider only when explicitly passed in by
-    the caller. A remote provider may transmit that code externally.
+    In explicit P4 provider mode, warn/return fake success is prohibited.
+    Legacy injected providers retain the previous best-effort fallback.
     """
     for node in graph.nodes.values():
         if node.kind != "activity" or not node.symbols:
@@ -48,7 +49,6 @@ def enrich_activity_labels(graph: FlowGraph, index: ProjectIndex,
         known = [key for key in node.symbols if key in index.symbols]
         if not known:
             continue
-        # Neighbors are context hints only, never commands to alter connectivity.
         before = tuple(graph.nodes[e.source].label for e in graph.edges
                        if e.target == node.id and e.source in graph.nodes)[:MAX_CONTEXT_ITEMS]
         after = tuple(graph.nodes[e.target].label for e in graph.edges
@@ -61,13 +61,27 @@ def enrich_activity_labels(graph: FlowGraph, index: ProjectIndex,
         )
         try:
             candidate = provider.label(request)
-        except Exception as exc:  # noqa: BLE001 - isolate failures of injected providers
+        except Exception as exc:  # noqa: BLE001 - legacy provider fallback only
+            if strict:
+                raise
             graph.warnings.append(f"Semantic label unavailable for {node.id}: {type(exc).__name__}")
             continue
         if candidate is None:
             continue
-        if not _valid_label(candidate):
+        outcome = candidate if isinstance(candidate, SemanticLabelOutcome) else None
+        label = outcome.label if outcome else candidate
+        if not _valid_label(label):
+            if strict:
+                raise ValueError(f"Invalid external semantic label for {node.id}")
             graph.warnings.append(f"Rejected invalid semantic label for {node.id}")
             continue
-        node.label = candidate.strip()
+        node.label = label.strip()
         node.label_source = "external"
+        if outcome:
+            node.label_metadata = {
+                "provider": outcome.provider, "char_count": outcome.char_count,
+                "language": outcome.language, "style": outcome.style,
+                "output_type": outcome.output_type, "warnings": list(outcome.warnings),
+            }
+            for warning in outcome.warnings:
+                graph.warnings.append(f"Semantic label {node.id}: {warning}")

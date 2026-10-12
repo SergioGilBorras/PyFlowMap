@@ -26,6 +26,11 @@ def main(argv: list[str] | None = None) -> int:
     analyze.add_argument("--renderer", choices=["auto", "mermaid", "graphviz"], default="auto")
     analyze.add_argument("--format", choices=["mmd", "svg", "png", "images", "all"], default="mmd")
     analyze.add_argument("--output", help="Output directory or diagram filename")
+    analyze.add_argument("--semantic-provider", choices=["disabled", "mock", "codex"],
+                         default="disabled", help="Optional P4 labeler (Codex opt-in only)")
+    analyze.add_argument("--semantic-style", default="neutral")
+    analyze.add_argument("--semantic-max-chars", type=int, default=70)
+    analyze.add_argument("--semantic-reduction-attempts", type=int, default=1)
     args = parser.parse_args(argv)
     try:
         if args.command == "inspect":
@@ -35,11 +40,15 @@ def main(argv: list[str] | None = None) -> int:
                                       max_nodes=args.max_nodes, max_depth=args.max_depth,
                                       direction=args.direction, format=args.format, output=args.output,
                                       diagram_type=args.diagram_type, language=args.language,
-                                      renderer=args.renderer)
+                                      renderer=args.renderer,
+                                      semantic_provider=args.semantic_provider,
+                                      semantic_style=args.semantic_style,
+                                      semantic_max_chars=args.semantic_max_chars,
+                                      semantic_reduction_attempts=args.semantic_reduction_attempts)
             result.pop("mermaid")  # Mermaid is in the .mmd file; keep CLI output concise.
         print(json.dumps(result, indent=2, ensure_ascii=False))
         return 0
-    except (ValueError, OSError, RenderError) as exc:
+    except (ValueError, OSError, RenderError, RuntimeError) as exc:
         print(f"pyflowmap: {exc}", file=sys.stderr)
         return 2
 

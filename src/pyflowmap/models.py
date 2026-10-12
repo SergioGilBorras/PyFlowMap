@@ -11,6 +11,7 @@ class Node:
     symbols: list[str] = field(default_factory=list)
     locations: list[str] = field(default_factory=list)
     label_source: str = "deterministic"
+    label_metadata: dict = field(default_factory=dict)
 
 
 @dataclass

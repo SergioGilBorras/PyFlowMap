@@ -2,7 +2,7 @@
 
 **Python source → simplified Mermaid activity diagrams.** PyFlowMap extracts conservative, static control-flow sketches from Python functions/methods. The goal is **readability over exhaustive call graphs**: hide implementation noise, retain important decisions, and keep links back to the original code.
 
-> **Early preview (0.1.0).** Not a compiler, full CFG or runtime tracer. Python code is **never executed**. Dynamic dispatch, decorators, reflection, imports and exception flows may be incomplete or approximated; inspect the JSON warnings and source locations.
+> **Early preview (0.1.2).** Not a compiler, full CFG or runtime tracer. Python code is **never executed**. Dynamic dispatch, decorators, reflection, imports and exception flows may be incomplete or approximated; inspect the JSON warnings and source locations.
 
 ## Quick start
 
@@ -120,34 +120,36 @@ See [analysis rules](docs/analysis-rules.md) for limitations and future AI label
 MIT.
 
 
-## Optional semantic labels (library extension; no provider bundled)
+## Optional P4-Semantic-Labeler v0.1.0 (Python library)
 
-The default diagram is deterministic and has no AI/network dependencies. An external
-provider can optionally replace **only the text** of existing activity nodes.
-It receives a bounded method source snippet (up to 3,000 characters), the first
-350 characters of its docstring, the symbol identifiers, original label, file
-path, language, and adjacent activity labels. A name alone is often ambiguous:
-").run()" might mean execute a query, start a task, or handle an event.
+Normal PyFlowMap analysis is deterministic, offline and does not need AI.
+Install the **optional** `labeler` or `labeler-codex` extra from the private
+GitHub tag `v0.1.0` only when you need contextual semantic labels:
 
-The provider is a plain Python object, **not** a required microservice or agent.
-For example, you can adapt an existing Codex wrapper later:
-
-```python
-from pyflowmap.service import generate_diagram
-
-class MyLabeler:
-    def label(self, request):
-        # Integrate your wrapper here. Return one string or None.
-        # Never send code externally without explicit authorization.
-        return None
-
-generate_diagram("./my_project", entry="module:main",
-                 label_provider=MyLabeler(), format="images")
+```bash
+python -m pip install -e '.[labeler]'
+python -m pip check
 ```
 
-This injection point is currently exposed through the Python library only;
-CLI/MCP provider configuration is deferred until we have an actual wrapper to integrate.
-If the provider is unavailable or fails validation, PyFlowMap keeps the
-deterministic label. Decision/Yes/No and all graph edges are immutable to labeling.
+```bash
+# Mock mode tests the library integration; it is NOT semantic inference.
+pyflowmap analyze ./my_project --entry app:main --semantic-provider mock \
+  --semantic-max-chars 70 --semantic-style neutral --format images
+```
 
-See [semantic integration design](docs/semantic-labeling.md).
+For explicitly authorized Codex use, install `'.[labeler-codex]'`, run
+`codex login`, and choose `--semantic-provider codex`. Codex is NEVER selected
+implicitly. The same parameters are accepted by the existing MCP tools.
+
+PyFlowMap passes the selected function's **source code**, docstring, class,
+module and neighbor labels to the P4 library; it does not merely translate
+its name. P4's labeler can only replace text on resolved activity nodes,
+never branch logic or Mermaid graph topology. Source references stay in JSON.
+The P4 result metadata and warnings (including a possible loss-of-meaning
+truncation warning) are retained in JSON and diagram warnings. An explicitly
+selected P4 provider failure raises an error; it does not silently fabricate
+AI success. Legacy injected Python label providers remain supported.
+
+For independent title and summary generation, asynchronous or batch usage,
+see [integration documentation](docs/p4-semantic-labeler-integration.md) and
+[example script](examples/semantic_labeler_integration.py).

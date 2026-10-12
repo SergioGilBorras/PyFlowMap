@@ -26,25 +26,37 @@ def generate_diagram(project_path: str, entry_point: str | None = None,
                      scope: str | None = None, max_nodes: int = 8, max_depth: int = 2,
                      format: str = "mmd", output_path: str | None = None,
                      language: str = "en", renderer: str = "auto",
-                     diagram_type: str = "activity") -> dict:
-    """Generate a simplified Python activity diagram (.mmd and optional SVG/PNG)."""
+                     diagram_type: str = "activity",
+                     semantic_provider: str = "disabled", semantic_style: str = "neutral",
+                     semantic_max_chars: int = 70,
+                     semantic_reduction_attempts: int = 1) -> dict:
+    """Generate a simplified activity diagram with optional semantic labels."""
     src = _allowed(project_path)
     source_path = Path(src)
     default_output = (source_path if source_path.is_dir() else source_path.parent) / "pyflowmap-output"
     destination = _allowed(output_path) if output_path else _allowed(str(default_output))
     return _generate_diagram(src, entry=entry_point, scope=scope, max_nodes=max_nodes,
                              max_depth=max_depth, format=format, output=destination,
-                             language=language, renderer=renderer, diagram_type=diagram_type)
+                             language=language, renderer=renderer, diagram_type=diagram_type,
+                             semantic_provider=semantic_provider, semantic_style=semantic_style,
+                             semantic_max_chars=semantic_max_chars,
+                             semantic_reduction_attempts=semantic_reduction_attempts)
 
 
 def generate_activity_diagram(project_path: str, entry_point: str | None = None,
                               scope: str | None = None, max_nodes: int = 8,
                               format: str = "mmd", output_path: str | None = None,
-                              language: str = "en", renderer: str = "auto") -> dict:
-    """MCP-specific shortcut for UML-inspired activity diagrams."""
+                              language: str = "en", renderer: str = "auto",
+                              semantic_provider: str = "disabled", semantic_style: str = "neutral",
+                              semantic_max_chars: int = 70,
+                              semantic_reduction_attempts: int = 1) -> dict:
+    """MCP shortcut for UML-inspired activity diagrams."""
     return generate_diagram(project_path, entry_point=entry_point, scope=scope,
                             max_nodes=max_nodes, format=format, output_path=output_path,
-                            language=language, renderer=renderer)
+                            language=language, renderer=renderer,
+                            semantic_provider=semantic_provider, semantic_style=semantic_style,
+                            semantic_max_chars=semantic_max_chars,
+                            semantic_reduction_attempts=semantic_reduction_attempts)
 
 
 def make_server():

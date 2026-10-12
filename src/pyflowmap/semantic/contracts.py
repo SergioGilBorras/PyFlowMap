@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Dependency-free interface to plug a local wrapper or external label provider."""
 
 from dataclasses import dataclass
@@ -26,4 +27,17 @@ class SemanticLabelProvider(Protocol):
     The provider never receives a mutable FlowGraph and cannot change edges.
     """
 
-    def label(self, request: LabelRequest) -> str | None: ...
+    def label(self, request: LabelRequest) -> str | SemanticLabelOutcome | None: ...
+
+
+@dataclass(frozen=True)
+class SemanticLabelOutcome:
+    """Presentation metadata returned by an external labeling library."""
+
+    label: str
+    provider: str
+    warnings: tuple[str, ...] = ()
+    char_count: int = 0
+    output_type: str = "title"
+    language: str = "es"
+    style: str = "neutral"
