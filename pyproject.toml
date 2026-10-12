@@ -12,7 +12,9 @@ license = "MIT"
 authors = [{name = "PyFlowMap contributors"}]
 keywords = ["python", "mermaid", "static-analysis", "flowchart", "mcp"]
 classifiers = ["Programming Language :: Python :: 3", "Programming Language :: Python :: 3 :: Only", "Topic :: Software Development :: Documentation"]
-dependencies = []
+dependencies = [
+    "portable-tempdirs @ git+https://github.com/SergioGilBorras/portable-tempdirs.git@fd6dbd640630e6911a53b4d756089099ec870a8b",
+]
 
 [project.optional-dependencies]
 mcp = ["mcp>=1.10,<3"]

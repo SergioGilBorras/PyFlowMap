@@ -1,13 +1,15 @@
 """Safe source loading and a small Python symbol index (no execution/imports)."""
 
 import ast
+import os
 import stat
-import tempfile
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 from zipfile import ZipFile
+
+from portable_tempdirs import temporary_directory
 
 SKIP_DIRS = {".git", ".venv", "venv", "__pycache__", "node_modules", "site-packages", ".tox", "build", "dist"}
 MAX_FILES = 2500
@@ -235,7 +237,10 @@ def load_project(source: str | Path) -> Iterator[ProjectIndex]:
     elif path.is_file() and path.suffix == ".py":
         yield ProjectIndex(path.parent, selected_file=path)
     elif path.is_file() and path.suffix.lower() == ".zip":
-        with tempfile.TemporaryDirectory(prefix="pyflowmap-") as directory:
+        temp_parent = Path(os.environ.get("PYFLOWMAP_TEMP_ROOT", Path.cwd())).expanduser().resolve()
+        if not temp_parent.is_dir():
+            raise ValueError(f"Temporary directory parent does not exist: {temp_parent}")
+        with temporary_directory("pyflowmap-zip", parent=temp_parent) as directory:
             root = Path(directory)
             total = 0
             count = 0

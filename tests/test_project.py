@@ -30,6 +30,41 @@ def test_zip_source(tmp_path):
         assert project.entry("main").id == "src.worker:main"
 
 
+def test_zip_extraction_uses_managed_root_and_cleans_on_failure(tmp_path, monkeypatch):
+    import pyflowmap.project as project_module
+
+    archive = tmp_path / "code.zip"
+    with ZipFile(archive, "w") as z:
+        z.writestr("src/worker.py", "def main(:\n")
+    managed_parent = tmp_path / "managed"
+    managed_parent.mkdir()
+    monkeypatch.setenv("PYFLOWMAP_TEMP_ROOT", str(managed_parent))
+    owners = []
+    create = project_module.temporary_directory
+
+    def track(namespace, parent=None, **kwargs):
+        owner = create(namespace, parent=parent, **kwargs)
+        owners.append(owner)
+        return owner
+
+    monkeypatch.setattr(project_module, "temporary_directory", track)
+    with pytest.raises(ValueError, match="No parseable Python files found"), project_module.load_project(archive):
+        pass
+
+    assert len(owners) == 1
+    assert owners[0].path.parent == managed_parent
+    assert not owners[0].path.exists()
+
+
+def test_zip_temp_parent_must_exist(tmp_path, monkeypatch):
+    archive = tmp_path / "code.zip"
+    with ZipFile(archive, "w") as z:
+        z.writestr("worker.py", "def main(): pass\n")
+    monkeypatch.setenv("PYFLOWMAP_TEMP_ROOT", str(tmp_path / "missing"))
+    with pytest.raises(ValueError, match="Temporary directory parent does not exist"), load_project(archive):
+        pass
+
+
 def test_zip_rejects_traversal(tmp_path):
     archive = tmp_path / "code.zip"
     with ZipFile(archive, "w") as z:

@@ -25,6 +25,8 @@ def main(argv: list[str] | None = None) -> int:
     analyze.add_argument("--language", choices=["en", "es"], default="en")
     analyze.add_argument("--renderer", choices=["auto", "mermaid", "graphviz"], default="auto")
     analyze.add_argument("--format", choices=["mmd", "svg", "png", "images", "all"], default="mmd")
+    analyze.add_argument("--view", choices=["detailed", "overview"], default="detailed",
+                         help="overview groups internal control flow by source symbol")
     analyze.add_argument("--output", help="Output directory or diagram filename")
     analyze.add_argument("--semantic-provider", choices=["disabled", "mock", "codex"],
                          default="disabled", help="Optional P4 labeler (Codex opt-in only)")
@@ -44,7 +46,8 @@ def main(argv: list[str] | None = None) -> int:
                                       semantic_provider=args.semantic_provider,
                                       semantic_style=args.semantic_style,
                                       semantic_max_chars=args.semantic_max_chars,
-                                      semantic_reduction_attempts=args.semantic_reduction_attempts)
+                                      semantic_reduction_attempts=args.semantic_reduction_attempts,
+                                      view=args.view)
             result.pop("mermaid")  # Mermaid is in the .mmd file; keep CLI output concise.
         print(json.dumps(result, indent=2, ensure_ascii=False))
         return 0

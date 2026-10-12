@@ -27,6 +27,14 @@ optional labeler without AI inference; `disabled` keeps deterministic labels.
 Codex inference is never enabled implicitly. The script can also be run from
 another directory with `-PyFlowMapRoot <checkout>`.
 
+The installer pins `portable-tempdirs` to commit
+`fd6dbd640630e6911a53b4d756089099ec870a8b`. Pytest allocates an owned,
+per-run directory under this checkout for `--basetemp`; this applies to the
+installer, direct pytest runs, and PyCharm. ZIP inputs use the same manager.
+For direct CLI or MCP use, temporary files go under the current directory by
+default; set `$env:PYFLOWMAP_TEMP_ROOT` to an existing writable directory when
+the current directory is not an approved workspace.
+
 ### macOS and Linux
 
 ```bash
@@ -45,6 +53,7 @@ pyflowmap inspect ./my_project
 pyflowmap analyze ./my_project --entry app.pipeline:Pipeline.run --format mmd
 pyflowmap analyze ./my_project --entry app.pipeline:Pipeline.run \
   --format images --renderer graphviz --output ./diagrams
+pyflowmap analyze ./my_project --entry app.pipeline:Pipeline.run --view overview --format images --renderer graphviz --output ./diagrams
 ```
 
 Inputs can be a directory, a Python file, or a ZIP containing Python files.
@@ -57,6 +66,12 @@ Each analysis writes editable Mermaid (`.mmd`) and a traceable graph (`.json`).
 uses UTF-8, including for Spanish labels. `max_nodes` is a soft limit: the
 analyzer preserves branch topology and reports when a graph cannot be
 simplified safely to the requested size.
+
+`--view overview` makes a function-level overview from observed source-symbol
+transitions. Cross-function edges retain their original branch labels. JSON
+records source locations and original node IDs. Decisions and paths inside a
+function are summarized; use the detailed view to inspect them. The overview
+warning states this abstraction explicitly.
 
 ## Use the MCP server
 
@@ -71,7 +86,8 @@ pyflowmap-mcp
 On Windows, separate roots with `;` (`os.pathsep`); on POSIX, use `:`. The
 server defaults to the current directory if the variable is unset. Every
 source and output path must resolve within an allowed root. Keep P4 outside
-the allowlist when using MCP if it must remain read-only.
+the allowlist when using MCP if it must remain read-only. Set
+`PYFLOWMAP_TEMP_ROOT` to an existing writable approved workspace for ZIP inputs.
 
 ## Optional semantic labels
 

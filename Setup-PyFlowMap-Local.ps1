@@ -122,6 +122,11 @@ function Check-Branch {
 }
 function Setup-Python {
     Say 'Crear / actualizar entorno virtual en PyFlowMap'
+    $previousTempVariables = @{ TEMP = $env:TEMP; TMP = $env:TMP; TMPDIR = $env:TMPDIR }
+    $env:TEMP = $PyFlowMapRoot
+    $env:TMP = $PyFlowMapRoot
+    $env:TMPDIR = $PyFlowMapRoot
+    try {
     $launcher = @(Resolve-PythonLauncher)
     $executable = [string]$launcher[0]
     $prefix = @()
@@ -147,7 +152,17 @@ function Setup-Python {
     Push-Location $PyFlowMapRoot
     try {
         Say "pip install -e .[$extras] (dependencias GitHub privadas: requiere credenciales Git)"
-        Run $pyvenv @('-m','pip','install','-e',".[$extras]")
+        $ready = $true
+        foreach ($packageName in @('portable-tempdirs','pytest','ruff','mcp','p4-semantic-labeler')) {
+            & $pyvenv -m pip show $packageName *> $null
+            if ($LASTEXITCODE -ne 0) { $ready = $false }
+        }
+        if ($ready -and $extras -eq 'dev,mcp') {
+            Run $pyvenv @('scripts\verify_portable_tempdirs.py')
+            Run $pyvenv @('-m','pip','install','--no-deps','-e',".[$extras]")
+        } else {
+            Run $pyvenv @('-m','pip','install','-e',".[$extras]")
+        }
         Run $pyvenv @('-m','pip','check')
         Say 'Verificar importacion de P4-Semantic-Labeler v0.1.0'
         # Keep Python -c free of quoted string literals: PS 5.1 native argument
@@ -158,19 +173,30 @@ function Setup-Python {
         if ($installedVersion -ne '0.1.0') { throw "Version inesperada de P4-Semantic-Labeler: '$installedVersion' (se esperaba v0.1.0)." }
         Write-Host "P4-Semantic-Labeler: $installedVersion" -ForegroundColor Green
     } finally { Pop-Location }
+    } finally {
+        foreach ($name in @('TEMP','TMP','TMPDIR')) {
+            if ($null -eq $previousTempVariables[$name]) { Remove-Item "Env:$name" }
+            else { Set-Item "Env:$name" -Value $previousTempVariables[$name] }
+        }
+    }
 }
 function Test-PyFlowMap {
     Say 'Pruebas y lint PyFlowMap (sin inferencia real de Codex)'
     $py = Join-Path $PyFlowMapRoot '.venv\Scripts\python.exe'
     if (-not (Test-Path -LiteralPath $py)) { throw 'Falta el entorno .venv; ejecuta -Action Setup o -Action All primero.' }
     Push-Location $PyFlowMapRoot
+    $previousTempRoot = $env:PYFLOWMAP_TEMP_ROOT
     try {
-        # Use workspace scratch storage on managed Windows profiles whose
-        # default Temp directory does not grant pytest directory-list access.
-        $testTemp = Join-Path $PyFlowMapRoot ('.pytest-tmp-' + [Guid]::NewGuid().ToString('N'))
-        Run $py @('-m','pytest','-q','-p','no:cacheprovider',"--basetemp=$testTemp")
+        # conftest owns a unique portable-tempdirs root shared by pytest,
+        # PyCharm and direct `python -m pytest` runs.
+        $env:PYFLOWMAP_TEMP_ROOT = $PyFlowMapRoot
+        Run $py @('-m','pytest','-q','-p','no:cacheprovider')
         Run $py @('-m','ruff','check','src','tests')
-    } finally { Pop-Location }
+    } finally {
+        if ($null -eq $previousTempRoot) { Remove-Item Env:PYFLOWMAP_TEMP_ROOT }
+        else { $env:PYFLOWMAP_TEMP_ROOT = $previousTempRoot }
+        Pop-Location
+    }
 }
 function Generate-Diagrams {
     if ($SemanticProvider -eq 'codex' -and -not $AllowCodexInference) {
@@ -192,6 +218,8 @@ function Generate-Diagrams {
     $sha = $null
     $zip = $null
     $digest = $null
+    $technicalRoot = $null
+    $imageRoot = $null
     $inputSource = $P4Root
     $sourceMode = 'local working tree (not a reproducible Git snapshot)'
     $gitRef = $null
@@ -204,17 +232,16 @@ function Generate-Diagrams {
         $short = $sha.Substring(0,12)
         $resultRoot = Join-Path (Join-Path $PyFlowMapRoot 'pyflowmap-output') "p4-$short"
         New-Item -ItemType Directory -Force -Path $resultRoot | Out-Null
-        $zip = Join-Path $resultRoot "p4-$short.git-archive.zip"
+        $technicalRoot = Join-Path $resultRoot 'technical'
+        $imageRoot = Join-Path $resultRoot 'images'
+        New-Item -ItemType Directory -Force -Path $technicalRoot,$imageRoot | Out-Null
+        $zip = Join-Path $technicalRoot "p4-$short.git-archive.zip"
         Run $script:GitPath @('-C',$P4Root,'archive','--format=zip',"--output=$zip",$sha)
         $digest = (Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash
-        # Analyze an extracted snapshot directory. PyFlowMap's ZIP input
-        # adapter needs a temporary directory, which can be denied by managed
-        # Windows Temp ACLs even when this workspace is writable.
-        $snapshotDirectory = Join-Path $resultRoot 'source'
-        New-Item -ItemType Directory -Force -Path $snapshotDirectory | Out-Null
-        Expand-Archive -LiteralPath $zip -DestinationPath $snapshotDirectory -Force
-        $inputSource = $snapshotDirectory
-        $sourceMode = 'git archive extracted snapshot; P4 repository remains untouched'
+        # PyFlowMap owns ZIP extraction under its explicit workspace temp root.
+        # The P4 checkout is only read by git archive and is never expanded into.
+        $inputSource = $zip
+        $sourceMode = 'pinned git archive; managed temporary extraction; P4 remains untouched'
         $gitRef = $P4Ref
     } else {
         if ($P4Ref -ne 'HEAD') {
@@ -225,6 +252,13 @@ function Generate-Diagrams {
         $resultRoot = Join-Path (Join-Path $PyFlowMapRoot 'pyflowmap-output') "p4-working-tree-$timestamp"
         New-Item -ItemType Directory -Force -Path $resultRoot | Out-Null
     }
+    $technicalRoot = Join-Path $resultRoot 'technical'
+    $imageRoot = Join-Path $resultRoot 'images'
+    $historyRoot = Join-Path $resultRoot 'history'
+    $graphRoot = Join-Path $technicalRoot 'graphs'
+    $mermaidRoot = Join-Path $technicalRoot 'mermaid'
+    $resultFilesRoot = Join-Path $technicalRoot 'results'
+    New-Item -ItemType Directory -Force -Path $graphRoot,$mermaidRoot,$resultFilesRoot,$imageRoot,$historyRoot | Out-Null
     $manifest = [ordered]@{
         source_repo = $P4Root; git_ref = $gitRef; commit_sha = $sha
         source_mode = $sourceMode; archive = $zip; archive_sha256 = $digest
@@ -232,34 +266,83 @@ function Generate-Diagrams {
         allowed_codex_inference = [bool]$AllowCodexInference
         generated_utc = (Get-Date).ToUniversalTime().ToString('o')
         entries = $Entries
+        views = @('function-overview for first entry','detailed activity for each entry')
+        parameters = @{ max_nodes = $MaxNodes; max_depth = 2; language = 'es'; direction = 'TD'; renderer = 'graphviz'; semantic_max_chars = $SemanticMaxChars; semantic_style = $SemanticStyle; semantic_provider = $SemanticProvider }
     }
-    $manifest | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $resultRoot 'manifest.json') -Encoding UTF8
-    $json = & $py -m pyflowmap 'inspect' $inputSource
-    if ($LASTEXITCODE -ne 0) { throw 'Fallo pyflowmap inspect sobre el origen de P4.' }
-    [System.IO.File]::WriteAllText((Join-Path $resultRoot 'inspect.json'),($json -join "`n"),[System.Text.UTF8Encoding]::new($false))
+    [System.IO.File]::WriteAllText((Join-Path $technicalRoot 'manifest.json'),
+        ($manifest | ConvertTo-Json -Depth 8),[System.Text.UTF8Encoding]::new($false))
 
-    foreach ($entry in $Entries) {
-        $safe = $entry -replace '[^a-zA-Z0-9_-]','_'
-        $dir = Join-Path $resultRoot ("activity-" + $safe)
-        New-Item -ItemType Directory -Force -Path $dir | Out-Null
-        Say "UML activity: $entry"
-        $params = @('analyze',$inputSource,'--entry',$entry,'--diagram-type','activity',
-                    '--max-nodes',"$MaxNodes",'--max-depth','2',
-                    '--language','es','--direction','TD',
-                    '--format','images','--renderer','graphviz',
-                    '--semantic-provider',$SemanticProvider,
-                    '--semantic-max-chars',"$SemanticMaxChars",
-                    '--semantic-style',$SemanticStyle,
-                    '--output',$dir)
-        $response = & $py -m pyflowmap @params
-        if ($LASTEXITCODE -ne 0) { throw "Fallo la generacion para $entry" }
-        [System.IO.File]::WriteAllText((Join-Path $dir 'result.json'),($response -join "`n"),[System.Text.UTF8Encoding]::new($false))
-        $parsed = ($response -join "`n") | ConvertFrom-Json
-        Write-Host "Salida: $dir" -ForegroundColor Green
-        if ($parsed.warnings -and $parsed.warnings.Count -gt 0) {
-            Write-Warning "El analizador ha reportado $($parsed.warnings.Count) advertencias. Consultar result.json y grafo JSON."
+    function Export-Activity([string]$Entry,[string]$Name,[string]$View) {
+        $stage = Join-Path $resultRoot ('.staging-' + [Guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Force -Path $stage | Out-Null
+        try {
+            $params = @('analyze',$inputSource,'--entry',$Entry,'--diagram-type','activity',
+                        '--max-nodes',"$MaxNodes",'--max-depth','2',
+                        '--language','es','--direction','TD',
+                        '--format','images','--renderer','graphviz',
+                        '--semantic-provider',$SemanticProvider,
+                        '--semantic-max-chars',"$SemanticMaxChars",
+                        '--semantic-style',$SemanticStyle,
+                        '--output',$stage)
+            if ($View -eq 'overview') { $params += @('--view','overview') }
+            $response = & $py -m pyflowmap @params
+            if ($LASTEXITCODE -ne 0) { throw "Fallo la generacion para $Entry ($View)" }
+            $parsed = ($response -join "`n") | ConvertFrom-Json
+            foreach ($extension in @('mmd','json','svg','png')) {
+                $folder = if ($extension -eq 'mmd') { $mermaidRoot } elseif ($extension -eq 'json') { $graphRoot } else { $imageRoot }
+                $destination = Join-Path $folder "$Name.$extension"
+                Move-Item -LiteralPath $parsed.files.$extension -Destination $destination -Force
+                $parsed.files.$extension = $destination
+            }
+            [System.IO.File]::WriteAllText((Join-Path $resultFilesRoot "$Name.json"),
+                ($parsed | ConvertTo-Json -Depth 10),[System.Text.UTF8Encoding]::new($false))
+            if ($parsed.warnings -and $parsed.warnings.Count -gt 0) {
+                Write-Warning "${Name}: $($parsed.warnings.Count) advertencias. Ver technical/results y technical/graphs."
+            }
+        } finally {
+            if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -Force }
         }
     }
+
+    $previousTempRoot = $env:PYFLOWMAP_TEMP_ROOT
+    $env:PYFLOWMAP_TEMP_ROOT = $PyFlowMapRoot
+    try {
+        $json = & $py -m pyflowmap 'inspect' $inputSource
+        if ($LASTEXITCODE -ne 0) { throw 'Fallo pyflowmap inspect sobre el origen de P4.' }
+        [System.IO.File]::WriteAllText((Join-Path $technicalRoot 'inspect.json'),
+            ($json -join "`n"),[System.Text.UTF8Encoding]::new($false))
+
+        for ($index = 0; $index -lt $Entries.Count; $index++) {
+            $entry = $Entries[$index]
+            $name = 'entry-{0:D2}-detail' -f ($index + 1)
+            Say "UML activity detallada: $entry"
+            Export-Activity $entry $name 'detailed'
+            if ($index -eq 0) {
+                Say "UML activity overview: $entry"
+                Export-Activity $entry 'entry-01-overview' 'overview'
+            }
+        }
+    } finally {
+        if ($null -eq $previousTempRoot) { Remove-Item Env:PYFLOWMAP_TEMP_ROOT }
+        else { $env:PYFLOWMAP_TEMP_ROOT = $previousTempRoot }
+    }
+
+    $readme = @('# Resultados UML de P4 - PyFlowMap', '',
+        "Commit: ``$sha``", "Generated: $($manifest.generated_utc)",
+        "Semantic provider: ``$SemanticProvider``", '',
+        '## Overview', '',
+        '![Function-level planning overview](images/entry-01-overview.svg)', '',
+        '[Open the full-size PNG](images/entry-01-overview.png) | [Mermaid source](technical/mermaid/entry-01-overview.mmd) | [Graph JSON](technical/graphs/entry-01-overview.json)', '',
+        'This view groups internal control flow by source symbol. Use the detailed diagrams for branches inside a function. Graph JSON records symbols, module paths, source lines, and original node IDs.', '',
+        '## Detailed activities', '')
+    for ($index = 0; $index -lt $Entries.Count; $index++) {
+        $name = 'entry-{0:D2}-detail' -f ($index + 1)
+        $readme += @("### $($Entries[$index])", '',
+            "![Detailed activity: $($Entries[$index])](images/$name.svg)", '',
+            "[Open the full-size PNG](images/$name.png) | [Mermaid source](technical/mermaid/$name.mmd) | [Graph JSON](technical/graphs/$name.json)", '')
+    }
+    $readme += @('## History', '', '[Previous generated artifacts and warning audit](history/README.md)', '')
+    [System.IO.File]::WriteAllText((Join-Path $resultRoot 'README.md'),($readme -join "`n"),[System.Text.UTF8Encoding]::new($false))
     Say "Resultados P4 ($sourceMode): $resultRoot"
 }
 function Configure-Mcp {
@@ -318,7 +401,8 @@ Con PyCharm: activar MCP en Settings > Tools > MCP Server, Auto-Configure Codex;
 no activar Brave Mode / comandos sin confirmacion.
 '@
     $prompt = $prompt.Replace('__PYFLOWMAP__',$PyFlowMapRoot).Replace('__P4__',$P4Root)
-    $path = Join-Path (Join-Path $PyFlowMapRoot 'pyflowmap-output') 'CODEX-TASK.md'
+    $historyRoot = Join-Path (Join-Path $PyFlowMapRoot 'pyflowmap-output') 'history'
+    $path = Join-Path $historyRoot 'CODEX-TASK.md'
     New-Item -ItemType Directory -Force -Path (Split-Path $path -Parent) | Out-Null
     [IO.File]::WriteAllText($path,$prompt,[System.Text.UTF8Encoding]::new($false))
     Write-Host "Instrucciones Codex: $path" -ForegroundColor Green

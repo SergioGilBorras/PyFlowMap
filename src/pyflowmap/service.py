@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .diagrams.activity import analyze as analyze_activity
 from .mermaid import to_mermaid
+from .overview import function_overview
 from .project import load_project
 from .render import render
 from .semantic import SemanticLabelProvider, enrich_activity_labels
@@ -33,13 +34,16 @@ def generate_diagram(source: str, *, entry: str | None = None, scope: str | None
                      label_provider: SemanticLabelProvider | None = None,
                      semantic_provider: str = "disabled", semantic_style: str = "neutral",
                      semantic_max_chars: int = 70,
-                     semantic_reduction_attempts: int = 1) -> dict:
+                     semantic_reduction_attempts: int = 1,
+                     view: str = "detailed") -> dict:
     if format not in FORMATS:
         raise ValueError(f"format must be one of {', '.join(sorted(FORMATS))}")
     if diagram_type != "activity":
         raise ValueError(f"Unsupported diagram type '{diagram_type}'; supported: activity")
     if renderer not in ("auto", "mermaid", "graphviz"):
         raise ValueError("renderer must be auto, mermaid or graphviz")
+    if view not in ("detailed", "overview"):
+        raise ValueError("view must be detailed or overview")
     if semantic_provider not in ("disabled", "mock", "codex"):
         raise ValueError("semantic_provider must be disabled, mock or codex")
     if label_provider is not None and semantic_provider != "disabled":
@@ -58,6 +62,8 @@ def generate_diagram(source: str, *, entry: str | None = None, scope: str | None
         if label_provider is not None:
             enrich_activity_labels(graph, project, label_provider, language,
                                    strict=semantic_provider != "disabled")
+    if view == "overview":
+        graph = function_overview(graph)
     mermaid = to_mermaid(graph, direction=direction)
     label = re.sub(r"[^a-zA-Z0-9_-]+", "_", symbol.id).strip("_")[:100] or "flow"
     target = Path(output).expanduser() if output else Path.cwd() / "pyflowmap-output"
