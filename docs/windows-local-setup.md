@@ -6,6 +6,53 @@ interfaces. The examples use these paths; adapt them to your workstation:
 - **PyFlowMap:** `F:\ProyectosPYCHARM\PythonProject\PyFlowMap`
 - **Read-only analysis source:** `F:\ProyectosPYCHARM\PythonProject\P4-Planning-Agent`
 
+## Working from a ZIP or copied folder (no `.git`)
+
+If running `Setup-PyFlowMap-Local.ps1` reports `fatal: not a git repository`
+for the PyFlowMap directory, it means this is not a Git checkout. Check:
+
+```powershell
+Set-Location 'F:\ProyectosPYCHARM\PythonProject\PyFlowMap'
+Test-Path -LiteralPath '.\.git'
+git status
+```
+
+The **revised standalone setup script (V2)** accepts the local PyFlowMap source
+without Git when `pyproject.toml` and `src\pyflowmap\cli.py` are present. It
+does not attempt to change branches when `.git` is missing, and warns that the
+code version cannot be verified or updated. Execute without
+`-CheckoutFeatureBranch`:
+
+```powershell
+.\Setup-PyFlowMap-Local.ps1 -Action All
+```
+
+Replace your original unsigned script with the revised, inspected copy first
+(and unblock that new file if Windows marks it as downloaded).
+
+For **updatable, commit-pinned development**, clone PyFlowMap into a **new
+sibling directory** without overwriting or resetting your existing work:
+
+```powershell
+Set-Location 'F:\ProyectosPYCHARM\PythonProject'
+git clone --single-branch --branch feat/initial-static-flow-mvp `
+  https://github.com/SergioGilBorras/PyFlowMap.git PyFlowMap-git
+
+& '.\PyFlowMap\Setup-PyFlowMap-Local.ps1' `
+  -PyFlowMapRoot 'F:\ProyectosPYCHARM\PythonProject\PyFlowMap-git' `
+  -Action All
+```
+
+This repository is private and requires working Git credentials. Do not
+`git init`, `git reset --hard` or delete the original directory to repair
+this error.
+
+If **P4-Planning-Agent has no `.git` either**, the revised script can
+analyze its existing working tree read-only when `-P4Ref HEAD` (the default),
+but saves results under `p4-working-tree-<timestamp>` and records
+`commit_sha: null`. This is **not** equivalent to a frozen Git version.
+To analyze `-P4Ref <SHA>`, P4 must be available as a real Git clone.
+
 ## 1. Required tools
 
 Install Python 3.11+, Git for Windows, and, for SVG/PNG rendering, Graphviz.

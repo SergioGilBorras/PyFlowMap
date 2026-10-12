@@ -48,7 +48,8 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
 
 `Process` scope lasts only for the current terminal and cannot override Group
 Policy. Review the script before unblocking or executing it. Details, alternative
-one-process invocation, PyCharm configuration, and reproducible P4 analysis:
+one-process invocation, diagnosis of **folders without .git**, PyCharm
+configuration, and reproducible P4 analysis:
 [Windows local setup](docs/windows-local-setup.md).
 
 ### Image export
