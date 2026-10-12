@@ -6,6 +6,43 @@ interfaces. The examples use these paths; adapt them to your workstation:
 - **PyFlowMap:** `F:\ProyectosPYCHARM\PythonProject\PyFlowMap`
 - **Read-only analysis source:** `F:\ProyectosPYCHARM\PythonProject\P4-Planning-Agent`
 
+## Windows PowerShell 5.1: Python `-c` loses quoted strings (installer V2)
+
+If `pip install` completes, `python -m pip check` prints `No broken
+requirements found`, but the installer then fails with:
+
+```text
+SyntaxError: invalid syntax
+import p4_semantic_labeler as x; assert x.__version__ == 0.1.0
+```
+
+**The dependencies installed successfully.** This is a Windows PowerShell 5.1
+native-argument quoting issue in the **old V2 setup script**: double quotes
+in the inline Python code are removed before Python evaluates it. The corrected
+standalone **V3** script executes `python -c` without embedded string literals
+and compares the returned version in PowerShell. The Python-version check was
+fixed the same way. Real Codex inference remains disabled by default.
+
+Verify the already-installed labeler without re-running pip:
+
+```powershell
+& 'F:\\ProyectosPYCHARM\\PythonProject\\PyFlowMap-git\\.venv\\Scripts\\python.exe' -c 'import p4_semantic_labeler as x; print(x.__version__)'
+```
+
+Expected output: `0.1.0`. Copy the inspected corrected
+`Setup-PyFlowMap-Local-v3.ps1` to a location **outside** the Git checkout
+(for example `F:\\ProyectosPYCHARM\\PythonProject\\PyFlowMap-DEV`), and continue:
+
+```powershell
+& 'F:\\ProyectosPYCHARM\\PythonProject\\PyFlowMap-DEV\\Setup-PyFlowMap-Local-v3.ps1' -PyFlowMapRoot 'F:\\ProyectosPYCHARM\\PythonProject\\PyFlowMap-git' -Action Test
+& 'F:\\ProyectosPYCHARM\\PythonProject\\PyFlowMap-DEV\\Setup-PyFlowMap-Local-v3.ps1' -PyFlowMapRoot 'F:\\ProyectosPYCHARM\\PythonProject\\PyFlowMap-git' -Action Diagrams
+```
+
+Or run the corrected script with `-Action All` to repeat installation, tests
+and exports. If Windows marks the downloaded V3 script as blocked, review its
+contents and run `Unblock-File` on that exact file before executing. Older V1/V2
+copies have the `python -c` bug; do not retry them expecting a different result.
+
 ## Working from a ZIP or copied folder (no `.git`)
 
 If running `Setup-PyFlowMap-Local.ps1` reports `fatal: not a git repository`
