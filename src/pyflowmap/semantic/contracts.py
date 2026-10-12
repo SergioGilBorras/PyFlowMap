@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """Dependency-free interface to plug a local wrapper or external label provider."""
 
 from dataclasses import dataclass
