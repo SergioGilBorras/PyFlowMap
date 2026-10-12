@@ -11,6 +11,7 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
+from typing import ClassVar
 
 import pytest
 
@@ -56,7 +57,7 @@ def fake_p4(monkeypatch):
         items: list = field(default_factory=list)
 
     class Labeler:
-        instances = []
+        instances: ClassVar[list] = []
 
         def __init__(self, settings=None):
             self.settings = settings

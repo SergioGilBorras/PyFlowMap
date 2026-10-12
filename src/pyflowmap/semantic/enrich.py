@@ -61,7 +61,7 @@ def enrich_activity_labels(graph: FlowGraph, index: ProjectIndex,
         )
         try:
             candidate = provider.label(request)
-        except Exception as exc:  # noqa: BLE001 - legacy provider fallback only
+        except Exception as exc:  # legacy injected-provider fallback only
             if strict:
                 raise
             graph.warnings.append(f"Semantic label unavailable for {node.id}: {type(exc).__name__}")

@@ -37,7 +37,7 @@ class P4SemanticLabelProvider:
             purpose=f"Activity diagram. Initial description: {request.current_label}",
             language=request.language, style=self.style, max_chars=self.max_chars,
             )
-        except Exception as exc:  # noqa: BLE001 - surface provider failure without private context
+        except Exception as exc:  # surface provider failure without private context
             raise RuntimeError(f"P4 semantic labeling failed ({type(exc).__name__})") from exc
         if len(result.label) > self.max_chars or result.char_count != len(result.label):
             raise ValueError("P4 semantic label violated the configured length limit")
