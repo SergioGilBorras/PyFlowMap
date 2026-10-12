@@ -23,6 +23,34 @@ pyflowmap analyze ./my_project --scope src/etl --entry etl.pipeline:Pipeline.exe
 
 Supported inputs: **local directory, `.py` file, ZIP containing `.py` files**. Import resolution is best-effort; use the fully qualified ID reported by `inspect` to avoid ambiguity. GitHub URLs are **not yet** a direct input: clone locally first.
 
+### Windows (PowerShell, PyCharm, local P4 analysis)
+
+For local development on Windows, install Graphviz and uv from a regular
+PowerShell terminal (winget may ask you to accept package terms):
+
+```powershell
+winget install -e --id Graphviz.Graphviz
+winget install -e --id astral-sh.uv
+```
+
+Open a **new terminal** afterwards and verify `dot -V`, `uv --version` and
+`uvx --version`. Python 3.11+, Git and optional Codex CLI must be installed
+separately. To run a trusted, unsigned `Setup-PyFlowMap-Local.ps1` downloaded
+for local setup without making a permanent machine-wide policy change:
+
+```powershell
+Set-Location 'F:\ProyectosPYCHARM\PythonProject\PyFlowMap'
+Get-ExecutionPolicy -List
+Unblock-File -LiteralPath '.\Setup-PyFlowMap-Local.ps1'
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+.\Setup-PyFlowMap-Local.ps1
+```
+
+`Process` scope lasts only for the current terminal and cannot override Group
+Policy. Review the script before unblocking or executing it. Details, alternative
+one-process invocation, PyCharm configuration, and reproducible P4 analysis:
+[Windows local setup](docs/windows-local-setup.md).
+
 ### Image export
 
 Install the [official Mermaid CLI](https://github.com/mermaid-js/mermaid-cli) separately (Node.js and a supported Chromium environment are required):
