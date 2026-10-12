@@ -10,6 +10,7 @@ from pyflowmap.diagrams.activity_labels import ellipsize, source_caption
 from pyflowmap.dot import to_dot
 from pyflowmap.mermaid import to_mermaid
 from pyflowmap.models import FlowGraph
+from pyflowmap.render import render
 from pyflowmap.service import generate_diagram
 
 P4 = Path(__file__).parent / "fixtures" / "references" / "p4-planning-agent-v1"
@@ -65,3 +66,17 @@ def test_graphviz_svg_contains_separate_font_sizes(tmp_path):
     assert "font-size=\"10.00\"" in svg
     assert "font-size=\"14.00\"" in svg
     assert "NEEDS_CLARIFICATION" in svg
+
+
+@pytest.mark.skipif(not shutil.which("dot"), reason="Graphviz unavailable")
+def test_graphviz_round_trips_spanish_utf8_labels(tmp_path):
+    graph = FlowGraph(entry="modulo:ejecutar")
+    graph.add("¿Qué acción realizará? Acción número 1", symbol="módulo:Función.española")
+    mmd = tmp_path / "unicode.mmd"
+    mmd.write_text("flowchart TD\n A[Unicode]\n", encoding="utf-8")
+
+    svg_path, backend = render(mmd, tmp_path / "unicode.svg", graph, renderer="graphviz")
+    svg = svg_path.read_text(encoding="utf-8")
+    assert backend == "graphviz"
+    assert "¿Qué acción realizará? Acción número 1" in svg
+    assert "Función.española" in svg

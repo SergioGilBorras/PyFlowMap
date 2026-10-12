@@ -43,6 +43,7 @@ def enrich_activity_labels(graph: FlowGraph, index: ProjectIndex,
     In explicit P4 provider mode, warn/return fake success is prohibited.
     Legacy injected providers retain the previous best-effort fallback.
     """
+    reported_provider_warnings: set[str] = set()
     for node in graph.nodes.values():
         if node.kind != "activity" or not node.symbols:
             continue
@@ -84,4 +85,9 @@ def enrich_activity_labels(graph: FlowGraph, index: ProjectIndex,
                 "output_type": outcome.output_type, "warnings": list(outcome.warnings),
             }
             for warning in outcome.warnings:
-                graph.warnings.append(f"Semantic label {node.id}: {warning}")
+                # Keep the graph warning list useful for large diagrams. The
+                # same provider warning is reported once globally; its exact
+                # per-node scope remains available in label_metadata.
+                if warning not in reported_provider_warnings:
+                    graph.warnings.append(f"Semantic provider warning: {warning}")
+                    reported_provider_warnings.add(warning)

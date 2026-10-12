@@ -71,3 +71,42 @@ def test_direct_constructor_method_resolution():
     with load_project(FIXTURE) as project:
         graph = FlowBuilder(project).build(project.entry("pipeline:main"))
     assert any("pipeline:Repository.save" in node.symbols for node in graph.nodes.values())
+
+
+def test_try_finally_runs_before_explicit_return(tmp_path):
+    (tmp_path / "tryflow.py").write_text(
+        "def operate():\n    pass\n"
+        "def cleanup():\n    pass\n"
+        "def main():\n"
+        "    try:\n        return operate()\n"
+        "    finally:\n        cleanup()\n",
+        encoding="utf-8",
+    )
+    with load_project(tmp_path) as project:
+        graph = FlowBuilder(project, language="es").build(project.entry("tryflow:main"))
+    cleanup = next(n for n in graph.nodes.values() if n.locations == ["tryflow.py:9"])
+    result = next(n for n in graph.nodes.values() if n.kind == "result")
+    assert any(e.source == cleanup.id and e.target == result.id for e in graph.edges)
+
+
+def test_try_handlers_have_distinct_typed_edges_and_spanish_truth_labels(tmp_path):
+    (tmp_path / "handlers.py").write_text(
+        "def first():\n    pass\n"
+        "def second():\n    pass\n"
+        "def main():\n"
+        "    try:\n        raise ValueError()\n"
+        "    except ValueError:\n        first()\n"
+        "    except TypeError:\n        second()\n",
+        encoding="utf-8",
+    )
+    with load_project(tmp_path) as project:
+        graph = FlowBuilder(project, language="es").build(project.entry("handlers:main"))
+    decisions = [n for n in graph.nodes.values() if n.kind == "decision"]
+    decision = next(n for n in decisions if "finaliza sin excepción" in n.label)
+    dispatch = next(n for n in decisions if "tipo de excepción" in n.label)
+    assert {e.label for e in graph.edges if e.source == decision.id} == {"Sí", "No"}
+    labels = {e.label for e in graph.edges if e.source == dispatch.id}
+    assert {"ValueError", "TypeError", "Sin coincidencia"} <= labels
+    assert any(n.label == "Capturar ValueError" and n.locations == ["handlers.py:8"]
+               for n in graph.nodes.values())
+    assert any("handler dispatch is approximated" in warning for warning in graph.warnings)

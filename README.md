@@ -1,184 +1,112 @@
 # PyFlowMap
 
-**Python source → simplified Mermaid activity diagrams.** PyFlowMap extracts conservative, static control-flow sketches from Python functions/methods. The goal is **readability over exhaustive call graphs**: hide implementation noise, retain important decisions, and keep links back to the original code.
+PyFlowMap extracts conservative, static activity diagrams from Python source.
+It parses with `ast` and **never imports or executes the analyzed project**.
+Diagrams retain source symbols and locations; inspect JSON warnings for
+approximated or unsupported control flow.
 
-> **Early preview (0.1.2).** Not a compiler, full CFG or runtime tracer. Python code is **never executed**. Dynamic dispatch, decorators, reflection, imports and exception flows may be incomplete or approximated; inspect the JSON warnings and source locations.
+## Install
 
-## Quick start
+Requires Python 3.11 or later. Graphviz is recommended for SVG and PNG output.
 
-Requires Python 3.11+.
+### Windows
+
+Install Python, Git for Windows, and Graphviz (`winget install -e --id
+Graphviz.Graphviz`), then open PowerShell in this checkout:
+
+```powershell
+Set-Location 'F:\ProyectosPYCHARM\PythonProject\PyFlowMap-git'
+.\Setup-PyFlowMap-Local.ps1 -Action All -SemanticProvider disabled
+```
+
+The installer creates or updates `.venv`, runs pytest and Ruff, and can render
+the coordinator and entry-point diagrams from the read-only P4 source. Set
+`-P4Root` if P4 is in a different location. Use `-Action Setup`, `Test`, or
+`Diagrams` to run a single phase. `-SemanticProvider mock` exercises the
+optional labeler without AI inference; `disabled` keeps deterministic labels.
+Codex inference is never enabled implicitly. The script can also be run from
+another directory with `-PyFlowMapRoot <checkout>`.
+
+### macOS and Linux
 
 ```bash
-pip install -e .
+python -m venv .venv
+. .venv/bin/activate
+python -m pip install -e '.[dev,mcp]'
+```
+
+Install Graphviz with the operating system's package manager when image export
+is needed. Mermaid CLI is an alternative renderer and requires Node.js.
+
+## Use the CLI
+
+```bash
 pyflowmap inspect ./my_project
-pyflowmap analyze ./my_project --entry app.pipeline:Pipeline.run --max-nodes 8 --format mmd
+pyflowmap analyze ./my_project --entry app.pipeline:Pipeline.run --format mmd
+pyflowmap analyze ./my_project --entry app.pipeline:Pipeline.run \
+  --format images --renderer graphviz --output ./diagrams
 ```
 
-Analyze a subset with a specific entry point:
+Inputs can be a directory, a Python file, or a ZIP containing Python files.
+Use the fully qualified entry ID returned by `inspect` when a name is
+ambiguous. `--scope` restricts entry discovery; resolvable local dependencies
+may still be examined outside that scope.
 
-```bash
-pyflowmap inspect ./my_project --scope src/etl
-pyflowmap analyze ./my_project --scope src/etl --entry etl.pipeline:Pipeline.execute --format mmd --output ./diagrams
-```
+Each analysis writes editable Mermaid (`.mmd`) and a traceable graph (`.json`).
+`--format svg`, `png`, `images`, or `all` adds rendered images. Graphviz SVG
+uses UTF-8, including for Spanish labels. `max_nodes` is a soft limit: the
+analyzer preserves branch topology and reports when a graph cannot be
+simplified safely to the requested size.
 
-Supported inputs: **local directory, `.py` file, ZIP containing `.py` files**. Import resolution is best-effort; use the fully qualified ID reported by `inspect` to avoid ambiguity. GitHub URLs are **not yet** a direct input: clone locally first.
+## Use the MCP server
 
-### Windows (PowerShell, PyCharm, local P4 analysis)
-
-For local development on Windows, install Graphviz and uv from a regular
-PowerShell terminal (winget may ask you to accept package terms):
+Install the MCP extra and set the roots the server may inspect or write:
 
 ```powershell
-winget install -e --id Graphviz.Graphviz
-winget install -e --id astral-sh.uv
+python -m pip install -e '.[mcp]'
+$env:PYFLOWMAP_ALLOWED_ROOTS = 'F:\Work\MyProject;F:\Work\Diagrams'
+pyflowmap-mcp
 ```
 
-Open a **new terminal** afterwards and verify `dot -V`, `uv --version` and
-`uvx --version`. Python 3.11+, Git and optional Codex CLI must be installed
-separately. To run a trusted, unsigned `Setup-PyFlowMap-Local.ps1` downloaded
-for local setup without making a permanent machine-wide policy change:
+On Windows, separate roots with `;` (`os.pathsep`); on POSIX, use `:`. The
+server defaults to the current directory if the variable is unset. Every
+source and output path must resolve within an allowed root. Keep P4 outside
+the allowlist when using MCP if it must remain read-only.
 
-```powershell
-Set-Location 'F:\ProyectosPYCHARM\PythonProject\PyFlowMap'
-Get-ExecutionPolicy -List
-Unblock-File -LiteralPath '.\Setup-PyFlowMap-Local.ps1'
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
-.\Setup-PyFlowMap-Local.ps1
-```
+## Optional semantic labels
 
-`Process` scope lasts only for the current terminal and cannot override Group
-Policy. Review the script before unblocking or executing it. Details, alternative
-one-process invocation, diagnosis of **folders without .git**, PyCharm
-configuration, and reproducible P4 analysis:
-[Windows local setup](docs/windows-local-setup.md).
-
-### Image export
-
-Install the [official Mermaid CLI](https://github.com/mermaid-js/mermaid-cli) separately (Node.js and a supported Chromium environment are required):
-
-```bash
-npm install -g @mermaid-js/mermaid-cli
-pyflowmap analyze ./my_project --entry app:main --format svg
-pyflowmap analyze ./my_project --entry app:main --format png
-pyflowmap analyze ./my_project --entry app:main --format all
-# Or request both image formats explicitly (also saves editable .mmd + .json)
-pyflowmap analyze ./my_project --entry app:main --format images
-```
-
-Every analysis saves an editable `.mmd` **and** a `.json` intermediate graph; SVG/PNG is optional. If `mmdc` is unavailable, the image command fails with a clear diagnostic while retaining `.mmd` and `.json`.
-
-### Run as an MCP server
-
-```bash
-pip install -e '.[mcp]'
-PYFLOWMAP_ALLOWED_ROOTS="$PWD" pyflowmap-mcp
-```
-
-The local **stdio** MCP server offers `inspect_project` and `generate_diagram` tools. A generic MCP client can configure it like this:
-
-```json
-{
-  "mcpServers": {
-    "pyflowmap": {
-      "command": "pyflowmap-mcp",
-      "env": {"PYFLOWMAP_ALLOWED_ROOTS": "/absolute/path/to/workspace"}
-    }
-  }
-}
-```
-
-`generate_diagram` accepts `project_path`, `entry_point`, `scope`, `max_nodes`, `max_depth`, `format`, and `output_path`. It returns the Mermaid source, warnings, and absolute output filenames. MCP file paths must stay under `PYFLOWMAP_ALLOWED_ROOTS` (defaults to the server's current working directory). Run this only against workspaces you trust; although it doesn't execute Python, image rendering invokes an installed local executable.
-
-## How it works
-
-1. Parse `.py` files with the standard-library `ast` module (without importing them).
-2. Index top-level functions, classes, and methods; resolve simple calls and local constructor receivers.
-3. Build a sequence with simple `if/else` branches and `for`/`while` loops, expanding small local orchestrators when useful.
-4. Contract only **linear activities** until `--max-nodes` is reached, retaining branching topology. If this isn't possible, warn and preserve the extra nodes rather than silently misrepresenting the code.
-5. Serialize to Mermaid `flowchart`, write provenance JSON, and optionally invoke `mmdc` for SVG/PNG.
-
-## Usage
-
-```text
-pyflowmap inspect SOURCE [--scope RELATIVE_PATH]
-pyflowmap analyze SOURCE [--entry MODULE:FUNCTION_OR_CLASS.METHOD]
-                         [--scope RELATIVE_PATH] [--max-nodes 8]
-                         [--max-depth 2] [--direction TD|LR]
-                         [--format mmd|svg|png|images|all] [--output DIR_OR_FILE]
-```
-
-For example, `--entry pipeline:main` analyzes the `main` function in `pipeline.py`. `--scope` limits **entry-point discovery**, while imported dependencies can still be examined outside the scope when statically resolvable.
+Normal analysis uses deterministic labels and makes no provider calls. The
+optional P4-Semantic-Labeler integration can be checked with
+`--semantic-provider mock`; mock labels are synthetic and do not assess
+semantic quality. `--semantic-provider codex` requires the explicit Codex
+extra and a deliberate command-line choice. Provider output can change node
+text only; it cannot change decisions, edges, or source provenance.
 
 ## Development
 
-```bash
-pip install -e '.[dev]'
-pytest -q
-ruff check src tests
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m ruff check src tests
 ```
 
-See [architecture](docs/architecture.md), [analysis rules](docs/analysis-rules.md), and [roadmap](docs/roadmap.md). The tests include a sample multi-file project.
+Technical details are kept in focused documents:
 
-## Important limitations
+- [Architecture](docs/architecture.md)
+- [Analysis rules and limitations](docs/analysis-rules.md)
+- [Diagram type roadmap](docs/diagram-types.md)
+- [P4 labeler integration API](docs/p4-semantic-labeler-integration.md)
+- [Reference snapshot and hash policy](docs/reference-testing.md)
+- [Semantic labeling details](docs/semantic-labeling.md)
 
-- A diagram illustrates **possible static control flow**, not a verified runtime trace.
-- Calls made through reflection, dynamic imports, abstract dispatch, higher-order functions, and decorators cannot always be resolved. For ambiguous symbols, choose an explicit entry.
-- `try/except` is approximated and marked with a warning. `match/case` is collapsed. Relative imports aren't fully resolved.
-- `max_nodes` is a **soft limit** if lowering further would destroy topology.
-- Rendering requires a separately installed `mmdc`. The core parser and `.mmd` output have no external runtime dependencies.
-- ZIP input is restricted by size and path safety checks; nested ZIP archives and non-Python files are ignored.
+Historical result README files under `examples/results/` document earlier
+outputs and remain alongside their artifacts.
 
+## Limitations
 
-## Generic activity labels (no project-specific dictionaries)
+The diagram represents possible static control flow, not a runtime trace.
+Dynamic dispatch, reflection, imports, exception-group matching, and complex
+exception flow can be approximated. `try/finally` paths are retained, but
+handler selection is not inferred from runtime exception types. Check the
+warnings and source locations before relying on a diagram as a specification.
 
-Labels are derived from method/function identifiers and optional docstrings. For methods,
-common verb names and CamelCase class words provide context. This is deterministic and
-works independently of the project. For instance, `GalaxyAnalysisAgent.analyze` becomes
-`Analyze galaxy` or `Analizar galaxy` with `--language es`. The source symbol is displayed
-in a smaller second line and kept in full in the JSON graph.
-
-**No AI and no full natural-language translator are included.** Generic action verbs can
-be localized, but unknown domain-specific nouns stay in their original language rather
-than being replaced by hard-coded project aliases. The actual condition predicate appears
-in each decision node, so Yes/No (Sí/No) always retain their logical truth values.
-
-See [analysis rules](docs/analysis-rules.md) for limitations and future AI labeling options.
-
-## License
-
-MIT.
-
-
-## Optional P4-Semantic-Labeler v0.1.0 (Python library)
-
-Normal PyFlowMap analysis is deterministic, offline and does not need AI.
-Install the **optional** `labeler` or `labeler-codex` extra from the private
-GitHub tag `v0.1.0` only when you need contextual semantic labels:
-
-```bash
-python -m pip install -e '.[labeler]'
-python -m pip check
-```
-
-```bash
-# Mock mode tests the library integration; it is NOT semantic inference.
-pyflowmap analyze ./my_project --entry app:main --semantic-provider mock \
-  --semantic-max-chars 70 --semantic-style neutral --format images
-```
-
-For explicitly authorized Codex use, install `'.[labeler-codex]'`, run
-`codex login`, and choose `--semantic-provider codex`. Codex is NEVER selected
-implicitly. The same parameters are accepted by the existing MCP tools.
-
-PyFlowMap passes the selected function's **source code**, docstring, class,
-module and neighbor labels to the P4 library; it does not merely translate
-its name. P4's labeler can only replace text on resolved activity nodes,
-never branch logic or Mermaid graph topology. Source references stay in JSON.
-The P4 result metadata and warnings (including a possible loss-of-meaning
-truncation warning) are retained in JSON and diagram warnings. An explicitly
-selected P4 provider failure raises an error; it does not silently fabricate
-AI success. Legacy injected Python label providers remain supported.
-
-For independent title and summary generation, asynchronous or batch usage,
-see [integration documentation](docs/p4-semantic-labeler-integration.md) and
-[example script](examples/semantic_labeler_integration.py).
+MIT License.

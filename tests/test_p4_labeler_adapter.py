@@ -151,6 +151,9 @@ def test_diagram_with_mock_preserves_topology_and_warns(fake_p4, tmp_path):
     assert labeled and all(n["label_metadata"]["provider"] == "mock" for n in labeled)
     assert all(n["label_metadata"]["style"] == "academic" for n in labeled)
     assert any("output_truncated: meaning may be incomplete" in w for w in mock["warnings"])
+    provider_warnings = [w for w in mock["warnings"] if w.startswith("Semantic provider warning:")]
+    assert len(provider_warnings) == 2
+    assert all(len(n["label_metadata"]["warnings"]) == 2 for n in labeled)
     assert all(n["label_source"] == "deterministic" for n in enriched["nodes"]
                if n["kind"] == "decision")
 

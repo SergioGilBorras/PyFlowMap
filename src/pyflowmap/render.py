@@ -29,9 +29,10 @@ def render(mmd: Path, dest: Path, graph: FlowGraph | None = None,
             )
         dest.parent.mkdir(parents=True, exist_ok=True)
         try:
-            result = subprocess.run([executable, f"-T{dest.suffix[1:]}", "-o", str(dest)],
-                                    input=to_dot(graph, direction), capture_output=True,
-                                    text=True, timeout=90, check=False)
+            result = subprocess.run(
+                [executable, "-Gcharset=UTF-8", f"-T{dest.suffix[1:]}", "-o", str(dest)],
+                input=to_dot(graph, direction), capture_output=True,
+                text=True, encoding="utf-8", timeout=90, check=False)
         except (OSError, subprocess.TimeoutExpired) as exc:
             raise RenderError(f"Graphviz failed to run: {exc}") from exc
         if result.returncode != 0 or not dest.is_file():
@@ -46,7 +47,8 @@ def render(mmd: Path, dest: Path, graph: FlowGraph | None = None,
     dest.parent.mkdir(parents=True, exist_ok=True)
     try:
         result = subprocess.run([executable, "-i", str(mmd), "-o", str(dest)],
-                                capture_output=True, text=True, timeout=90, check=False)
+                                capture_output=True, text=True, encoding="utf-8",
+                                timeout=90, check=False)
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise RenderError(f"Mermaid CLI failed to run: {exc}") from exc
     if result.returncode != 0 or not dest.is_file():

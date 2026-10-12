@@ -136,7 +136,7 @@ class FlowBuilder:
                 prior = self._loop(stmt, prior, current, types, stack)
             elif isinstance(stmt, (ast.With, ast.AsyncWith)):
                 prior = self._block(stmt.body, prior, current, types, stack)
-            elif isinstance(stmt, ast.Try):
+            elif isinstance(stmt, (ast.Try, ast.TryStar)):
                 prior = self._try(stmt, prior, current, types, stack)
             elif isinstance(stmt, (ast.Assign, ast.AnnAssign, ast.NamedExpr)):
                 value = stmt.value
@@ -215,20 +215,107 @@ class FlowBuilder:
             self.graph.warnings.append(f"loop-else approximated at {current.path}:{stmt.lineno}")
         return [(identifier, no)]
 
-    def _try(self, stmt: ast.Try, prior: list[tuple[str, str]], current: Symbol,
+    def _block_outcomes(self, statements: list[ast.stmt], prior: list[tuple[str, str]],
+                        current: Symbol, types: dict[str, str], stack: tuple[str, ...]
+                        ) -> tuple[list[tuple[str, str]], list[tuple[str, str]], list[tuple[str, str]]]:
+        """Return normal, return, and raise tails from one structured block."""
+        self._return_frames.append([])
+        exception_start = len(self._exception_tails)
+        normal = self._block(statements, prior, current, types, stack)
+        returned = self._return_frames.pop()
+        raised = self._exception_tails[exception_start:]
+        del self._exception_tails[exception_start:]
+        return normal, returned, raised
+
+    def _try(self, stmt: ast.Try | ast.TryStar, prior: list[tuple[str, str]], current: Symbol,
              types: dict[str, str], stack: tuple[str, ...]) -> list[tuple[str, str]]:
+        returned: list[tuple[str, str]] = []
+        raised: list[tuple[str, str]] = []
         if stmt.handlers:
             assert self.graph is not None
-            self.graph.warnings.append(f"try/except is approximated at {current.path}:{stmt.lineno}")
-            decision = self._emit("Try succeeds?", prior, current, stmt, kind="decision")[0][0]
-            success = self._block(stmt.body + stmt.orelse, [(decision, "Yes")], current, types.copy(), stack)
-            failures = []
+            if isinstance(stmt, ast.TryStar):
+                approximation = "except* dispatch is approximated"
+            else:
+                approximation = "except handler dispatch is approximated"
+            self.graph.warnings.append(f"{approximation} at {current.path}:{stmt.lineno}")
+            question = ("¿El bloque try finaliza sin excepción?" if self.language == "es"
+                        else "Does the try block succeed?")
+            success_label = "Sí" if self.language == "es" else "Yes"
+            failure_label = "No"
+            decision = self._emit(question, prior, current, stmt, kind="decision")[0][0]
+
+            body, body_returns, body_raises = self._block_outcomes(
+                stmt.body, [(decision, success_label)], current, types.copy(), stack)
+            returned.extend(body_returns)
+            # `else` runs only after the try body completes normally. Exceptions
+            # raised by the else block are not caught by this try's handlers.
+            if stmt.orelse:
+                normal, else_returns, else_raises = self._block_outcomes(
+                    stmt.orelse, body, current, types.copy(), stack)
+                returned.extend(else_returns)
+                raised.extend(else_raises)
+            else:
+                normal = body
+
+            dispatch_question = ("¿Qué tipo de excepción se produjo?" if self.language == "es"
+                                 else "Which exception type occurred?")
+            dispatch_prior = [(decision, failure_label), *body_raises]
+            dispatch = self._emit(dispatch_question, dispatch_prior, current, stmt,
+                                  kind="decision")[0][0]
+            has_catch_all = any(handler.type is None for handler in stmt.handlers)
             for handler in stmt.handlers:
-                failures += self._block(handler.body, [(decision, "No")], current, types.copy(), stack)
-            prior = success + failures
+                if handler.type is None:
+                    handler_name = "cualquier excepción" if self.language == "es" else "any exception"
+                else:
+                    try:
+                        handler_name = ast.unparse(handler.type)
+                    except (TypeError, ValueError):
+                        handler_name = "exception type"
+                handler_label = handler_name
+                handler_action = (f"Capturar {handler_name}" if self.language == "es"
+                                  else f"Handle {handler_name}")
+                handler_prior = self._emit(
+                    handler_action, [(dispatch, handler_label)], current, handler)
+                handler_normal, handler_returns, handler_raises = self._block_outcomes(
+                    handler.body, handler_prior, current, types.copy(), stack)
+                normal.extend(handler_normal)
+                returned.extend(handler_returns)
+                raised.extend(handler_raises)
+
+            if not has_catch_all:
+                unhandled_label = "Sin coincidencia" if self.language == "es" else "Unhandled"
+                unhandled = self._emit("Excepción no capturada" if self.language == "es"
+                                       else "Unhandled exception",
+                                       [(dispatch, unhandled_label)], current, stmt)
+                unhandled.extend(body_raises)
+                raised.extend(unhandled)
         else:
-            prior = self._block(stmt.body + stmt.orelse, prior, current, types, stack)
-        return self._block(stmt.finalbody, prior, current, types, stack)
+            normal, returned, raised = self._block_outcomes(
+                stmt.body + stmt.orelse, prior, current, types.copy(), stack)
+
+        if stmt.finalbody:
+            normal_after: list[tuple[str, str]] = []
+            returned_after: list[tuple[str, str]] = []
+            raised_after: list[tuple[str, str]] = []
+            for pending, kind in ((normal, "normal"), (returned, "return"), (raised, "raise")):
+                if not pending:
+                    continue
+                final_normal, final_returns, final_raises = self._block_outcomes(
+                    stmt.finalbody, pending, current, types.copy(), stack)
+                if kind == "normal":
+                    normal_after.extend(final_normal)
+                elif kind == "return":
+                    returned_after.extend(final_normal)
+                else:
+                    raised_after.extend(final_normal)
+                # A return or raise in finally overrides the pending outcome.
+                returned_after.extend(final_returns)
+                raised_after.extend(final_raises)
+            normal, returned, raised = normal_after, returned_after, raised_after
+
+        self._return_frames[-1].extend(returned)
+        self._exception_tails.extend(raised)
+        return normal
 
 
 def simplify(graph: FlowGraph, max_nodes: int = 8) -> FlowGraph:

@@ -1,6 +1,7 @@
 """UML-inspired notation and branching invariants."""
 
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -56,11 +57,13 @@ def test_single_entry_cli_and_per_type_mcp(tmp_path, capsys, monkeypatch):
                  "--language", "es", "--renderer", "graphviz", "--format", "svg",
                  "--output", str(target)]) == 0
     assert "graphviz" in capsys.readouterr().out
-    monkeypatch.setenv("PYFLOWMAP_ALLOWED_ROOTS", str(tmp_path.parent) + ":" + str(P4.parent))
+    monkeypatch.setenv("PYFLOWMAP_ALLOWED_ROOTS", os.pathsep.join((str(tmp_path.parent), str(P4.parent))))
     generated = generate_activity_diagram(str(P4), entry_point=ENTRY, language="es",
                                            output_path=str(target), renderer="graphviz")
     assert generated["diagram_type"] == "activity"
     assert "NEEDS_CLARIFICATION" in generated["mermaid"]
+    with pytest.raises(ValueError, match="outside allowed"):
+        generate_activity_diagram(str(tmp_path.parent.parent), output_path=str(target))
 
 
 def test_other_diagram_types_rejected_explicitly(tmp_path):
