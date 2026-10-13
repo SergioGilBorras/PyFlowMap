@@ -40,4 +40,8 @@ def to_mermaid(graph: FlowGraph, direction: str = "TD") -> str:
             lines.append(f"    {edge.source} -->|{_safe(edge.label)}| {edge.target}")
         else:
             lines.append(f"    {edge.source} --> {edge.target}")
+    for node in graph.nodes.values():
+        href = node.label_metadata.get("subdiagram_index")
+        if href:
+            lines.append(f'    click {node.id} "{_safe(href)}" "Open call-site subdiagrams"')
     return "\n".join(lines) + "\n"

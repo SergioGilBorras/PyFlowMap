@@ -8,4 +8,9 @@ __pycache__/
 build/
 dist/
 pyflowmap-output/
+benchmark-results/
+*.zip
+pytest-cache-files-*/
+.pytest-tmp-*/
+pyflowmap-tmp-*/
 .DS_Store

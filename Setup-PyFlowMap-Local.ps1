@@ -403,6 +403,10 @@ no activar Brave Mode / comandos sin confirmacion.
     $prompt = $prompt.Replace('__PYFLOWMAP__',$PyFlowMapRoot).Replace('__P4__',$P4Root)
     $historyRoot = Join-Path (Join-Path $PyFlowMapRoot 'pyflowmap-output') 'history'
     $path = Join-Path $historyRoot 'CODEX-TASK.md'
+    if (Test-Path -LiteralPath $path -PathType Leaf) {
+        Write-Host "Conservo las instrucciones locales existentes: $path" -ForegroundColor Yellow
+        return
+    }
     New-Item -ItemType Directory -Force -Path (Split-Path $path -Parent) | Out-Null
     [IO.File]::WriteAllText($path,$prompt,[System.Text.UTF8Encoding]::new($false))
     Write-Host "Instrucciones Codex: $path" -ForegroundColor Green

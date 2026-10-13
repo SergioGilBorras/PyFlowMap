@@ -79,10 +79,16 @@ def enrich_activity_labels(graph: FlowGraph, index: ProjectIndex,
         node.label = label.strip()
         node.label_source = "external"
         if outcome:
+            # Preserve analysis metadata (resolution, source expressions,
+            # control transfers, provenance, etc.). Provider details have a
+            # separate namespace and cannot overwrite those semantics.
             node.label_metadata = {
+                **node.label_metadata,
+                "external_label": {
                 "provider": outcome.provider, "char_count": outcome.char_count,
                 "language": outcome.language, "style": outcome.style,
                 "output_type": outcome.output_type, "warnings": list(outcome.warnings),
+                },
             }
             for warning in outcome.warnings:
                 # Keep the graph warning list useful for large diagrams. The

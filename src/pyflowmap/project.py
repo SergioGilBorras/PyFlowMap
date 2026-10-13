@@ -3,6 +3,7 @@
 import ast
 import os
 import stat
+import tempfile
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -41,6 +42,7 @@ class ProjectIndex:
         self.symbols: dict[str, Symbol] = {}
         self.modules: dict[str, Module] = {}
         self.classes: set[str] = set()
+        self.class_nodes: dict[str, ast.ClassDef] = {}
         self.warnings: list[str] = []
         files = [selected_file] if selected_file else self._python_files()
         if not files:
@@ -69,6 +71,7 @@ class ProjectIndex:
                     self._add_function(record, stmt)
                 if isinstance(stmt, ast.ClassDef):
                     self.classes.add(f"{module}:{stmt.name}")
+                    self.class_nodes[f"{module}:{stmt.name}"] = stmt
                     for method in stmt.body:
                         if isinstance(method, (ast.FunctionDef, ast.AsyncFunctionDef)):
                             self._add_function(record, method, stmt.name)
@@ -91,6 +94,19 @@ class ProjectIndex:
         qualname = f"{owner}.{node.name}" if owner else node.name
         identifier = f"{module.name}:{qualname}"
         self.symbols[identifier] = Symbol(identifier, node.name, module.name, module.path, node, owner)
+        self._add_nested_functions(module, node.body, qualname)
+
+    def _add_nested_functions(self, module: Module, statements: list[ast.stmt], owner: str) -> None:
+        """Index local functions under their lexical owner without crossing scopes."""
+        for statement in statements:
+            if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                self._add_function(module, statement, owner)
+                continue
+            if isinstance(statement, ast.ClassDef):
+                continue
+            for child in ast.iter_child_nodes(statement):
+                if isinstance(child, ast.stmt):
+                    self._add_nested_functions(module, [child], owner)
 
     def _import(self, module: Module, node: ast.Import | ast.ImportFrom) -> None:
         if isinstance(node, ast.Import):
@@ -148,6 +164,36 @@ class ProjectIndex:
         match = [s for s in self.classes if s == f"{module}:{name}" or s == imported]
         return match[0] if len(match) == 1 else None
 
+    def _method_targets(self, class_id: str, method: str, seen: set[str] | None = None) -> list[Symbol]:
+        """Resolve a method through statically named, unambiguous base classes."""
+        seen = seen or set()
+        if class_id in seen:
+            return []
+        seen.add(class_id)
+        direct = self.symbols.get(f"{class_id}.{method}")
+        if direct:
+            return [direct]
+        module_name = class_id.split(":", 1)[0]
+        class_node = self.class_nodes.get(class_id)
+        if class_node is None:
+            return []
+        inherited = []
+        for base in class_node.bases:
+            if isinstance(base, ast.Name):
+                base_id = self.class_id(base.id, module_name)
+            elif isinstance(base, ast.Attribute) and isinstance(base.value, ast.Name):
+                imported = self.modules[module_name].imports.get(base.value.id)
+                base_id = f"{imported}.{base.attr}" if imported and ":" in imported else None
+                if imported and ":" not in imported:
+                    base_id = f"{imported}:{base.attr}"
+            else:
+                base_id = None
+            if base_id:
+                inherited.extend(self._method_targets(base_id, method, seen))
+        # Multiple independent base implementations are ambiguous without MRO modeling.
+        unique = {symbol.id: symbol for symbol in inherited}
+        return list(unique.values()) if len(unique) == 1 else []
+
     def instance_types(self, current: Symbol) -> dict[str, str]:
         """Conservatively infer default-instantiated `self.attribute` classes.
 
@@ -165,11 +211,21 @@ class ProjectIndex:
                 continue
             targets = stmt.targets if isinstance(stmt, ast.Assign) else [stmt.target]
             candidate_calls = [n for n in ast.walk(stmt.value) if isinstance(n, ast.Call)]
-            constructors = {
-                found for call in candidate_calls
-                if isinstance(call.func, ast.Name)
-                if (found := self.class_id(call.func.id, init.module))
-            }
+            constructors = set()
+            for call in candidate_calls:
+                if isinstance(call.func, ast.Name):
+                    found = self.class_id(call.func.id, init.module)
+                    factory = self.resolve_call(call, init, {})
+                    if found:
+                        constructors.add(found)
+                    elif factory:
+                        for returned in ast.walk(factory.node):
+                            if (isinstance(returned, ast.Return)
+                                    and isinstance(returned.value, ast.Call)
+                                    and isinstance(returned.value.func, ast.Name)):
+                                returned_class = self.class_id(returned.value.func.id, factory.module)
+                                if returned_class:
+                                    constructors.add(returned_class)
             if len(constructors) != 1:
                 continue
             for target in targets:
@@ -182,8 +238,35 @@ class ProjectIndex:
         func = call.func
         candidates: list[str] = []
         record = self.modules[current.module]
+        if (isinstance(func, ast.Attribute) and isinstance(func.value, ast.Call)
+                and isinstance(func.value.func, ast.Name)
+                and func.value.func.id == "super" and current.owner
+                and not func.value.args and not func.value.keywords):
+            # Resolve no-argument super() only for a single statically named base.
+            # Multiple inheritance/MRO and dynamic bases remain unresolved.
+            owner_id = f"{current.module}:{current.owner}"
+            owner_node = self.class_nodes.get(owner_id)
+            if owner_node is not None and len(owner_node.bases) == 1:
+                base = owner_node.bases[0]
+                base_id = None
+                if isinstance(base, ast.Name):
+                    base_id = self.class_id(base.id, current.module)
+                elif isinstance(base, ast.Attribute) and isinstance(base.value, ast.Name):
+                    imported = record.imports.get(base.value.id)
+                    if imported:
+                        base_id = (f"{imported}.{base.attr}" if ":" in imported
+                                   else f"{imported}:{base.attr}")
+                if base_id:
+                    inherited = self._method_targets(base_id, func.attr)
+                    if len(inherited) == 1:
+                        candidates = [inherited[0].id]
         if isinstance(func, ast.Name):
-            candidates = [f"{current.module}:{func.id}"]
+            # Search local lexical scopes from nearest to farthest before module globals.
+            qualname = current.id.split(":", 1)[1]
+            scopes = [".".join(qualname.split(".")[:index])
+                      for index in range(len(qualname.split(".")), 0, -1)]
+            candidates = [f"{current.module}:{scope}.{func.id}" for scope in scopes]
+            candidates.append(f"{current.module}:{func.id}")
             imp = record.imports.get(func.id)
             if imp:
                 candidates.append(imp)
@@ -191,8 +274,12 @@ class ProjectIndex:
             base = func.value.id
             if base in types:
                 candidates = [f"{types[base]}.{func.attr}"]
+                inherited = self._method_targets(types[base], func.attr)
+                candidates.extend(symbol.id for symbol in inherited)
             elif base in ("self", "cls") and current.owner:
                 candidates = [f"{current.module}:{current.owner}.{func.attr}"]
+                candidates.extend(symbol.id for symbol in self._method_targets(
+                    f"{current.module}:{current.owner}", func.attr))
             elif f"{current.module}:{base}" in self.classes:
                 candidates = [f"{current.module}:{base}.{func.attr}"]
             else:
@@ -214,6 +301,7 @@ class ProjectIndex:
                 ctor = self.class_id(called.id, current.module)
                 if ctor:
                     candidates.append(f"{ctor}.{func.attr}")
+                    candidates.extend(symbol.id for symbol in self._method_targets(ctor, func.attr))
         for candidate in candidates:
             if candidate in self.symbols:
                 return self.symbols[candidate]
@@ -224,6 +312,38 @@ class ProjectIndex:
                 if len(matched) == 1:
                     return matched[0]
         return None
+
+    def possible_call_targets(self, call: ast.Call, current: Symbol,
+                              types: dict[str, str] | None = None) -> list[Symbol]:
+        """Return candidates only when receiver or lexical scope narrows dispatch."""
+        func = call.func
+        types = types or {}
+        if isinstance(func, ast.Name):
+            return [symbol for symbol in self.symbols.values()
+                    if symbol.name == func.id and symbol.module == current.module
+                    and symbol.id != current.id]
+        if not isinstance(func, ast.Attribute):
+            return []
+        classes: set[str] = set()
+        receiver = func.value
+        if isinstance(receiver, ast.Name) and receiver.id in types:
+            classes.add(types[receiver.id])
+        elif (isinstance(receiver, ast.Attribute) and isinstance(receiver.value, ast.Name)
+              and receiver.value.id == "self" and f"self.{receiver.attr}" in types):
+            classes.add(types[f"self.{receiver.attr}"])
+        else:
+            constructors = []
+            if isinstance(receiver, ast.Call):
+                constructors = [receiver]
+            elif isinstance(receiver, (ast.BoolOp, ast.IfExp)):
+                constructors = [item for item in ast.walk(receiver) if isinstance(item, ast.Call)]
+            for constructor in constructors:
+                if isinstance(constructor.func, ast.Name):
+                    resolved = self.class_id(constructor.func.id, current.module)
+                    if resolved:
+                        classes.add(resolved)
+        return [self.symbols[f"{class_id}.{func.attr}"] for class_id in classes
+                if f"{class_id}.{func.attr}" in self.symbols]
 
 
 @contextmanager
@@ -237,7 +357,7 @@ def load_project(source: str | Path) -> Iterator[ProjectIndex]:
     elif path.is_file() and path.suffix == ".py":
         yield ProjectIndex(path.parent, selected_file=path)
     elif path.is_file() and path.suffix.lower() == ".zip":
-        temp_parent = Path(os.environ.get("PYFLOWMAP_TEMP_ROOT", Path.cwd())).expanduser().resolve()
+        temp_parent = Path(os.environ.get("PYFLOWMAP_TEMP_ROOT", tempfile.gettempdir())).expanduser().resolve()
         if not temp_parent.is_dir():
             raise ValueError(f"Temporary directory parent does not exist: {temp_parent}")
         with temporary_directory("pyflowmap-zip", parent=temp_parent) as directory:

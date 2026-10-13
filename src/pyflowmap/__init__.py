@@ -1,3 +1,3 @@
 """PyFlowMap: explain Python control flows without executing user code."""
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"

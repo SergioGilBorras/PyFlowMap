@@ -29,7 +29,8 @@ def generate_diagram(project_path: str, entry_point: str | None = None,
                      diagram_type: str = "activity",
                      semantic_provider: str = "disabled", semantic_style: str = "neutral",
                      semantic_max_chars: int = 70,
-                     semantic_reduction_attempts: int = 1) -> dict:
+                     semantic_reduction_attempts: int = 1,
+                     view: str = "detailed") -> dict:
     """Generate a simplified activity diagram with optional semantic labels."""
     src = _allowed(project_path)
     source_path = Path(src)
@@ -40,7 +41,8 @@ def generate_diagram(project_path: str, entry_point: str | None = None,
                              language=language, renderer=renderer, diagram_type=diagram_type,
                              semantic_provider=semantic_provider, semantic_style=semantic_style,
                              semantic_max_chars=semantic_max_chars,
-                             semantic_reduction_attempts=semantic_reduction_attempts)
+                             semantic_reduction_attempts=semantic_reduction_attempts,
+                             view=view)
 
 
 def generate_activity_diagram(project_path: str, entry_point: str | None = None,
@@ -49,14 +51,16 @@ def generate_activity_diagram(project_path: str, entry_point: str | None = None,
                               language: str = "en", renderer: str = "auto",
                               semantic_provider: str = "disabled", semantic_style: str = "neutral",
                               semantic_max_chars: int = 70,
-                              semantic_reduction_attempts: int = 1) -> dict:
+                              semantic_reduction_attempts: int = 1,
+                              view: str = "detailed") -> dict:
     """MCP shortcut for UML-inspired activity diagrams."""
     return generate_diagram(project_path, entry_point=entry_point, scope=scope,
                             max_nodes=max_nodes, format=format, output_path=output_path,
                             language=language, renderer=renderer,
                             semantic_provider=semantic_provider, semantic_style=semantic_style,
                             semantic_max_chars=semantic_max_chars,
-                            semantic_reduction_attempts=semantic_reduction_attempts)
+                            semantic_reduction_attempts=semantic_reduction_attempts,
+                            view=view)
 
 
 def make_server():

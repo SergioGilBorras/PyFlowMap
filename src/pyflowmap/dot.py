@@ -12,7 +12,7 @@ def _quoted(label: str) -> str:
 
 def _action_label(description: str, source: str | None) -> str:
     # Graphviz HTML labels let the secondary source reference use a smaller font.
-    title = escape(description, quote=True)
+    title = escape(description, quote=True).replace("\n", "<BR ALIGN=\"LEFT\"/>")
     if not source:
         return f'<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="2"><TR><TD><B>{title}</B></TD></TR></TABLE>>'
     sub = escape(source, quote=True)
@@ -32,6 +32,7 @@ def to_dot(graph: FlowGraph, direction: str = "TD") -> str:
              '  node [fontname="Arial", fontsize=13, color="#333333", margin="0.14,0.10"];',
              '  edge [fontname="Arial", fontsize=14, color="#475569", fontcolor="#1e293b", arrowsize=0.8];']
     for n in graph.nodes.values():
+        href = n.label_metadata.get("subdiagram_index")
         if n.kind == "initial":
             attrs = 'shape=circle, label="", width=0.18, fixedsize=true, style=filled, fillcolor=black, color=black'
         elif n.kind == "final":
@@ -41,6 +42,8 @@ def to_dot(graph: FlowGraph, direction: str = "TD") -> str:
         else:
             attrs = ('shape=box, style="rounded,filled", fillcolor="#f1f5f9", '
                      f'label={_action_label(n.label, source_caption(n))}')
+        if href:
+            attrs += f', URL={_quoted(href)}, tooltip={_quoted("Open call-site subdiagrams")}'
         lines.append(f"  {n.id} [{attrs}];")
     for edge in graph.edges:
         # Head labels are offset away from the arrow tip rather than sitting

@@ -4,12 +4,14 @@ import argparse
 import json
 import sys
 
+from . import __version__
 from .render import RenderError
 from .service import generate_diagram, inspect_project
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="pyflowmap", description="Python source → concise Mermaid workflow")
+    parser = argparse.ArgumentParser(prog="pyflowmap", description="Python source - concise Mermaid workflow")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     cmds = parser.add_subparsers(dest="command", required=True)
     discover = cmds.add_parser("inspect", help="List candidate functions and methods")
     discover.add_argument("source", help="Local directory, .py file or ZIP")
@@ -25,8 +27,9 @@ def main(argv: list[str] | None = None) -> int:
     analyze.add_argument("--language", choices=["en", "es"], default="en")
     analyze.add_argument("--renderer", choices=["auto", "mermaid", "graphviz"], default="auto")
     analyze.add_argument("--format", choices=["mmd", "svg", "png", "images", "all"], default="mmd")
-    analyze.add_argument("--view", choices=["detailed", "overview"], default="detailed",
-                         help="overview groups internal control flow by source symbol")
+    analyze.add_argument("--view", choices=["detailed", "overview", "hierarchical"],
+                         default="detailed",
+                         help="overview is a call outline; hierarchical adds navigable activity subprocesses")
     analyze.add_argument("--output", help="Output directory or diagram filename")
     analyze.add_argument("--semantic-provider", choices=["disabled", "mock", "codex"],
                          default="disabled", help="Optional P4 labeler (Codex opt-in only)")

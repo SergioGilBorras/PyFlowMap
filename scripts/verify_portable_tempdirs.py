@@ -3,7 +3,6 @@
 import json
 from importlib.metadata import distribution
 
-
 EXPECTED_COMMIT = "fd6dbd640630e6911a53b4d756089099ec870a8b"
 EXPECTED_VERSION = "0.1.2"
 

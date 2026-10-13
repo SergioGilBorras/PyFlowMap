@@ -1,3 +1,4 @@
+import tempfile
 from pathlib import Path
 from zipfile import ZipFile
 
@@ -36,8 +37,7 @@ def test_zip_extraction_uses_managed_root_and_cleans_on_failure(tmp_path, monkey
     archive = tmp_path / "code.zip"
     with ZipFile(archive, "w") as z:
         z.writestr("src/worker.py", "def main(:\n")
-    managed_parent = tmp_path / "managed"
-    managed_parent.mkdir()
+    managed_parent = Path(tempfile.gettempdir())
     monkeypatch.setenv("PYFLOWMAP_TEMP_ROOT", str(managed_parent))
     owners = []
     create = project_module.temporary_directory
@@ -63,6 +63,33 @@ def test_zip_temp_parent_must_exist(tmp_path, monkeypatch):
     monkeypatch.setenv("PYFLOWMAP_TEMP_ROOT", str(tmp_path / "missing"))
     with pytest.raises(ValueError, match="Temporary directory parent does not exist"), load_project(archive):
         pass
+
+
+def test_zip_uses_platform_temp_root_when_no_managed_root_is_configured(tmp_path, monkeypatch):
+    import pyflowmap.project as project_module
+
+    archive = tmp_path / "code.zip"
+    with ZipFile(archive, "w") as z:
+        z.writestr("worker.py", "def main(): pass\n")
+    temp_root = Path(tempfile.gettempdir())
+    monkeypatch.delenv("PYFLOWMAP_TEMP_ROOT", raising=False)
+    monkeypatch.setattr(project_module.tempfile, "gettempdir", lambda: str(temp_root))
+    owners = []
+    create = project_module.temporary_directory
+
+    def track(namespace, parent=None, **kwargs):
+        owner = create(namespace, parent=parent, **kwargs)
+        owners.append(owner)
+        return owner
+
+    monkeypatch.setattr(project_module, "temporary_directory", track)
+
+    with load_project(archive) as project:
+        assert project.entry("main").id == "worker:main"
+
+    assert len(owners) == 1
+    assert owners[0].path.parent == temp_root
+    assert not owners[0].path.exists()
 
 
 def test_zip_rejects_traversal(tmp_path):

@@ -89,7 +89,7 @@ def test_try_finally_runs_before_explicit_return(tmp_path):
     assert any(e.source == cleanup.id and e.target == result.id for e in graph.edges)
 
 
-def test_try_handlers_have_distinct_typed_edges_and_spanish_truth_labels(tmp_path):
+def test_try_handlers_dispatch_only_from_exceptional_body_exits(tmp_path):
     (tmp_path / "handlers.py").write_text(
         "def first():\n    pass\n"
         "def second():\n    pass\n"
@@ -101,12 +101,16 @@ def test_try_handlers_have_distinct_typed_edges_and_spanish_truth_labels(tmp_pat
     )
     with load_project(tmp_path) as project:
         graph = FlowBuilder(project, language="es").build(project.entry("handlers:main"))
-    decisions = [n for n in graph.nodes.values() if n.kind == "decision"]
-    decision = next(n for n in decisions if "finaliza sin excepción" in n.label)
-    dispatch = next(n for n in decisions if "tipo de excepción" in n.label)
-    assert {e.label for e in graph.edges if e.source == decision.id} == {"Sí", "No"}
-    labels = {e.label for e in graph.edges if e.source == dispatch.id}
+    decisions = [node for node in graph.nodes.values() if node.kind == "decision"]
+    dispatch = next(node for node in decisions
+                    if node.label_metadata.get("exception_dispatch") == "runtime-dependent")
+    labels = {edge.label for edge in graph.edges if edge.source == dispatch.id}
     assert {"ValueError", "TypeError", "Sin coincidencia"} <= labels
-    assert any(n.label == "Capturar ValueError" and n.locations == ["handlers.py:8"]
-               for n in graph.nodes.values())
+    raise_nodes = {node.id for node in graph.nodes.values()
+                   if node.label_metadata.get("control_transfer") == "raise"}
+    assert raise_nodes
+    assert any(edge.source in raise_nodes and edge.target == dispatch.id
+               for edge in graph.edges)
+    assert any(node.label == "Capturar ValueError"
+               and node.locations == ["handlers.py:8"] for node in graph.nodes.values())
     assert any("handler dispatch is approximated" in warning for warning in graph.warnings)

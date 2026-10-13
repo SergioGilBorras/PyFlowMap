@@ -28,9 +28,19 @@ def render(mmd: Path, dest: Path, graph: FlowGraph | None = None,
                 "or Graphviz (`dot` on PATH)."
             )
         dest.parent.mkdir(parents=True, exist_ok=True)
+        command = [executable, "-Gcharset=UTF-8"]
+        if dest.suffix.lower() == ".png":
+            # Graphviz caps raster dimensions at 32767 pixels. Large full-detail
+            # graphs must be scaled before rasterization to avoid silent crops.
+            # The branch-preserving graphs can exceed 1,000 nodes. A lower
+            # raster density keeps them below Graphviz's cap; small graphs
+            # retain enough density for readable labels.
+            dpi = 45 if len(graph.nodes) > 100 else 96
+            command.append(f"-Gdpi={dpi}")
+        command.extend((f"-T{dest.suffix[1:]}", "-o", str(dest)))
         try:
             result = subprocess.run(
-                [executable, "-Gcharset=UTF-8", f"-T{dest.suffix[1:]}", "-o", str(dest)],
+                command,
                 input=to_dot(graph, direction), capture_output=True,
                 text=True, encoding="utf-8", timeout=90, check=False)
         except (OSError, subprocess.TimeoutExpired) as exc:
