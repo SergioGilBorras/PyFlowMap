@@ -1,0 +1,13 @@
+{
+  "name": "PyFlowMap 1.0 fresh acceptance set",
+  "cases": [
+    {"id": "match-flow", "domain": "generic", "patterns": "ordered match, guard, assignment, later use", "source": "match_flow.py", "entry": "match_flow:dispatch", "min_decisions": 0},
+    {"id": "loop-exhaustion", "domain": "generic", "patterns": "for else, continue, break and early return", "source": "loop_exhaustion.py", "entry": "loop_exhaustion:locate", "min_decisions": 0},
+    {"id": "pending-return", "domain": "generic", "patterns": "return and cleanup through finally", "source": "pending_return.py", "entry": "pending_return:process", "min_decisions": 0},
+    {"id": "async-context", "domain": "generic", "patterns": "async with, await and exception handling", "source": "async_context.py", "entry": "async_context:load", "min_decisions": 0},
+    {"id": "generator-close", "domain": "generic", "patterns": "yield suspension, resumption and finally", "source": "generator_close.py", "entry": "generator_close:values", "min_decisions": 0},
+    {"id": "exception-group", "domain": "generic", "patterns": "except star handlers and finally", "source": "exception_group.py", "entry": "exception_group:handle", "min_decisions": 0},
+    {"id": "comprehension-flow", "domain": "generic", "patterns": "comprehension filters and significant calls", "source": "comprehension_flow.py", "entry": "comprehension_flow:collect", "min_decisions": 0},
+    {"id": "nested-call", "domain": "generic", "patterns": "local function, method call and return", "source": "nested_call.py", "entry": "nested_call:execute", "min_decisions": 0}
+  ]
+}
