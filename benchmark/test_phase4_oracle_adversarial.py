@@ -141,4 +141,3 @@ def test_data_branches_are_informational_but_loss_warnings_are_reviewed():
     assert _warning_classification("A source activity is not represented") == (
         "activity-not-represented", "REVIEW")
     assert _warning_classification("Reached max depth") == ("expansion-limit", "REVIEW")
-

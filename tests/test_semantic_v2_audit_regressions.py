@@ -233,4 +233,3 @@ def test_nested_context_managers_remain_navigable_in_hierarchical_view(tmp_path)
         phase.label_metadata["source_locations"])
     assert phase.label_metadata["source_references"]
     assert outline.warnings and "detailed activity graph" in outline.warnings[-1]
-

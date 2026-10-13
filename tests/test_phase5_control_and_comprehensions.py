@@ -214,4 +214,3 @@ def run():
                  if node.label_metadata.get("call_expression") == "Child().execute"]
     assert inherited
     assert inherited[0].label_metadata["resolved_target"] == "sample:Base.execute"
-

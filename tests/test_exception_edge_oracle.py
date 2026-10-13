@@ -58,4 +58,3 @@ def finish():
     feature = next(item for item in result["features"]
                    if item["feature"] == "raise-control-flow")
     assert feature["evidence"]["invalid_successors"]
-
