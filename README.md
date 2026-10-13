@@ -38,6 +38,16 @@ from the documentation.
 
 ## Analyze a project
 
+Use the built-in CLI guide to discover the available commands and options:
+
+```bash
+pyflowmap --help
+pyflowmap inspect --help
+pyflowmap analyze --help
+```
+
+Then analyze a source project:
+
 ```bash
 pyflowmap --version
 pyflowmap inspect ./my_project
