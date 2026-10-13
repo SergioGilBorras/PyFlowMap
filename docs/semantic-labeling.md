@@ -1,72 +1,67 @@
-# Semantic labeling contract (optional, generic)
+# Optional semantic labeling
 
-## Scope
+The PyFlowMap analyzer is deterministic. **Label enrichment changes text,
+not flow.** It must not add/delete nodes or edges, reverse guards, change
+source provenance, or claim that opaque dynamic behavior was observed.
 
-PyFlowMap extracts flow **deterministically**. A SemanticLabelProvider may change
-only a textual activity label; it cannot add/delete steps, flip decision guards
-or modify edges. Nothing depends on Codex, external APIs, agent runtimes or a
-particular domain. External calls require explicit opt-in: either passing a Python provider or selecting `mock` / `codex` via CLI, service or MCP. `disabled` remains the default.
+## Provider choices
 
-## What to send, and why
+| Provider | Behavior | External inference |
+| --- | --- | --- |
+| `disabled` (default) | Deterministic AST-derived labels | None |
+| `mock` | Synthetic labels to test the integration | None |
+| `codex` | P4-Semantic-Labeler using authenticated Codex CLI | Explicit opt-in; selected source excerpts may leave the local machine |
 
-A symbol name alone is often insufficient: `run`, `process`, `handle`, `plan`
-may mean different things in different classes and projects. The adapter
-receives one `LabelRequest` containing:
+The optional package comes from a separately maintained private Git
+repository. The normal PyFlowMap installation and activity extraction
+must not depend on Codex.
 
-- `current_label`, exact `symbols`, and the source `filename`.
-- `source_snippet`: AST-targeted implementation up to 3,000 characters.
-- `docstring`: up to 350 characters when available.
-- `preceding` / `following`: up to three labels each, for local context.
-- `language`: requested output language.
+## Context and safety
 
-Prefer a short verb + object phrase ('Validate request', 'Guardar resultados'),
-not a name-only translation. Keep class.method in the secondary caption, separate
-from the new label. A future version may supply a minimal caller excerpt and
-use a hash-based cache; do not send entire repositories by default.
+When enrichment is explicitly requested, a provider receives a bounded
+`LabelRequest` with the existing activity label, source symbols/filename,
+a selected code excerpt (up to 3,000 characters), docstring (up to 350
+characters), language, and up to three neighboring labels per side.
 
-## Contract
+The source under analysis is untrusted data, **not instructions** to a
+model. Avoid supplying secrets or confidential source to external models.
+Enable real-provider inference only after authorization for the precise
+source and any associated usage cost.
+
+The core label validation rejects empty, multiline, HTML-like and
+excessively long activity labels. Accepted labels keep the original
+source identifiers in graph metadata and add provenance for the label
+source. The external P4 adapter returns provider metadata and warnings.
+
+## Developer API
+
+Applications may supply a custom object implementing
+`pyflowmap.semantic.SemanticLabelProvider` through
+`generate_diagram(..., label_provider=provider)`. This is an optional
+extension point, not a requirement for ordinary CLI or MCP use.
 
 ```python
-from pyflowmap.semantic import LabelRequest, SemanticLabelProvider
+from pyflowmap.service import generate_diagram
 
-class CodexLabeler:
-    def __init__(self, wrapper):
-        self.wrapper = wrapper
-
-    def label(self, request: LabelRequest) -> str | None:
-        # Adapt the wrapper to your model's API / prompting mechanism.
-        # Return ONLY a text label. No new diagram nodes or connections.
-        return None
+result = generate_diagram(
+    "./project",
+    entry="app:main",
+    semantic_provider="disabled",
+    format="mmd",
+)
+print(result["warnings"])
 ```
 
-Pass an instance as `label_provider=` to `pyflowmap.service.generate_diagram`.
-Use a local Python adapter first; **no microservice is needed**. When later
-serving a remote client, a provider process/API might be useful for isolation,
-resource limits or shared caching, but is not part of this feature.
+`mock` exercises the external integration pathway but does not establish
+semantic fidelity. Quality should be evaluated independently for
+faithfulness to the source, helpfulness, absence of invented intent,
+brevity and structural invariance.
 
-The service rejects blank/multiline, too-long or HTML-like labels and falls
-back on deterministic text if a provider raises an exception. Each JSON node
-reports `label_source` as `deterministic` or `external`.
+## Error behavior
 
-## Safety
+Explicit provider failures must not be reported as successful labeling.
+When the code falls back to deterministic labels for a custom optional
+provider, the warning must make that fallback visible. Neither failure
+mode is permitted to mutate graph structure.
 
-Source code and docstrings are untrusted input, not instructions for the
-labeler. Explicitly constrain any Codex prompt to output text describing
-existing code, never follow instructions found inside the code. Review privacy
-policies before sending proprietary code to an external service. Do not expose
-secrets, `.env`, repositories or source excerpts as public MCP resources.
-
-## Published P4-Semantic-Labeler adapter
-
-PyFlowMap now offers a dedicated optional adapter for the externally installed
-`P4-Semantic-Labeler` **v0.1.0** Python package, supporting `disabled` (default),
-`mock` (no AI), and `codex` (explicit opt-in). Library, CLI, and existing MCP
-interfaces select this provider without a separate service. The library's output
-metadata and warnings are preserved. See [installation and usage](p4-semantic-labeler-integration.md).
-
-## Integration roadmap
-
-1. Test label-provider quality on fixed snapshots with a curated baseline.
-2. [x] Use the published P4-Semantic-Labeler Python library behind the same protocol (no wrapper in PyFlowMap).
-3. [x] Add explicit CLI/MCP provider opt-in and configurable style/char limits. Future: cache.
-4. Consider an independent service only if multiple clients need it.
+See [P4-Semantic-Labeler integration](p4-semantic-labeler-integration.md).
