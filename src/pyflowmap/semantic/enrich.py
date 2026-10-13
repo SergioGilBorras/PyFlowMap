@@ -41,7 +41,7 @@ def enrich_activity_labels(graph: FlowGraph, index: ProjectIndex,
     """Change activity labels only. Provider errors propagate if strict=True.
 
     In explicit P4 provider mode, warn/return fake success is prohibited.
-    Legacy injected providers retain the previous best-effort fallback.
+    User-supplied Python providers use a documented best-effort fallback.
     """
     reported_provider_warnings: set[str] = set()
     for node in graph.nodes.values():
@@ -62,7 +62,7 @@ def enrich_activity_labels(graph: FlowGraph, index: ProjectIndex,
         )
         try:
             candidate = provider.label(request)
-        except Exception as exc:  # legacy injected-provider fallback only
+        except Exception as exc:  # Best-effort fallback for custom Python providers.
             if strict:
                 raise
             graph.warnings.append(f"Semantic label unavailable for {node.id}: {type(exc).__name__}")
