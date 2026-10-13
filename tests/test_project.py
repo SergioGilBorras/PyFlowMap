@@ -52,7 +52,7 @@ def test_zip_extraction_uses_managed_root_and_cleans_on_failure(tmp_path, monkey
         pass
 
     assert len(owners) == 1
-    assert owners[0].path.parent == managed_parent
+    assert owners[0].path.parent.samefile(managed_parent)
     assert not owners[0].path.exists()
 
 
@@ -88,7 +88,7 @@ def test_zip_uses_platform_temp_root_when_no_managed_root_is_configured(tmp_path
         assert project.entry("main").id == "worker:main"
 
     assert len(owners) == 1
-    assert owners[0].path.parent == temp_root
+    assert owners[0].path.parent.samefile(temp_root)
     assert not owners[0].path.exists()
 
 

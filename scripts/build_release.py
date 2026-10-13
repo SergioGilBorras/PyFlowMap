@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Build and smoke-test a clean local PyFlowMap wheel and sdist.
 
 This script never uploads packages. Its temporary environment is created under

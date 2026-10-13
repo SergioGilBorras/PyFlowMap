@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Compare deterministic labels with the optional mock provider; never calls Codex."""
 from __future__ import annotations
 
