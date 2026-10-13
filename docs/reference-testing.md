@@ -1,38 +1,71 @@
-# Immutable reference cases (read-only source projects)
+# Testing and reference cases
 
-The project under test is **not modified**. GitHub references are fixed to a
-full commit SHA. Every reference snapshot is vendored as plain Python source
-under `tests/fixtures/references/`, so regression tests work offline, even
-when the GitHub source repository is private or its `main` branch advances.
+Test and benchmark code are **development tooling**. The installed
+PyFlowMap application does not need them in order to analyze a Python
+project. Generated diagrams, galleries, audit ZIPs and local manifests
+must not be included in the wheel or source distribution.
 
-## P4-Planning-Agent V1
+## Sources of verification
 
-- Original repository: `SergioGilBorras/P4-Planning-Agent`
-- Commit: `8e68c720bef75e24acd6b3ed8a237b41fa3a838d`
-- Fixture: `tests/fixtures/references/p4-planning-agent-v1/`
-- Scope: application Python files only, no secrets, tests, or `.env` files
-- Entry: `planning.coordinator:PlanningCoordinator.plan`
-- Core regression: two branch labels with correct predicate polarity, one
-  shared return, activity initial/final, no invented continuation from a return.
+- `tests/` contains unit, interface, generic semantic regression, packaging
+  and protocol tests.
+- `benchmark/` contains reusable programs, semantic criteria and runners
+  used to assess behavior beyond individual units.
+- Independent V1 (28 programs), V2 (30 programs) and the smaller smoke corpus
+  are retained as **known regression banks**, not permanent hidden tests.
+- Additional read-only reference snapshots under test fixtures must be
+  identified by stable content or commit hashes. The analyzer must not
+  overwrite their source.
+- `.github/workflows/` runs cross-platform checks against a specific
+  remote commit, not an uncommitted working tree.
 
-Run locally after installing `pip install -e '.[dev]'`:
+These corpora are examples of Python semantics. They must never drive
+hard-coded rules for application names, repositories or fixture identifiers.
+
+## What results mean
+
+| Result | Interpretation |
+| --- | --- |
+| `GENERATED` | An output file set exists; no semantic approval implied |
+| `PASS` | The specified property was reviewed and satisfied |
+| `REVIEW` | A judgment/abstraction remains, possibly because runtime data are unknown |
+| `FAIL` | A reproducible semantic property is violated |
+| `UNSUPPORTED` | Declared out-of-scope construction |
+| `NOT_EVALUATED` | No semantic evaluation was carried out |
+
+Separate structural validations (valid JSON/SVG/PNG, connected graph,
+local links) from semantic decisions about executable paths.
+
+## Running checks
 
 ```bash
-pytest -q
-pyflowmap analyze tests/fixtures/references/p4-planning-agent-v1 \
-  --entry planning.coordinator:PlanningCoordinator.plan \
-  --language es --diagram-type activity --format all --renderer graphviz \
-  --output examples/results/p4-planning-agent-v1-1/
+python -m pip install -e '.[dev,mcp]'
+python -m pytest -q
+python -m ruff check src tests scripts
+python -m pip check
 ```
 
-## Future P4-Planning-Agent V2
+Use the canonical evaluation entry points under `benchmark/` for benchmark
+programs. Do not silently substitute older oracles, or change an oracle merely
+to turn a real FAIL into PASS. Verify both a correct graph and a deliberately
+incorrect one when testing an evaluator fix.
 
-When the P4 pipeline changes, record its **new full commit SHA**, place a new
-snapshot under `tests/fixtures/references/p4-planning-agent-v2/`, and **leave
-V1 untouched**. Run the same tests and compare the generated diagrams for both
-versions. A local Git clone can also check out either commit into a disposable
-folder; never checkout or write into the user's working P4 project.
+## Clean reference run
 
-The fixture manifest records Git blob hashes so alterations to pinned snapshots
-are caught by tests. These hashes are calculated from the raw file contents
-using the standard Git blob algorithm.
+Recreate `pyflowmap-output/final-validation-1.0/` from an empty output folder
+when preparing a release candidate. Record the exact commit and local state,
+parameters, Python/Graphviz versions, checksums, label-provider selection,
+warnings and evaluation scope.
+
+Results must be **newly generated** from that exact code. Keep reusable
+program sources, fixture manifests and evaluators in Git; treat generated
+validation images, galleries, temporary files and ZIPs as removable outputs
+rather than runtime dependencies.
+
+Cross-platform success is only established when Windows, Linux or macOS
+jobs actually finish on the **same candidate commit**. Installing a wheel
+outside the checkout tests packaging more effectively than importing a
+source checkout.
+
+Real `codex` labeling is optional and requires explicit authorization to
+transmit selected code excerpts. `mock` exercises integration only.
