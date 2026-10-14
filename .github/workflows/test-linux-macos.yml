@@ -81,6 +81,52 @@ jobs:
           "$venv/bin/python" -c 'import pyflowmap.mcp_server; import importlib.metadata as m; print("Installed PyFlowMap:", m.version("pyflowmap"))'
           dot -V
 
+  regression-banks:
+    name: Verify all retained regression banks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+
+      - name: Configure Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Graphviz
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq graphviz
+
+      - name: Install developer dependencies
+        run: python -m pip install -e '.[dev,mcp]'
+
+      - name: Execute 15-case cross-domain bank
+        run: python -m benchmark.runners.run --render --output "$RUNNER_TEMP/baseline"
+
+      - name: Execute eight control-flow regressions
+        run: python -m benchmark.runners.run --cases-file benchmark/control-flow/cases.json --fixtures-root benchmark/control-flow/fixtures --render --output "$RUNNER_TEMP/control-flow"
+
+      - name: Generate V1 bank and verify fixture hashes
+        run: python benchmark/independent-v1/run.py --project-root "$GITHUB_WORKSPACE" --output "$RUNNER_TEMP/bank-v1"
+
+      - name: Generate V2 bank and verify fixture hashes
+        run: python benchmark/independent-v2/run.py --project-root "$GITHUB_WORKSPACE" --output "$RUNNER_TEMP/bank-v2"
+
+      - name: Compare deterministic and mock labeler invariants
+        run: python scripts/compare_labeler_modes.py --output "$RUNNER_TEMP/labeler"
+
+      - name: Archive short regression evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-evidence-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/baseline/report.json
+            ${{ runner.temp }}/control-flow/report.json
+            ${{ runner.temp }}/bank-v1/run-report.json
+            ${{ runner.temp }}/bank-v2/run-report.json
+            ${{ runner.temp }}/labeler/labeler-comparison.json
+          if-no-files-found: error
+          retention-days: 7
+
   release-package:
     name: Build verified wheel and sdist
     runs-on: ubuntu-latest
