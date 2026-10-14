@@ -220,3 +220,22 @@ This is a candidate fix, not a claim that the six historical failures
 were comparisons. Re-run those six cases only with **real Codex**, keeping
 the original results untouched. Treat all new provider/model errors as
 failures; retain semantic REVIEW on technical PASS.
+
+
+## Pending return values must not be overwritten by finally summaries
+
+A semantic audit of the earlier 75-case live Codex CSV found a substantive
+caption error in `independent-v2-v07` (`dispatch:refresh`): three separate
+activities evaluating return values `-1`, `1`, and `0` had all been
+renamed to `Call sensor.mark_access() in the finally block`. The graph
+topology remained intact, so automated technical PASS did not catch it.
+
+The static analyzer records these nodes as
+`pending_control_transfer="return"`, including copies routed through a
+`finally` clause. P4 label enrichment now **preserves their deterministic
+labels**, as it already does for completed `control_transfer` events and
+generator transitions. An offline regression reuses the exact original v07
+fixture with a deliberately misleading provider, checks all three pending
+return values and unchanged edges. This change has not yet been verified
+with a new authenticated model call and does not retroactively grant full
+semantic approval to historical results.

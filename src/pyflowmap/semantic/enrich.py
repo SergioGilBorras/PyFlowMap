@@ -101,11 +101,12 @@ def enrich_activity_labels(graph: FlowGraph, index: ProjectIndex,
     for node in graph.nodes.values():
         if node.kind != "activity" or not node.symbols:
             continue
-        # Control-transfer and generator nodes encode Python execution
-        # semantics. A whole-function LLM summary must never replace
-        # "Propagate exception", "break", "continue", "raise" or "yield".
-        # Keep their deterministic labels and source/control metadata.
+        # Protect transfer semantics during exception/finally unwinding.
+        # In particular, an activity tagged pending_control_transfer="return"
+        # must retain its return value; a model can otherwise relabel the
+        # duplicated pending returns as the shared finally-body call.
         if ("control_transfer" in node.label_metadata
+                or "pending_control_transfer" in node.label_metadata
                 or "generator_event" in node.label_metadata):
             continue
         known = [key for key in node.symbols if key in index.symbols]

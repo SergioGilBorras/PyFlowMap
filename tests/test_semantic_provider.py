@@ -218,3 +218,40 @@ def test_real_external_comparison_caption_retains_provenance(tmp_path):
     assert all(_invalid_label_reason(node["label"]) is None for node in enriched)
     assert all(node["label"] == "Check amount <= 0 or temperature > 90"
                for node in enriched)
+
+
+
+def test_pending_returns_in_finally_are_not_relabelled_as_cleanup(tmp_path):
+    """Regression from the real v07 pilot: -1, 1, 0 are distinct returns."""
+    example = (Path(__file__).resolve().parents[1]
+               / "benchmark/independent-v2/fixtures/v07/dispatch.py")
+
+    class Misleading:
+        def label(self, request):
+            return "Call sensor.mark_access() in the finally block"
+
+    base = generate_diagram(
+        str(example), entry="dispatch:refresh", max_nodes=30, max_depth=3,
+        format="mmd", output=str(tmp_path / "disabled"),
+    )
+    enriched = generate_diagram(
+        str(example), entry="dispatch:refresh", max_nodes=30, max_depth=3,
+        format="mmd", output=str(tmp_path / "semantic"),
+        label_provider=Misleading(),
+    )
+    raw = json.loads(Path(base["files"]["json"]).read_text(encoding="utf-8"))
+    labels = json.loads(Path(enriched["files"]["json"]).read_text(encoding="utf-8"))
+    by_id = {node["id"]: node for node in raw["nodes"]}
+    pending = [
+        node for node in labels["nodes"]
+        if node["kind"] == "activity"
+        and node["label_metadata"].get("pending_control_transfer") == "return"
+    ]
+    assert pending
+    assert {n["label_metadata"].get("return_expression") for n in pending} >= {
+        "-1", "1", "0",
+    }
+    assert all(n["label_source"] == "deterministic" for n in pending)
+    assert all(n["label"] == by_id[n["id"]]["label"] for n in pending)
+    assert any(n["label_source"] == "external" for n in labels["nodes"])
+    assert raw["edges"] == labels["edges"]
