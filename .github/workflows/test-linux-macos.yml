@@ -103,6 +103,12 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e '.[dev,mcp]'
 
+      - name: Smoke-test the organized benchmark runners
+        run: |
+          python -m benchmark.runners.run --only cli --output "$RUNNER_TEMP/pyflowmap-benchmark-smoke"
+          python benchmark/independent-v1/run.py --validate-only
+          python benchmark/independent-v2/run.py --validate-only
+
       - name: Build allowlisted packages and clean-install smoke
         run: python scripts/build_release.py
 
