@@ -52,6 +52,10 @@ def fake_p4(monkeypatch):
         provider: str = "disabled"
         reduction_attempts: int = 1
 
+        @classmethod
+        def from_env(cls):
+            return cls()
+
     @dataclass
     class BatchRequest:
         items: list = field(default_factory=list)
