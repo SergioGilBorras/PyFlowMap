@@ -79,3 +79,14 @@ def test_images_format_exports_both_images_and_editable_sources(tmp_path):
     assert set(result["files"]) == {"mmd", "json", "svg", "png"}
     assert Path(result["files"]["svg"]).read_text().find("<svg") >= 0
     assert Path(result["files"]["png"]).read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+
+def test_public_pipeline_example_generates_own_artifacts(tmp_path):
+    example = Path(__file__).parents[1] / "examples" / "basic_pipeline.py"
+    result = generate_diagram(
+        str(example), entry="basic_pipeline:main", format="mmd",
+        output=str(tmp_path / "diagrams"),
+    )
+    assert set(result["files"]) == {"mmd", "json"}
+    assert all(Path(filename).is_file() for filename in result["files"].values())
+    graph = json.loads(Path(result["files"]["json"]).read_text(encoding="utf-8"))
+    assert graph["nodes"] and graph["edges"]
