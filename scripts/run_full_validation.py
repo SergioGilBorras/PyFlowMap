@@ -193,6 +193,7 @@ def main(argv: list[str] | None = None) -> int:
         "PYFLOWMAP_TEMP_ROOT": str(work),
         "PYTHONDONTWRITEBYTECODE": "1",
         "PYTHONIOENCODING": "utf-8",
+        "PYTHONUNBUFFERED": "1",
         "PIP_CACHE_DIR": str(work / "pip-cache"),
         "RUFF_CACHE_DIR": str(work / "ruff-cache"),
         "PYFLOWMAP_DEFAULT_SEMANTIC_PROVIDER": "disabled",  # pytest stays offline
@@ -210,12 +211,26 @@ def main(argv: list[str] | None = None) -> int:
             stream.write("Command: " + " ".join(argv) + "\n\n")
             stream.flush()
             try:
-                result = subprocess.run(
-                    argv, cwd=ROOT, env=environment, stdout=stream,
-                    stderr=subprocess.STDOUT, check=False,
-                    timeout=None if name == "real-labeler" else 3600,
-                )
-                rc = result.returncode
+                if name == "real-labeler":
+                    # Forward each case to PowerShell as it completes; persist
+                    # a duplicate in the log for offline troubleshooting.
+                    with subprocess.Popen(
+                        argv, cwd=ROOT, env=environment, stdout=subprocess.PIPE,
+                        stderr=subprocess.STDOUT, text=True, encoding="utf-8",
+                        errors="replace", bufsize=1,
+                    ) as live:
+                        assert live.stdout is not None
+                        for line in live.stdout:
+                            stream.write(line)
+                            stream.flush()
+                            print(line, end="", flush=True)
+                        rc = live.wait()
+                else:
+                    result = subprocess.run(
+                        argv, cwd=ROOT, env=environment, stdout=stream,
+                        stderr=subprocess.STDOUT, check=False, timeout=3600,
+                    )
+                    rc = result.returncode
             except (OSError, subprocess.TimeoutExpired) as exc:
                 stream.write("\nExecution error: " + str(exc) + "\n")
                 rc = 124

@@ -13,6 +13,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -152,7 +153,8 @@ def main(argv: list[str] | None = None) -> int:
         "--acknowledge-source-transmission", action="store_true",
         help="Required: send selected code excerpts to authenticated Codex"
     )
-    parser.add_argument("--timeout-per-case", type=int, default=3600)
+    parser.add_argument("--timeout-per-case", type=int, default=3600,
+                        help="Per subprocess time limit in seconds (outer safety bound)")
     parser.add_argument("--only", nargs="*",
                         help="Optional subset by exact case ID for diagnostics")
     args = parser.parse_args(argv)
@@ -185,19 +187,31 @@ def main(argv: list[str] | None = None) -> int:
     rows: list[dict] = []
     review: list[dict] = []
     for index, case in enumerate(cases, 1):
+        began = time.monotonic()
+        print(f"[{index}/{len(cases)}] START {case['id']} (disabled then real Codex)",
+              flush=True)
         try:
             row, labels = run_case(case, destination, args.timeout_per_case)
             review.extend(labels)
         except (OSError, RuntimeError, ValueError, KeyError,
                 subprocess.TimeoutExpired, json.JSONDecodeError) as exc:
+            message = str(exc)
+            kind = ("PROVIDER_TIMEOUT" if "ProviderTimeout" in message else
+                    "SUBPROCESS_TIMEOUT" if isinstance(exc, subprocess.TimeoutExpired) else
+                    "PROVIDER_ERROR" if "P4 semantic labeling failed" in message else
+                    "ANALYSIS_ERROR")
             row = {
                 "case": case["id"], "suite": case["suite"],
-                "status": "FAIL", "error": f"{type(exc).__name__}: {str(exc)[:1000]}",
+                "status": "FAIL", "failure_type": kind,
+                "error": f"{type(exc).__name__}: {message[:1000]}",
                 "semantic_fidelity": "NOT_EVALUATED",
             }
+        row["elapsed_seconds"] = round(time.monotonic() - began, 2)
         rows.append(row)
         save(destination, cases, rows, review)
-        print(f"[{index}/{len(cases)}] {case['id']} = {row['status']}", flush=True)
+        explanation = f" ({row['failure_type']})" if row.get("failure_type") else ""
+        print(f"[{index}/{len(cases)}] END {case['id']} = {row['status']}"
+              f"{explanation} in {row['elapsed_seconds']}s", flush=True)
     return 0 if all(row["status"] == "PASS" for row in rows) else 1
 
 
