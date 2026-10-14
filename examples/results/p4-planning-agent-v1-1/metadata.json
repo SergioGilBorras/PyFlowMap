@@ -1,9 +1,0 @@
-{
-  "diagram_type": "activity",
-  "reference": "SergioGilBorras/P4-Planning-Agent",
-  "pinned_commit": "8e68c720bef75e24acd6b3ed8a237b41fa3a838d",
-  "entry": "planning.coordinator:PlanningCoordinator.plan",
-  "result": "7 logical diagram nodes: 1 decision, 4 process activities including shared return, UML initial and final",
-  "renderer": "graphviz",
-  "note": "Visualization generated locally from a representative copy of pinned coordinator and default agent classes; the published PyFlowMap regression fixture includes the complete exact P4 application source at the pinned commit."
-}
