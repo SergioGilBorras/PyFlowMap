@@ -177,3 +177,23 @@ real-provider CSV both expose `source_call_expression` for review.
 This is verified by deterministic regression tests; full semantic approval
 requires a new **real Codex** pilot rather than assuming that better context
 guarantees an accurate model output.
+
+## Pilot review: exact literals and malformed quotes
+
+The second authenticated Codex pilot (`independent-v1-c02` and `c19`)
+completed without timeouts. Both graphs retained the same nodes and edges.
+All four `c02` call-site activities now refer to their distinct arguments.
+However, Codex returned two labels missing the terminal apostrophe:
+`Call emit with the literal argument 'halt` and the analogous
+`'unreadable` label. Technical graph PASS must not imply that these
+captions have passed independent human-semantic review.
+
+PyFlowMap now closes **only that precise missing quote** if the original
+call-site expression AST contains exactly one positional *string literal*,
+its quote is balanced in the source, and the model output ends with its
+verbatim opening-quote-and-value suffix. Ambiguous or mismatched cases are
+not modified. The adjustment emits the explicit per-node warning
+`pyflowmap_source_literal_quote_closed`, exposed in the real Codex review
+CSV. A correction that would exceed the diagram label limit fails instead.
+This deterministic repair does not change graph topology, execute source,
+or falsely claim independent semantic validation.

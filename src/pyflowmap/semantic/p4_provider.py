@@ -1,5 +1,6 @@
 """Bridge PyFlowMap's immutable activity requests to P4-Semantic-Labeler v0.1.0."""
 
+import ast
 import logging
 import time
 
@@ -8,6 +9,34 @@ from .contracts import LabelRequest, SemanticLabelOutcome
 
 LOGGER = logging.getLogger(__name__)
 CODEX_TIMEOUT_RETRY_DELAY_SECONDS = 2
+
+
+def _close_verified_literal_quote(
+    label: str, expression: str | None
+) -> tuple[str, bool]:
+    """Close one missing final quote only when confirmed by the source AST.
+
+    Avoid rewriting arbitrary model output or inferring values. The source
+    call must have exactly one positional string literal and no keywords.
+    """
+    if not expression:
+        return label, False
+    try:
+        parsed = ast.parse(expression, mode="eval").body
+    except (SyntaxError, ValueError, RecursionError):
+        return label, False
+    if (not isinstance(parsed, ast.Call) or len(parsed.args) != 1
+            or parsed.keywords or not isinstance(parsed.args[0], ast.Constant)
+            or not isinstance(parsed.args[0].value, str)):
+        return label, False
+    literal = ast.get_source_segment(expression, parsed.args[0])
+    if (not literal or len(literal) < 2 or literal[0] not in ("'", '"')
+            or literal[-1] != literal[0]
+            or literal.startswith(literal[0] * 3)):
+        return label, False
+    if label.endswith(literal[:-1]) and not label.endswith(literal):
+        return label + literal[-1], True
+    return label, False
 
 
 class P4SemanticLabelProvider:
@@ -75,10 +104,19 @@ class P4SemanticLabelProvider:
 
         if len(result.label) > self.max_chars or result.char_count != len(result.label):
             raise ValueError("P4 semantic label violated the configured length limit")
+        # Narrow, source-verified typographic correction: never invent text.
+        # Preserve an explicit audit warning for review of the Codex output.
+        label, quote_closed = _close_verified_literal_quote(
+            result.label, request.call_site_expression,
+        )
+        if len(label) > self.max_chars:
+            raise ValueError("Corrected semantic label exceeds the configured limit")
         return SemanticLabelOutcome(
-            label=result.label, provider=result.provider,
+            label=label, provider=result.provider,
             warnings=(tuple(result.warnings)
-                      + (("pyflowmap_codex_timeout_retried",) if retries_used else ())),
-            char_count=result.char_count, output_type=result.output_type,
+                      + (("pyflowmap_codex_timeout_retried",) if retries_used else ())
+                      + (("pyflowmap_source_literal_quote_closed",)
+                         if quote_closed else ())),
+            char_count=len(label), output_type=result.output_type,
             language=result.language, style=result.style,
         )
