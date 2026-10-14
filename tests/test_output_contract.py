@@ -5,8 +5,8 @@ import re
 import runpy
 from pathlib import Path
 
-from pyflowmap.service import generate_diagram
 from pyflowmap.mcp_server import generate_diagram as mcp_generate
+from pyflowmap.service import generate_diagram
 
 ROOT = Path(__file__).resolve().parents[1]
 

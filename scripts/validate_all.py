@@ -46,9 +46,7 @@ def managed_run(path: Path, root: Path) -> bool:
             and metadata.get("schema") == 1
             and metadata.get("run") == path.name):
         return False
-    if {item.name for item in path.iterdir()} - CONTENTS:
-        return False
-    return True
+    return not ({item.name for item in path.iterdir()} - CONTENTS)
 
 
 def report_is_technically_complete(path: Path) -> tuple[bool, str]:

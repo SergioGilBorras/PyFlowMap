@@ -3,9 +3,9 @@
 import os
 from pathlib import Path
 
+from .output_paths import next_graph_directory
 from .service import generate_diagram as _generate_diagram
 from .service import inspect_project as _inspect_project
-from .output_paths import next_graph_directory
 
 
 def _allowed(path: str) -> str:
