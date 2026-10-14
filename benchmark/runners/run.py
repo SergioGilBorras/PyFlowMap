@@ -16,13 +16,9 @@ from collections import Counter, defaultdict, deque
 from datetime import UTC, datetime
 from pathlib import Path
 
-try:
-    from .oracles_current import evaluate_semantics
-except ImportError:  # Direct execution as ``python benchmark/run.py``.
-    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-    from benchmark.oracles_current import evaluate_semantics
+from benchmark.evaluation.oracles_current import evaluate_semantics
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parents[1]
 CASES = HERE / 'cases.json'
 FIXTURES = HERE / 'fixtures'
 

@@ -10,12 +10,13 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 import tokenize
 from pathlib import Path
 
 from portable_tempdirs import temporary_directory
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parents[1]
 FIXTURES = HERE / "fixtures"
 
 
@@ -126,7 +127,7 @@ def main() -> int:
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     cases = []
-    with temporary_directory("pyflowmap-metamorphic", parent=output) as temp_root:
+    with temporary_directory("pyflowmap-metamorphic", parent=tempfile.gettempdir()) as temp_root:
         work = Path(temp_root)
         cases.extend(_rename_case(work, "variable-function-renaming", FIXTURES / "logic/predicates.py",
                                   "predicates:authorize", "predicates:evaluate_access",
