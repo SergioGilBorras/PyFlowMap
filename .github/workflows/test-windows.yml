@@ -32,7 +32,28 @@ jobs:
 
       - name: Install Graphviz
         shell: pwsh
-        run: choco install graphviz --no-progress -y
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $dot = $null
+          for ($attempt = 1; $attempt -le 3; $attempt++) {
+            choco install graphviz --no-progress -y
+            $candidate = 'C:\Program Files\Graphviz\bin\dot.exe'
+            if (Test-Path $candidate) {
+              $dot = $candidate
+              break
+            }
+            $command = Get-Command dot -ErrorAction SilentlyContinue
+            if ($command) {
+              $dot = $command.Source
+              break
+            }
+            Write-Warning "Graphviz is not available after attempt $attempt"
+            if ($attempt -lt 3) { Start-Sleep -Seconds (10 * $attempt) }
+          }
+          if (-not $dot) { throw 'Graphviz installation failed; dot.exe is unavailable' }
+          Add-Content -Path $env:GITHUB_PATH -Value (Split-Path $dot)
+          & $dot -V
+          if ($LASTEXITCODE -ne 0) { throw 'Graphviz dot -V failed' }
 
       - name: Install development dependencies
         run: |
