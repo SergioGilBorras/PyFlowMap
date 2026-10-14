@@ -2,13 +2,13 @@
 import json
 import unittest
 
-from benchmark import oracles_current, oracles_phase5_2
-from benchmark.run import CASES, check_sources, inspect_graph
+from benchmark.evaluation import oracles_current, oracles_phase5_2
+from benchmark.runners.run import CASES, check_sources, inspect_graph
 
 
 class GraphOracleTests(unittest.TestCase):
     def test_default_runner_uses_declared_canonical_oracle(self):
-        import benchmark.run as runner
+        from benchmark.runners import run as runner
         self.assertEqual(oracles_current.VERSION, "phase5.2")
         self.assertIs(runner.evaluate_semantics, oracles_current.evaluate_semantics)
         self.assertIs(oracles_current.evaluate_semantics, oracles_phase5_2.evaluate_semantics)

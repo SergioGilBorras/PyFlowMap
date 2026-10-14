@@ -1,6 +1,6 @@
 """Tests for semantic preconditions behind expression metamorphic comparisons."""
 
-from benchmark.metamorphic import empty_list_len_equivalence_preconditions
+from benchmark.runners.metamorphic import empty_list_len_equivalence_preconditions
 
 
 def test_list_truthiness_and_builtin_len_zero_have_proven_preconditions():

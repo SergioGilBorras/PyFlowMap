@@ -2,16 +2,17 @@
 from __future__ import annotations
 
 import copy
+import tempfile
 from pathlib import Path
 
 from portable_tempdirs import temporary_directory
 
-from benchmark.oracles import evaluate_semantics as legacy_evaluate_semantics
-from benchmark.oracles_phase3 import evaluate_semantics
+from benchmark.evaluation.oracles import evaluate_semantics as legacy_evaluate_semantics
+from benchmark.evaluation.oracles_phase3 import evaluate_semantics
 from pyflowmap.diagrams.activity import analyze
 from pyflowmap.project import load_project
 
-FIXTURES = Path(__file__).parent / "oracle-audit" / "phase3" / "fixtures"
+FIXTURES = Path(__file__).parents[1] / "oracle-audit" / "phase3" / "fixtures"
 
 
 def _analyze(fixture: Path, entry: str):
@@ -76,7 +77,7 @@ def test_mutation_retrying_an_earlier_case_is_detected():
 
 
 def test_compound_guard_is_reviewed_instead_of_claimed_as_correct():
-    owner = temporary_directory("pyflowmap-compound-guard", parent=FIXTURES.parent)
+    owner = temporary_directory("pyflowmap-compound-guard", parent=tempfile.gettempdir())
     try:
         fixture = Path(owner.path) / "compound.py"
         fixture.write_text(

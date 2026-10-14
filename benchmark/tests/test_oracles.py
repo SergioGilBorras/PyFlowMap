@@ -2,16 +2,14 @@
 from __future__ import annotations
 
 import json
+import tempfile
 from pathlib import Path
 import unittest
 
 from portable_tempdirs import temporary_directory
 
-from benchmark.oracles import evaluate_semantics
-from benchmark.run import inspect_graph
-
-
-HERE = Path(__file__).resolve().parent
+from benchmark.evaluation.oracles import evaluate_semantics
+from benchmark.runners.run import inspect_graph
 
 
 def node(node_id, kind, line=None, label="", metadata=None, symbols=None):
@@ -28,7 +26,7 @@ def graph(nodes, edges, warnings=None):
 
 class SemanticOracleTests(unittest.TestCase):
     def setUp(self):
-        self.owner = temporary_directory("pyflowmap-oracle-tests", parent=HERE)
+        self.owner = temporary_directory("pyflowmap-oracle-tests", parent=tempfile.gettempdir())
         self.root = Path(self.owner.__enter__())
         self.addCleanup(self.owner.__exit__, None, None, None)
 
