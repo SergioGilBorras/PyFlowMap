@@ -31,7 +31,7 @@ For Windows commands and installed launchers, see
 
 | Location | Purpose | Shipping? |
 | --- | --- | --- |
-| `tests/`, `conftest.py` | Automated API, parser, CLI, renderer, semantic and regression checks | No |
+| `tests/`, root `conftest.py` | Automated checks and shared pytest isolation under the OS temporary directory | No |
 | `benchmark/` | Four known regression corpora, canonical evaluator, mutation and metamorphic tools | No |
 | `benchmark/independent-v1/run.py`, `independent-v2/run.py` | Repeatable generation from intact source banks | No |
 | `scripts/build_release.py` | Build checked local wheel/sdist and isolated install smoke | No |
@@ -67,6 +67,14 @@ Keep the source fixtures, oracles and tests, but do not version their
 outputs. Never delete `.serena/`, `.git/`, the current `.venv/`,
 unexpected personal files, or protected Windows temporary paths.
 Git ignore rules do not remove files that were already committed.
+
+The root `conftest.py` is **not an installer or runtime code**. Pytest
+loads it automatically for both `tests/` and `benchmark/`. It creates
+scratch test workspaces under the current system temp directory (Windows:
+`%TEMP%`) and cleans them after the run. Pytest's cache provider is
+disabled so it cannot create a `.pytest_cache` folder in the checkout.
+The `_avast_` directory, if present, may come from endpoint protection
+software; never delete or attribute it to PyFlowMap without evidence.
 
 To validate a release, use a new ignored output directory and record
 the exact Git SHA, OS/Python versions and semantic statuses. Do not

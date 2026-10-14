@@ -55,7 +55,7 @@ def semantic_shape(graph: dict) -> dict:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run disabled/mock label comparison on the historical bank")
     parser.add_argument("--output", type=Path,
-                        default=ROOT / "pyflowmap-output/final-validation-1.0/03-labeler")
+                        default=ROOT / "pyflowmap-output/labeler-comparison")
     args = parser.parse_args(argv)
     output = args.output.resolve()
     cases = json.loads((ROOT / "benchmark/cases.json").read_text(encoding="utf-8"))["cases"]

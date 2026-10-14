@@ -24,3 +24,5 @@ def test_no_generated_or_installer_artifacts_in_tracked_source():
     gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
     assert ".serena/" in gitignore
     assert "pyflowmap-output/" in gitignore
+    assert "dist/" in gitignore
+    assert "addopts = \"-p no:cacheprovider\"" in (ROOT / "pyproject.toml").read_text(encoding="utf-8")

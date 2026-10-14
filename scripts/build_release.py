@@ -206,7 +206,7 @@ def smoke_install(wheel: Path, work: Path, version: str) -> dict:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build and verify local PyFlowMap release artifacts")
     parser.add_argument("--output", type=Path, help="Release output directory (default: dist/)")
-    parser.add_argument("--work-parent", type=Path, default=ROOT,
+    parser.add_argument("--work-parent", type=Path, default=Path(tempfile.gettempdir()),
                         help="Authorized parent for temporary staging and the clean install venv")
     args = parser.parse_args(argv)
     output = (args.output or ROOT / "dist").resolve()

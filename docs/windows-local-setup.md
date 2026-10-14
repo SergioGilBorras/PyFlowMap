@@ -77,6 +77,8 @@ explicit permission to transmit source excerpts. See the
 ## Publishing and validation
 
 For release builds use `python scripts/build_release.py` from the checkout.
+It creates local wheel/sdist and the verification report in `dist/` while
+temporary build/test files are isolated under `%TEMP%`.
 The builder must keep tests, benchmarks, generated reports, personal files
 and workspaces out of the wheel/sdist. Running tests and building release artifacts are developer tasks, not
 requirements for users of an installed wheel.

@@ -22,7 +22,10 @@ The release builder:
 5. Writes artifacts and a `release-build-report.json` under ignored `dist/`.
    Override with `--output /approved/path` if needed.
 
-The version comes from `pyflowmap.__version__`. Building does not create
+The build's scratch workspaces are created under the OS temporary directory
+(Windows: `%TEMP%`; POSIX: `TMPDIR` or the standard system directory), while
+**deliverables remain locally in `dist/`**. The version comes from
+`pyflowmap.__version__`. Building does not create
 Git tags, publish to an index, or create a GitHub release.
 
 ## Clean wheel installation
