@@ -12,6 +12,10 @@ source provenance, or claim that opaque dynamic behavior was observed.
 | `mock` | Synthetic labels to test the integration | None |
 | `codex` | P4-Semantic-Labeler using authenticated Codex CLI | Explicit opt-in; selected source excerpts may leave the local machine |
 
+The Python adapter defaults to English, like the CLI; request `language="es"`
+explicitly when Spanish labels are required. These are two supported output
+languages, not mixed-language project documentation.
+
 The optional package comes from a separately maintained private Git
 repository. The normal PyFlowMap installation and activity extraction
 must not depend on Codex.

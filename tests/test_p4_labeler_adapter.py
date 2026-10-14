@@ -108,7 +108,7 @@ def test_library_sync_summary_async_and_batch(fake_p4):
     assert request.max_chars == 50 and request.style == "formal"
     assert instance.settings.reduction_attempts == 0
     summary = tools.generate_summary(name="archive", text="Some text", max_chars=40)
-    assert summary.output_type == "summary"
+    assert summary.output_type == "summary" and summary.language == "en"
     assert asyncio.run(tools.agenerate_label(name="archive")).output_type == "title"
     batch = tools.generate_labels_batch([{"name": "one"}, {"name": "two"}])
     assert batch.success_count == 2

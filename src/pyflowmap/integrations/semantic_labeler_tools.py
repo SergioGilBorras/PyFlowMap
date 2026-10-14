@@ -57,7 +57,7 @@ class SemanticLabelerTools:
                  after: str | None = None, purpose: str | None = None,
                  module: str | None = None, class_name: str | None = None,
                  signature: str | None = None, max_chars: int = 80,
-                 language: str = "es", style: str = "neutral",
+                 language: str = "en", style: str = "neutral",
                  output_type: str = "title"):
         Context, _, LabelRequest, Subject, _, _ = _imports()
         return LabelRequest(
@@ -69,7 +69,7 @@ class SemanticLabelerTools:
 
     def generate_label(self, *, name: str, kind: str = "function",
                        documentation: str | None = None, source_code: str | None = None,
-                       max_chars: int = 80, language: str = "es",
+                       max_chars: int = 80, language: str = "en",
                        style: str = "neutral", **context):
         client = self._client()
         request = self._request(name=name, kind=kind, documentation=documentation,
@@ -79,7 +79,7 @@ class SemanticLabelerTools:
 
     def generate_summary(self, *, name: str, kind: str = "concept",
                          documentation: str | None = None, source_code: str | None = None,
-                         max_chars: int = 160, language: str = "es",
+                         max_chars: int = 160, language: str = "en",
                          style: str = "neutral", **context):
         client = self._client()
         request = self._request(name=name, kind=kind, documentation=documentation,
@@ -89,7 +89,7 @@ class SemanticLabelerTools:
 
     async def agenerate_label(self, *, name: str, kind: str = "function",
                               documentation: str | None = None, source_code: str | None = None,
-                              max_chars: int = 80, language: str = "es",
+                              max_chars: int = 80, language: str = "en",
                               style: str = "neutral", **context):
         client = self._client()
         request = self._request(name=name, kind=kind, documentation=documentation,

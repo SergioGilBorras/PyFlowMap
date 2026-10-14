@@ -9,12 +9,12 @@ def main():
     title = labeler.generate_label(
         name="process_pending_orders", kind="function",
         documentation="Validate pending orders and prepare dispatch.",
-        max_chars=50, language="es", style="formal",
+        max_chars=50, language="en", style="formal",
     )
     summary = labeler.generate_summary(
         name="process_pending_orders", kind="function",
         documentation="Validate pending orders and prepare dispatch.",
-        max_chars=140, language="es", style="academic",
+        max_chars=140, language="en", style="academic",
     )
     print(title.model_dump())
     print(summary.model_dump())
