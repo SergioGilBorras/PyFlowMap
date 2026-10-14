@@ -197,3 +197,26 @@ not modified. The adjustment emits the explicit per-node warning
 CSV. A correction that would exceed the diagram label limit fails instead.
 This deterministic repair does not change graph topology, execute source,
 or falsely claim independent semantic validation.
+
+
+## October 2026 full real-Codex comparison-operator regression
+
+The authenticated full Windows run processed all 81 programs. Its original
+real-inference results were 75 technical PASS and six FAIL, each reporting
+`Invalid external semantic label` (cases: `iot`, `workflow`,
+`independent-v1-c10`, `independent-v1-c12`, `independent-v1-c28`,
+`independent-v2-v02`). The six programs contain comparisons, but the
+report did not capture the precise rejected label or rule.
+
+Previously PyFlowMap rejected *any* `<` or `>` in model output. Ordinary
+comparison labels such as `x < 0`, `temperature > 90`, `x <= threshold`
+are now accepted; Mermaid and DOT renderers already escape such text.
+Markup-looking `<tag` prefixes, multiline labels, control characters,
+invalid types and excessive length still fail closed. An invalid label
+carries a safe categorical reason, and the real comparison report uses
+`INVALID_EXTERNAL_LABEL` instead of generic `ANALYSIS_ERROR`.
+
+This is a candidate fix, not a claim that the six historical failures
+were comparisons. Re-run those six cases only with **real Codex**, keeping
+the original results untouched. Treat all new provider/model errors as
+failures; retain semantic REVIEW on technical PASS.

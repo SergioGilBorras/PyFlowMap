@@ -173,3 +173,48 @@ def test_ambiguous_multiple_same_calls_are_not_attributed_wrongly(tmp_path):
         label_metadata={"call_expression": "act"},
     )
     assert _call_site_expression(index, node) is None
+
+
+
+def test_comparison_labels_are_allowed_and_safely_rendered():
+    from pyflowmap.dot import to_dot
+    from pyflowmap.mermaid import to_mermaid
+    from pyflowmap.models import FlowGraph
+    from pyflowmap.semantic.enrich import _invalid_label_reason, _valid_label
+
+    assert _valid_label("Check temp > 90 and amount <= 0")
+    assert _valid_label("Keep x < 0 or count >= 3")
+    assert _invalid_label_reason("<script>alert(1)</script>") == "possible_markup"
+    assert _invalid_label_reason("line 1\nline 2") == "multiline"
+    assert _invalid_label_reason("a" * 81) == "length_limit"
+
+    graph = FlowGraph(entry="demo:main")
+    graph.add("Check x < 0 or temp > 90", "activity", "demo:main", "demo.py:1")
+    assert "Check x &lt; 0 or temp &gt; 90" in to_mermaid(graph)
+    assert "Check x &lt; 0 or temp &gt; 90" in to_dot(graph)
+
+
+def test_real_external_comparison_caption_retains_provenance(tmp_path):
+    from pyflowmap.semantic.enrich import _invalid_label_reason
+
+    source = tmp_path / "limits.py"
+    source.write_text(
+        "def notify():\n    return 3\n"
+        "def main():\n    return notify()\n",
+        encoding="utf-8",
+    )
+
+    class Comparisons:
+        def label(self, request):
+            return "Check amount <= 0 or temperature > 90"
+
+    output = generate_diagram(
+        str(source), entry="limits:main", format="mmd",
+        output=str(tmp_path / "labels"), label_provider=Comparisons(),
+    )
+    graph = json.loads(Path(output["files"]["json"]).read_text(encoding="utf-8"))
+    enriched = [node for node in graph["nodes"] if node["label_source"] == "external"]
+    assert enriched
+    assert all(_invalid_label_reason(node["label"]) is None for node in enriched)
+    assert all(node["label"] == "Check amount <= 0 or temperature > 90"
+               for node in enriched)

@@ -66,11 +66,27 @@ def _call_site_expression(index: ProjectIndex, node: Node) -> str | None:
     return None
 
 
+def _invalid_label_reason(label: object) -> str | None:
+    """Validate labels while allowing ordinary comparisons, never markup."""
+    if not isinstance(label, str):
+        return "non_string"
+    if not label.strip():
+        return "empty"
+    if len(label.strip()) > MAX_LABEL_CHARS:
+        return "length_limit"
+    if "\n" in label or "\r" in label:
+        return "multiline"
+    if any(ord(char) < 32 or ord(char) == 127 for char in label):
+        return "control_character"
+    # Renderers escape "<" and ">" for Mermaid and Graphviz. A tag-like
+    # prefix is still refused (including <script> and closing tags).
+    if re.search(r"<[A-Za-z!/]", label):
+        return "possible_markup"
+    return None
+
+
 def _valid_label(label: object) -> bool:
-    return (isinstance(label, str) and 0 < len(label.strip()) <= MAX_LABEL_CHARS
-            and "\n" not in label and "\r" not in label
-            and not any(ord(char) < 32 for char in label)
-            and not re.search(r"[<>]", label))
+    return _invalid_label_reason(label) is None
 
 
 def enrich_activity_labels(graph: FlowGraph, index: ProjectIndex,
@@ -117,10 +133,15 @@ def enrich_activity_labels(graph: FlowGraph, index: ProjectIndex,
             continue
         outcome = candidate if isinstance(candidate, SemanticLabelOutcome) else None
         label = outcome.label if outcome else candidate
-        if not _valid_label(label):
+        issue = _invalid_label_reason(label)
+        if issue is not None:
             if strict:
-                raise ValueError(f"Invalid external semantic label for {node.id}")
-            graph.warnings.append(f"Rejected invalid semantic label for {node.id}")
+                raise ValueError(
+                    f"Invalid external semantic label for {node.id} ({issue})"
+                )
+            graph.warnings.append(
+                f"Rejected invalid semantic label for {node.id} ({issue})"
+            )
             continue
         node.label = label.strip()
         node.label_source = "external"

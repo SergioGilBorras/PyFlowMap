@@ -148,6 +148,20 @@ def save(root: Path, cases: list[dict], rows: list[dict],
         writer.writerows(reviews)
 
 
+def classify_failure(exc: Exception) -> str:
+    """Classify real-provider failures without emitting untrusted label text."""
+    message = str(exc)
+    if "ProviderTimeout" in message:
+        return "PROVIDER_TIMEOUT"
+    if isinstance(exc, subprocess.TimeoutExpired):
+        return "SUBPROCESS_TIMEOUT"
+    if "Invalid external semantic label" in message:
+        return "INVALID_EXTERNAL_LABEL"
+    if "P4 semantic labeling failed" in message:
+        return "PROVIDER_ERROR"
+    return "ANALYSIS_ERROR"
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Live Codex labels for 81 regression cases"
@@ -206,10 +220,7 @@ def main(argv: list[str] | None = None) -> int:
         except (OSError, RuntimeError, ValueError, KeyError,
                 subprocess.TimeoutExpired, json.JSONDecodeError) as exc:
             message = str(exc)
-            kind = ("PROVIDER_TIMEOUT" if "ProviderTimeout" in message else
-                    "SUBPROCESS_TIMEOUT" if isinstance(exc, subprocess.TimeoutExpired) else
-                    "PROVIDER_ERROR" if "P4 semantic labeling failed" in message else
-                    "ANALYSIS_ERROR")
+            kind = classify_failure(exc)
             row = {
                 "case": case["id"], "suite": case["suite"],
                 "status": "FAIL", "failure_type": kind,

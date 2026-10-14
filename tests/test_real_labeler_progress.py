@@ -47,3 +47,17 @@ def test_real_runner_records_provider_timeout_and_continues(monkeypatch, tmp_pat
     assert report["cases"][1]["status"] == "PASS"
     assert all(isinstance(row["elapsed_seconds"], float)
                for row in report["cases"])
+
+
+
+def test_invalid_external_label_is_not_misreported_as_generic_error():
+    from compare_real_labeler import classify_failure
+
+    error = RuntimeError(
+        "codex analysis returned 2: "
+        "Invalid external semantic label for n8 (possible_markup)"
+    )
+    assert classify_failure(error) == "INVALID_EXTERNAL_LABEL"
+    assert classify_failure(RuntimeError(
+        "P4 semantic labeling failed (ProviderTimeout)"
+    )) == "PROVIDER_TIMEOUT"
