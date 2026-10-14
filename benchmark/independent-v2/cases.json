@@ -1,13 +1,12 @@
 {
-  "name": "PyFlowMap — Segunda batería independiente V2",
-  "generated": "2026-10-13",
+  "name": "PyFlowMap regression bank V2",
   "case_count": 30,
   "python_target": "3.13",
-  "kind": "first-run-evaluation",
+  "kind": "known-regression-corpus",
   "parameters": {
     "max_nodes": 30,
     "max_depth": 3,
-    "language": "es",
+    "language": "en",
     "renderer": "graphviz",
     "format": "all",
     "semantic_provider": "disabled"
@@ -15,19 +14,19 @@
   "cases": [
     {
       "id": "v01",
-      "domain": "bibliotecas digitales",
+      "domain": "digital libraries",
       "entry": "catalog:route_request",
       "source": "fixtures/v01",
       "tags": [
         "match/case",
-        "captura AS",
-        "guardas",
-        "retornos"
+        "AS capture",
+        "guards",
+        "returns"
       ]
     },
     {
       "id": "v02",
-      "domain": "cultivos hidropónicos",
+      "domain": "hydroponics",
       "entry": "nutrients:select_formula",
       "source": "fixtures/v02",
       "tags": [
@@ -39,12 +38,12 @@
     },
     {
       "id": "v03",
-      "domain": "centro ferroviario",
+      "domain": "railway operations",
       "entry": "switches:move_train",
       "source": "fixtures/v03",
       "tags": [
         "while/else",
-        "bucles anidados",
+        "nested loops",
         "break",
         "continue"
       ]
@@ -56,24 +55,24 @@
       "source": "fixtures/v04",
       "tags": [
         "try/finally",
-        "return pendiente",
-        "sustitución en finally"
+        "pending return",
+        "finally override"
       ]
     },
     {
       "id": "v05",
-      "domain": "gestión de archivos",
+      "domain": "file management",
       "entry": "writer:atomic_publish",
       "source": "fixtures/v05",
       "tags": [
-        "with anidados",
+        "nested context managers",
         "return",
-        "excepción"
+        "exception"
       ]
     },
     {
       "id": "v06",
-      "domain": "telemática",
+      "domain": "telematics",
       "entry": "receiver:consume_packets",
       "source": "fixtures/v06",
       "tags": [
@@ -85,19 +84,19 @@
     },
     {
       "id": "v07",
-      "domain": "control energético",
+      "domain": "energy control",
       "entry": "dispatch:refresh",
       "source": "fixtures/v07",
       "tags": [
         "await",
-        "cancelación",
+        "cancellation",
         "try/except/finally",
         "async with"
       ]
     },
     {
       "id": "v08",
-      "domain": "geometría procedural",
+      "domain": "procedural geometry",
       "entry": "vertices:stream_vertices",
       "source": "fixtures/v08",
       "tags": [
@@ -108,7 +107,7 @@
     },
     {
       "id": "v09",
-      "domain": "ciencia de materiales",
+      "domain": "materials science",
       "entry": "specimens:receive_samples",
       "source": "fixtures/v09",
       "tags": [
@@ -120,109 +119,109 @@
     },
     {
       "id": "v10",
-      "domain": "recomendaciones",
+      "domain": "recommendation systems",
       "entry": "filtering:find_match",
       "source": "fixtures/v10",
       "tags": [
-        "walrus",
+        "assignment expression",
         "and/or",
-        "llamadas en condiciones"
+        "calls in conditions"
       ]
     },
     {
       "id": "v11",
-      "domain": "instrumentación",
+      "domain": "instrumentation",
       "entry": "probe:activate",
       "source": "fixtures/v11",
       "tags": [
-        "resolución por receptor",
-        "llamadas anidadas",
-        "argumentos"
+        "receiver-based resolution",
+        "nested calls",
+        "arguments"
       ]
     },
     {
       "id": "v12",
-      "domain": "álgebra simbólica",
+      "domain": "symbolic algebra",
       "entry": "expr:evaluate",
       "source": "fixtures/v12",
       "tags": [
-        "recursión mutua",
-        "funciones locales",
+        "mutual recursion",
+        "local functions",
         "nonlocal"
       ]
     },
     {
       "id": "v13",
-      "domain": "meteorología",
+      "domain": "meteorology",
       "entry": "weather:decide",
       "source": "fixtures/v13",
       "tags": [
-        "propiedades",
+        "properties",
         "getattr",
-        "despacho dinámico"
+        "dynamic dispatch"
       ]
     },
     {
       "id": "v14",
-      "domain": "consolas de operación",
+      "domain": "operations consoles",
       "entry": "command:interpret_twice",
       "source": "fixtures/v14",
       "tags": [
-        "dos match",
-        "guardas en ambos",
-        "variables capturadas"
+        "two match statements",
+        "guards in both",
+        "captured variables"
       ]
     },
     {
       "id": "v15",
-      "domain": "cobro de tasas",
+      "domain": "fee processing",
       "entry": "fees:calculate_fee",
       "source": "fixtures/v15",
       "tags": [
-        "herencia múltiple",
+        "multiple inheritance",
         "MRO",
         "super",
-        "métodos"
+        "methods"
       ]
     },
     {
       "id": "v16",
-      "domain": "trazabilidad",
+      "domain": "traceability",
       "entry": "tracker:perform",
       "source": "fixtures/v16",
       "tags": [
-        "decoradores apilados",
+        "stacked decorators",
         "wrapper",
         "finally"
       ]
     },
     {
       "id": "v17",
-      "domain": "microservicio modular",
+      "domain": "modular microservice",
       "entry": "main:process_message",
       "source": "fixtures/v17",
       "tags": [
-        "paquete multimódulo",
-        "alias import",
-        "excepciones",
-        "método"
+        "multimodule package",
+        "import alias",
+        "exceptions",
+        "method"
       ]
     },
     {
       "id": "v18",
-      "domain": "sistemas acústicos",
+      "domain": "acoustics",
       "entry": "accumulator:configure",
       "source": "fixtures/v18",
       "tags": [
         "closure",
         "nonlocal",
         "callbacks",
-        "función devuelta"
+        "returned function"
       ]
     },
     {
       "id": "v19",
-      "domain": "validación masiva",
+      "domain": "bulk validation",
       "entry": "bulk:verify_all",
       "source": "fixtures/v19",
       "tags": [
@@ -233,11 +232,11 @@
     },
     {
       "id": "v20",
-      "domain": "configuración de recursos",
+      "domain": "resource configuration",
       "entry": "gate:operate",
       "source": "fixtures/v20",
       "tags": [
-        "__exit__ dinámico",
+        "dynamic __exit__",
         "with",
         "except",
         "return"
@@ -245,7 +244,7 @@
     },
     {
       "id": "v21",
-      "domain": "colas de impresión",
+      "domain": "print queues",
       "entry": "spool:drain",
       "source": "fixtures/v21",
       "tags": [
@@ -257,65 +256,65 @@
     },
     {
       "id": "v22",
-      "domain": "procesamiento espacial",
+      "domain": "spatial processing",
       "entry": "cloud:cluster",
       "source": "fixtures/v22",
       "tags": [
-        "comprensiones anidadas",
-        "filtros",
-        "generador diferido"
+        "nested comprehensions",
+        "filters",
+        "deferred generator"
       ]
     },
     {
       "id": "v23",
-      "domain": "mensajería de red",
+      "domain": "network messaging",
       "entry": "schema:decode",
       "source": "fixtures/v23",
       "tags": [
         "match mapping",
         "OR",
         "sequence",
-        "guardas"
+        "guards"
       ]
     },
     {
       "id": "v24",
-      "domain": "sesiones de usuario",
+      "domain": "user sessions",
       "entry": "sessions:choose",
       "source": "fixtures/v24",
       "tags": [
-        "walrus",
-        "ternario",
-        "cortocircuito",
-        "llamadas con side effects"
+        "assignment expression",
+        "ternary",
+        "short-circuit",
+        "calls with side effects"
       ]
     },
     {
       "id": "v25",
-      "domain": "biometría experimental",
+      "domain": "experimental biometrics",
       "entry": "samples:validate_bounds",
       "source": "fixtures/v25",
       "tags": [
         "assert",
-        "optimización",
-        "mensaje con efectos"
+        "optimization",
+        "message with side effects"
       ]
     },
     {
       "id": "v26",
-      "domain": "planificación de lotes",
+      "domain": "batch scheduling",
       "entry": "scheduler:execute_chain",
       "source": "fixtures/v26",
       "tags": [
         "async def",
-        "await en argumento",
+        "await in argument",
         "try/finally",
         "raise"
       ]
     },
     {
       "id": "v27",
-      "domain": "registros notariales",
+      "domain": "notarial records",
       "entry": "registry:extract",
       "source": "fixtures/v27",
       "tags": [
@@ -327,7 +326,7 @@
     },
     {
       "id": "v28",
-      "domain": "estadística incremental",
+      "domain": "incremental statistics",
       "entry": "stream:measure",
       "source": "fixtures/v28",
       "tags": [
@@ -339,18 +338,18 @@
     },
     {
       "id": "v29",
-      "domain": "ensamblado industrial",
+      "domain": "industrial assembly",
       "entry": "assembly:run_build",
       "source": "fixtures/v29",
       "tags": [
-        "módulos con nombres repetidos",
-        "alias",
-        "fábrica"
+        "modules with identical names",
+        "aliases",
+        "factory"
       ]
     },
     {
       "id": "v30",
-      "domain": "gestión de incidencias",
+      "domain": "incident management",
       "entry": "incident:resolve",
       "source": "fixtures/v30",
       "tags": [

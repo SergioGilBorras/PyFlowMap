@@ -1,124 +1,124 @@
 {
   "schema_version": 1,
-  "purpose": "Benchmark transversal para diagramas de actividad sobre codigo Python arbitrario",
-  "note": "Ningun caso de prueba debe inducir excepciones por dominio en src/pyflowmap; los oraculos viven exclusivamente en benchmark/",
+  "purpose": "Cross-domain regression coverage for generic Python static activity analysis",
+  "note": "Regression criteria belong exclusively to benchmark tooling; do not introduce domain-specific exceptions into src/pyflowmap.",
   "cases": [
     {
       "id": "commerce",
-      "domain": "Comercio",
-      "patterns": "Decisiones y devoluciones tempranas",
+      "domain": "Commerce",
+      "patterns": "Decisions and early returns",
       "source": "commerce/checkout.py",
       "entry": "checkout:checkout",
       "min_decisions": 2
     },
     {
       "id": "etl",
-      "domain": "Procesamiento de datos",
-      "patterns": "Bucles, continue/break, try-except-else",
+      "domain": "Data processing",
+      "patterns": "Loops, continue/break, try/except/else",
       "source": "etl/transform.py",
       "entry": "transform:process_batch",
       "min_decisions": 3
     },
     {
       "id": "cli",
-      "domain": "Aplicación de consola",
-      "patterns": "Inyección de dependencias y llamada compuesta",
+      "domain": "Command-line application",
+      "patterns": "Dependency injection and compound calls",
       "source": "cli/entrypoint.py",
       "entry": "entrypoint:main",
       "min_decisions": 1
     },
     {
       "id": "network",
-      "domain": "Servicios asíncronos",
-      "patterns": "async/await y captura de errores",
+      "domain": "Asynchronous services",
+      "patterns": "async/await and exception handling",
       "source": "network/service.py",
       "entry": "service:handle",
       "min_decisions": 1
     },
     {
       "id": "iot",
-      "domain": "Control de dispositivos",
-      "patterns": "match/case y guards",
+      "domain": "Device control",
+      "patterns": "match/case and guards",
       "source": "iot/controller.py",
       "entry": "controller:transition",
       "min_decisions": 1
     },
     {
       "id": "resources",
-      "domain": "Gestión de recursos",
-      "patterns": "with y salida temprana",
+      "domain": "Resource management",
+      "patterns": "with statements and early exit",
       "source": "resources/io.py",
       "entry": "io:store",
       "min_decisions": 1
     },
     {
       "id": "logic",
-      "domain": "Lógica de negocio genérica",
-      "patterns": "and/or y operador condicional",
+      "domain": "General business logic",
+      "patterns": "Short-circuit and/or and conditional expressions",
       "source": "logic/predicates.py",
       "entry": "predicates:authorize",
       "min_decisions": 1
     },
     {
       "id": "scheduling",
-      "domain": "Planificación de tareas",
-      "patterns": "Función local, cierres y bucles",
+      "domain": "Task scheduling",
+      "patterns": "Local functions, closures and loops",
       "source": "scheduling/scheduler.py",
       "entry": "scheduler:schedule",
       "min_decisions": 2
     },
     {
       "id": "algorithms",
-      "domain": "Algoritmos",
-      "patterns": "Recursión y caso base",
+      "domain": "Algorithms",
+      "patterns": "Recursion and base case",
       "source": "algorithms/recursion.py",
       "entry": "recursion:walk_tree",
       "min_decisions": 1
     },
     {
       "id": "security",
-      "domain": "Control de acceso",
-      "patterns": "raise y try/finally",
+      "domain": "Access control",
+      "patterns": "raise and try/finally",
       "source": "security/permission.py",
       "entry": "permission:check_permission",
       "min_decisions": 2
     },
     {
       "id": "workflow",
-      "domain": "Flujos administrativos",
-      "patterns": "Decisiones encadenadas y estados",
+      "domain": "Administrative workflow",
+      "patterns": "Chained decisions and state transitions",
       "source": "workflow/approvals.py",
       "entry": "approvals:process_leave",
       "min_decisions": 2
     },
     {
       "id": "multimodule",
-      "domain": "Aplicación modular",
-      "patterns": "Importaciones y llamadas entre archivos",
+      "domain": "Multimodule application",
+      "patterns": "Imports and cross-module calls",
       "source": "multimodule",
       "entry": "pipeline.main:start",
       "min_decisions": 1
     },
     {
       "id": "plugins",
-      "domain": "Arquitectura extensible",
-      "patterns": "Decoradores y despacho dinámico",
+      "domain": "Extensible architecture",
+      "patterns": "Decorators and dynamic dispatch",
       "source": "plugins/registry.py",
       "entry": "registry:dispatch",
       "min_decisions": 0
     },
     {
       "id": "analytics",
-      "domain": "Análisis numérico",
-      "patterns": "Comprensiones y agregaciones",
+      "domain": "Numerical analysis",
+      "patterns": "Comprehensions and aggregation",
       "source": "analytics/metrics.py",
       "entry": "metrics:summarize",
       "min_decisions": 1
     },
     {
       "id": "library",
-      "domain": "Biblioteca OO",
-      "patterns": "Herencia, sobrescritura y self",
+      "domain": "Object-oriented library",
+      "patterns": "Inheritance, overrides and self",
       "source": "library/resolution.py",
       "entry": "resolution:Derived.process",
       "min_decisions": 0
