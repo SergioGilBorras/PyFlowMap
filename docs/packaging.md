@@ -55,7 +55,9 @@ a guessed path. Graphviz (`dot`) must be installed separately for
 
 The Linux release job builds and smoke-tests wheel/sdist from the
 exact remote commit, then uploads both files and the build report
-as an Actions artifact. Download these from the successful workflow run.
+as an Actions artifact. Pull-request runs checkout the actual branch head
+commit rather than GitHub's temporary merge commit. The report records
+that Git SHA when the Git checkout is available. Download these from the successful workflow run.
 A job that is still queued or failed is **not** package validation.
 
 ## Important publishing limitation

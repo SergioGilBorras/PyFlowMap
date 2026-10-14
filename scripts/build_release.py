@@ -252,8 +252,13 @@ def main(argv: list[str] | None = None) -> int:
             smoke = {"status": "PASS", **smoke_install(built_wheel, workspace / "smoke", __version__)}
         except Exception as exc:  # noqa: BLE001 - persist any smoke failure in the release report.
             smoke = {"status": "FAIL", "error": f"{type(exc).__name__}: {str(exc)[:3000]}"}
+    try:
+        source_commit = run(["git", "rev-parse", "HEAD"]).strip()
+    except (OSError, RuntimeError):
+        source_commit = None
     report = {
         "version": __version__,
+        "source_git_commit": source_commit,
         "python": sys.version,
         "platform": sys.platform,
         "graphviz": shutil.which("dot"),

@@ -27,6 +27,8 @@ jobs:
     steps:
       - name: Checkout exact commit
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Configure Python
         uses: actions/setup-python@v5
@@ -87,6 +89,8 @@ jobs:
     steps:
       - name: Checkout exact commit
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Configure Python
         uses: actions/setup-python@v5
@@ -123,7 +127,7 @@ jobs:
       - name: Archive short regression evidence
         uses: actions/upload-artifact@v4
         with:
-          name: regression-evidence-${{ github.sha }}
+          name: regression-evidence-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             ${{ runner.temp }}/baseline/report.json
             ${{ runner.temp }}/control-flow/report.json
@@ -139,6 +143,8 @@ jobs:
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Configure Python
         uses: actions/setup-python@v5
@@ -165,7 +171,7 @@ jobs:
       - name: Upload verified packages and SHA report
         uses: actions/upload-artifact@v4
         with:
-          name: pyflowmap-release-${{ github.sha }}
+          name: pyflowmap-release-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             dist/*.whl
             dist/*.tar.gz
