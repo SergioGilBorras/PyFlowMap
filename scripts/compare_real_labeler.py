@@ -18,6 +18,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from compare_labeler_modes import cases_for, semantic_shape
+from pyflowmap.integrations.semantic_labeler_tools import DEFAULT_CODEX_TIMEOUT_SECONDS
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -184,6 +185,12 @@ def main(argv: list[str] | None = None) -> int:
     if destination.exists() and any(destination.iterdir()):
         parser.error("Output directory is not empty; supply a fresh location")
     destination.mkdir(parents=True, exist_ok=True)
+    print(
+        "Codex timeout per label: "
+        f"{os.environ.get('P4_LABELER_PROVIDER_TIMEOUT', str(DEFAULT_CODEX_TIMEOUT_SECONDS))}s; "
+        "at most one retry per timeout",
+        flush=True,
+    )
     rows: list[dict] = []
     review: list[dict] = []
     for index, case in enumerate(cases, 1):

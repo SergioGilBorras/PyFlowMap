@@ -2,11 +2,27 @@
 
 from dataclasses import dataclass
 
+import pytest
+
 import pyflowmap.integrations.semantic_labeler_tools as adapter
 
 
-def test_p4_timeout_from_environment_is_not_discarded(monkeypatch):
-    monkeypatch.setenv("P4_LABELER_PROVIDER_TIMEOUT", "120")
+@pytest.mark.parametrize(
+    ("provider", "override", "expected"),
+    [
+        ("codex", None, 180.0),
+        ("codex", "120", 120.0),
+        ("codex", "300", 300.0),
+        ("mock", None, 20.0),
+    ],
+)
+def test_p4_timeout_from_environment_is_not_discarded(
+    monkeypatch, provider, override, expected
+):
+    if override is None:
+        monkeypatch.delenv("P4_LABELER_PROVIDER_TIMEOUT", raising=False)
+    else:
+        monkeypatch.setenv("P4_LABELER_PROVIDER_TIMEOUT", override)
 
     @dataclass(frozen=True)
     class StubSettings:
@@ -30,8 +46,8 @@ def test_p4_timeout_from_environment_is_not_discarded(monkeypatch):
         adapter, "_imports",
         lambda: (object, StubLabeler, object, object, StubSettings, object),
     )
-    tools = adapter.SemanticLabelerTools(provider="codex", reduction_attempts=2)
+    tools = adapter.SemanticLabelerTools(provider=provider, reduction_attempts=2)
     client = tools._client()
-    assert client.settings.provider == "codex"
+    assert client.settings.provider == provider
     assert client.settings.reduction_attempts == 2
-    assert client.settings.provider_timeout_seconds == 120.0
+    assert client.settings.provider_timeout_seconds == expected

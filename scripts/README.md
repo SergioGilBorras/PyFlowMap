@@ -56,3 +56,15 @@ generating a picture or receiving an AI label implies a semantic PASS.
 See [testing](../docs/reference-testing.md),
 [setup](../docs/development.md), [benchmark corpora](../benchmark/README.md)
 and [consumer output](../output_graphs/README.md).
+
+
+### Real Codex timeout configuration
+
+The default timeout for each Codex label request is **180 seconds**
+(instead of P4's 20-second library default). Override it from the
+environment when genuinely required, e.g.
+`$env:P4_LABELER_PROVIDER_TIMEOUT='300'` in PowerShell. One bounded
+retry occurs only after `ProviderTimeout`, with a two-second delay;
+other errors remain errors and `mock` is never substituted. Large
+diagrams can trigger multiple independent Codex calls and therefore
+take longer than this per-request limit. First test a small real subset.

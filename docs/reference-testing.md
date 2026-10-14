@@ -133,3 +133,25 @@ node as subject (`kind=activity`), keep the function's source as context,
 and explicitly ask for a faithful *single-node* label. This change is
 covered by a contract regression test but still needs checking against
 real Codex responses; it is not evidence of factual-semantic PASS yet.
+
+
+## Live Codex timeout policy and transient retries
+
+PyFlowMap applies a **180-second default per Codex label request**, rather
+than inheriting P4's 20-second default. The environment variable
+`P4_LABELER_PROVIDER_TIMEOUT` overrides that number explicitly, including
+for the full validation runner. The configured value is forwarded through
+P4 `Settings.from_env()` to the bridge's `timeout_seconds`.
+
+On a genuine `ProviderTimeout`, PyFlowMap waits two seconds and retries
+**once** with the real provider. It does not retry non-timeout errors and
+never falls back to `mock`. Retried success adds
+`pyflowmap_codex_timeout_retried` to the label warnings; a second timeout
+remains a reported failure. Each timeout applies per label, not per graph;
+a large graph can legitimately take longer than 180 seconds total.
+
+Avoid raising this ceiling without limit: a longer timeout and retry can
+consume substantial time and provider quota across 81 benchmark programs.
+Verify one formerly successful and one previously timed-out case on the
+local Codex-authenticated workstation before another complete run. This
+change is covered by offline contract/regression tests, not by live Codex CI.

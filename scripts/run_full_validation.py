@@ -265,7 +265,13 @@ def main(argv: list[str] | None = None) -> int:
             ])
             run("labeler-example", [py, "examples/semantic_labeler_integration.py"])
         if args.with_real_labeler:
-            environment.setdefault("P4_LABELER_PROVIDER_TIMEOUT", "120")
+            environment.setdefault("P4_LABELER_PROVIDER_TIMEOUT", "180")
+            print(
+                "Codex provider timeout per label: "
+                f"{environment['P4_LABELER_PROVIDER_TIMEOUT']}s; "
+                "one retry on ProviderTimeout",
+                flush=True,
+            )
             run("real-labeler", [
                 py, "scripts/compare_real_labeler.py",
                 "--acknowledge-source-transmission",
