@@ -110,8 +110,10 @@ The cause of the unexpectedly short provider timeout was in
 thereby discarding `P4_LABELER_PROVIDER_TIMEOUT`. P4's built-in default is
 20 seconds. The adapter now constructs validated settings from the
 environment, retaining the explicitly requested provider and reduction
-attempts. The full runner provides 120 seconds unless the operator
-overrides that setting; this alone does not prove provider reliability.
+attempts. The previous runner tried to supply 120 seconds, but that value was
+discarded by the adapter. The corrected real-provider default is 180 seconds,
+with an explicit environment override and one bounded timeout retry; this
+alone does not prove provider reliability.
 
 External labels also no longer replace source-derived control-transfer or
 generator-event labels. Such nodes retain deterministic descriptions of
