@@ -19,7 +19,7 @@ def test_p4_timeout_from_environment_is_not_discarded(monkeypatch):
             import os
 
             return cls(provider_timeout_seconds=float(
-                os.environ.get("P4_LABELER_PROVIDER_TIMEOUT", 20.0)
+                os.environ.get("P4_LABELER_PROVIDER_TIMEOUT", "20")
             ))
 
     class StubLabeler:
