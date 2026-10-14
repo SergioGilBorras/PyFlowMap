@@ -6,9 +6,9 @@ and its criteria version is `phase5.2`.
 
 The evaluator is composed as
 `oracles_current -> oracles_phase5_2 -> oracles_phase5 ->
-oracles_phase4_1`, with earlier source-semantic helpers used by tests.
-Files named `oracles_phase*` remain necessary **because of imports and
-mutation regressions**, not to offer different old product versions.
+oracles_phase4_1`, with additional source-semantic helpers tested independently.
+The `oracles_phase*` components are imported by the canonical evaluator
+or its mutation/regression tests.
 
 | Module | Responsibility |
 | --- | --- |

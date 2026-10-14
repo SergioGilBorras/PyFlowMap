@@ -22,7 +22,7 @@ does not execute fixture programs. `GENERATED` proves that the output
 files were produced; the bank is `NOT_EVALUATED` semantically unless
 a separate semantic assessment is performed.
 
-As with V1, this is now a **known regression bank**, not a blind holdout.
+This is a **known regression bank**.
 Its fixtures are retained as developer assets and are never shipped
 inside wheel or sdist. Write all outputs below ignored
 `pyflowmap-output/`. Do not change sources to force a PASS.

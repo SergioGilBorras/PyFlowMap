@@ -1,8 +1,8 @@
 # Future directions
 
-This document describes **possible next steps**, not historical development
-phases or promised release dates. The current supported features and limits
-are documented in the [README](../README.md) and
+This document lists **optional future work**, without promised release dates.
+Current supported features and limits are documented in the
+[README](../README.md) and
 [analysis rules](analysis-rules.md).
 
 ## Release engineering and quality

@@ -29,14 +29,6 @@ No script should create `pytest-cache-files-*` or `pyflowmap-pytest-*`
 inside the repository. Root `conftest.py` manages test workspaces under
 the OS temp directory and disables the checkout's pytest cache.
 
-## What was removed
-
-Project-specific PowerShell installation and redundant historical benchmark
-launchers were retired. Use `pip install`, the CLI's own `--help`,
-the documented `python -m benchmark.runners.*` commands and GitHub Actions
-instead. Do not resurrect shell installers or generated examples as runtime
-requirements.
-
 For full developer setup see [development](../docs/development.md),
 for the output contract see [packaging](../docs/packaging.md), and for semantic
 test entry points see [benchmark](../benchmark/README.md).

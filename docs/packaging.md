@@ -74,7 +74,7 @@ development tests. First prove any alternative preserves that contract.
 
 ### What is not shipped
 
-`tests/`, `benchmark/`, fixtures, source banks, obsolete diagram
+`tests/`, `benchmark/`, fixtures, source banks, generated diagram
 galleries, developer scripts, CI workflows, private credentials,
 `.serena/`, `.venv/` and the contents of `pyflowmap-output/`.
 

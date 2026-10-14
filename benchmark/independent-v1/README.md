@@ -21,7 +21,7 @@ it does not import or execute these programs. It writes diagrams and
 records `GENERATED` or generation errors, **not an automatic semantic PASS**.
 The paths and parameters are controlled by `cases.json`.
 
-This is a **known regression bank**, not an unseen blind evaluation. Do
+This is a **known regression bank**. Do
 not change input fixtures to hide analyzer defects. New outputs belong
 in the ignored `pyflowmap-output/` directory, not in the source bank.
 

@@ -9,6 +9,5 @@ control-flow edges while permitting valid graph paths.
 - `python-semantics/`: returns, exceptions, context managers and branching.
 
 These are **current regression inputs**. The source is parsed, not executed.
-The files were reorganized by semantic topic to remove obsolete phase
-directories. Results go to ignored output folders; changes to fixture
-source need an explicit new semantic criterion.
+Results go to ignored output folders; changes to fixture source
+require an explicit semantic criterion.

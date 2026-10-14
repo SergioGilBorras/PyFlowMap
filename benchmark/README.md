@@ -7,12 +7,12 @@ not part of the installed wheel or sdist, and the source examples are
 | Corpus | Coverage | Runner | What it proves |
 | --- | --- | --- | --- |
 | Cross-domain baseline | 15 programs | `benchmark/runners/run.py` | Structural checks and selected Python semantic oracles |
-| Control-flow regression | 8 programs | `benchmark/control-flow/` (same canonical runner) | Known semantic edge cases; no longer a blind holdout |
+| Control-flow regression | 8 programs | `benchmark/control-flow/` (same canonical runner) | Known semantic edge cases |
 | Independent-bank V1 | 28 cases / 33 Python modules | `benchmark/independent-v1/run.py` | Generates inspectable outputs and preserves source hashes |
 | Independent-bank V2 | 30 cases / 38 Python modules | `benchmark/independent-v2/run.py` | Generates inspectable outputs and preserves source hashes |
 
-V1 and V2 originally served as unseen input but are now **known regression
-banks**. Their `GENERATED` result **does not imply semantic PASS**; evaluate
+V1 and V2 are **known regression banks**. Their `GENERATED` result
+**does not imply semantic PASS**; evaluate
 the control flow separately before making a correctness claim.
 
 ## Run from the repository root
@@ -56,8 +56,7 @@ The canonical evaluator is `benchmark/evaluation/oracles_current.py`, currently
 delegating to `oracles_phase5_2.py`. The `oracles_phase*` modules
 are **actively used** as components of the composed evaluator and in
 mutation tests. Keep them until equivalence with a consolidated
-replacement is demonstrated. Their names do not indicate that the
-production analyzer exposes old versions.
+replacement is demonstrated. These are test-oracle implementations, not alternative product versions.
 
 Fixtures under `benchmark/regressions/` provide mutation/regression
 counterexamples. They are intentionally retained without past-result

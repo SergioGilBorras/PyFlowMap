@@ -40,9 +40,9 @@ For Windows commands and installed launchers, see
 | `scripts/compare_labeler_modes.py` | Compare deterministic and synthetic labels without model inference | No |
 | `.github/workflows/` | Clean Linux/macOS/Windows CI and downloadable release artifacts | No |
 
-The evaluator's older `oracles_phase*` modules remain in use through
-the canonical evaluator and mutation tests. A number in a regression
-filename is *test provenance*, not a supported old application mode.
+The canonical semantic evaluator imports `oracles_phase*` components;
+mutation tests cover their independent semantic obligations. These are
+internal test tools, not product execution modes.
 Remove a test utility only after showing it is unreferenced or its
 replacement catches the same regressions.
 

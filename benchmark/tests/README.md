@@ -11,7 +11,6 @@ Run alongside `tests/` when invoking `python -m pytest -q`.
 | `test_phase4_1_oracle_adversarial.py` | Return, context and branch mutation obligations |
 | `test_metamorphic_preconditions.py` | Preconditions of source transformations |
 
-Names inherited from a regression criterion identify the property being
-tested, not obsolete product APIs. Required fixture sources live in
+Each test module documents a current semantic regression obligation. Required fixture sources live in
 `../regressions/`. Tests allocate temporary work under the operating
 system's temp directory and do not mutate fixture sources.
