@@ -3,17 +3,17 @@
 import json
 from pathlib import Path
 
-from pyflowmap.service import generate_diagram, inspect_project
+from pyflowmap import service
 
 
 EXAMPLE = Path(__file__).resolve().parents[1] / "examples" / "basic_pipeline.py"
 
 
 def test_basic_pipeline_example_is_self_contained(tmp_path):
-    symbols = inspect_project(str(EXAMPLE))["symbols"]
+    symbols = service.inspect_project(str(EXAMPLE))["symbols"]
     assert any(symbol["id"] == "basic_pipeline:main" for symbol in symbols)
 
-    result = generate_diagram(
+    result = service.generate_diagram(
         str(EXAMPLE),
         entry="basic_pipeline:main",
         format="mmd",
