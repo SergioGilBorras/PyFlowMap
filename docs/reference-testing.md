@@ -45,7 +45,7 @@ python -m ruff check src tests scripts
 python -m pip check
 ```
 
-Use the canonical evaluation entry points under `benchmark/` for benchmark
+Use the documented `benchmark.runners` module entry points for benchmark
 programs. Do not silently substitute older oracles, or change an oracle merely
 to turn a real FAIL into PASS. Verify both a correct graph and a deliberately
 incorrect one when testing an evaluator fix.

@@ -14,7 +14,7 @@ from benchmark.evaluation.oracles_phase4 import _target_function, _warning_class
 from pyflowmap.diagrams.activity import analyze
 from pyflowmap.project import load_project
 
-FIXTURE = Path(__file__).parents[1] / "oracle-audit" / "phase4" / "fixtures" / "adversarial_match.py"
+FIXTURE = Path(__file__).parents[1] / "regressions" / "match-dispatch" / "adversarial_match.py"
 
 
 def _analyze(path: Path, entry: str) -> dict:

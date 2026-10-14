@@ -12,7 +12,7 @@ from benchmark.evaluation.oracles_phase3 import evaluate_semantics
 from pyflowmap.diagrams.activity import analyze
 from pyflowmap.project import load_project
 
-FIXTURES = Path(__file__).parents[1] / "oracle-audit" / "phase3" / "fixtures"
+FIXTURES = Path(__file__).parents[1] / "regressions" / "match-guards"
 
 
 def _analyze(fixture: Path, entry: str):

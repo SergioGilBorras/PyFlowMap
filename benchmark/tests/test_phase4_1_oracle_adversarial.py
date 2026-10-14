@@ -9,7 +9,7 @@ from benchmark.evaluation.oracles_phase4_1 import evaluate_semantics
 from pyflowmap.diagrams.activity import analyze
 from pyflowmap.project import load_project
 
-FIXTURE = Path(__file__).parents[1] / "oracle-audit" / "phase4_1" / "fixtures" / "python_semantics.py"
+FIXTURE = Path(__file__).parents[1] / "regressions" / "python-semantics" / "python_semantics.py"
 
 
 def _analyze(entry: str) -> dict:

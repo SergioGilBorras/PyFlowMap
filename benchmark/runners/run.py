@@ -300,7 +300,7 @@ def reports(out: Path, rows: list[dict], render: bool) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description='Banco de programas Python; los fixtures nunca se ejecutan.')
-    parser.add_argument('--output', type=Path, default=Path.cwd() / 'benchmark-results')
+    parser.add_argument('--output', type=Path, default=Path.cwd() / 'pyflowmap-output' / 'benchmark')
     parser.add_argument('--cases-file', type=Path, default=CASES,
                         help='JSON de casos; por defecto, el banco histórico de 15 casos')
     parser.add_argument('--fixtures-root', type=Path, default=FIXTURES,

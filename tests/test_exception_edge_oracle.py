@@ -2,7 +2,7 @@
 
 import copy
 
-from benchmark.oracles_phase5_2 import evaluate_semantics
+from benchmark.evaluation.oracles_phase5_2 import evaluate_semantics
 from pyflowmap.diagrams.activity import analyze
 from pyflowmap.project import load_project
 

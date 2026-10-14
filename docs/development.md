@@ -32,7 +32,7 @@ For Windows commands and installed launchers, see
 | Location | Purpose | Shipping? |
 | --- | --- | --- |
 | `tests/`, root `conftest.py` | Automated checks and shared pytest isolation under the OS temporary directory | No |
-| `benchmark/` | Four known regression corpora, canonical evaluator, mutation and metamorphic tools | No |
+| `benchmark/` | Reusable corpora, `evaluation/` oracles, `runners/`, oracle `tests/` and metamorphic checks | No |
 | `benchmark/independent-v1/run.py`, `independent-v2/run.py` | Repeatable generation from intact source banks | No |
 | `scripts/build_release.py` | Build checked local wheel/sdist and isolated install smoke | No |
 | `scripts/verify_offline_release_install.py` | Windows-specific offline installation diagnostic when internet downloads fail | No |
@@ -49,10 +49,10 @@ replacement catches the same regressions.
 ### Regression commands
 
 ```bash
-python benchmark/run.py --output pyflowmap-output/baseline --render
+python -m benchmark.runners.run --output pyflowmap-output/baseline --render
 python benchmark/independent-v1/run.py --project-root . --output pyflowmap-output/v1
 python benchmark/independent-v2/run.py --project-root . --output pyflowmap-output/v2
-python benchmark/metamorphic.py --output pyflowmap-output/metamorphic
+python -m benchmark.runners.metamorphic --output pyflowmap-output/metamorphic
 ```
 
 Benchmark strict mode intentionally treats REVIEW more severely; do not
@@ -87,5 +87,6 @@ invariance. Real `codex` inference sends excerpts to a provider and
 requires separate explicit authorization. Do not use Codex inference
 as part of the default CI.
 
-See [package building](packaging.md) and
+See the [script catalog](../scripts/README.md), [benchmark layout](../benchmark/README.md),
+[package building](packaging.md) and
 [reference testing](reference-testing.md).

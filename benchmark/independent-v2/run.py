@@ -143,7 +143,7 @@ def main() -> int:
     ap.add_argument('--validate-only', action='store_true', help='Comprobar sintaxis sin ejecutar PyFlowMap')
     ap.add_argument('--python', default=sys.executable, help='Python del entorno con PyFlowMap instalado')
     ap.add_argument('--project-root', type=Path, help='Raíz PyFlowMap para registrar huellas de producción')
-    ap.add_argument('--output', type=Path, default=ROOT.parent/'PyFlowMap-Validation-Results')
+    ap.add_argument('--output', type=Path, default=ROOT.parents[1]/'pyflowmap-output'/'independent-v2')
     ap.add_argument('--timeout', type=int, default=180)
     ap.add_argument('--package', action='store_true', help='Crear ZIP reproducible de fuentes y resultados')
     args = ap.parse_args()
