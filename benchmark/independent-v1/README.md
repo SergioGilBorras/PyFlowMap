@@ -16,6 +16,10 @@ Install PyFlowMap in the Python environment used by the runner first.
 If it runs in another environment, pass `--python` with the absolute
 path of the Python interpreter containing PyFlowMap.
 
+The original V1 checksum manifest stores paths with a `fixtures/` prefix;
+the runner normalizes that prefix when verifying SHA-256, without changing
+the manifest or any fixture bytes.
+
 The runner only parses fixtures and invokes PyFlowMap against them;
 it does not import or execute these programs. It writes diagrams and
 records `GENERATED` or generation errors, **not an automatic semantic PASS**.

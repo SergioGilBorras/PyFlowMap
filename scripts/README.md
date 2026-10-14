@@ -20,6 +20,12 @@ created under the OS system temp directory (Windows `%TEMP%`) and
 cleaned up when possible. To choose another *approved* output folder,
 pass `--output /path/to/output`.
 
+The `compare_labeler_modes.py` utility requires the optional
+`.[labeler]` dependency from the separate P4-Semantic-Labeler repository.
+Its `mock` mode does not contact Codex, but the absence of that library
+must be reported as **NOT_VERIFIED**, not as a product failure. The regular
+pytest suite verifies injected-provider structural invariance without it.
+
 The offline installer diagnostic is **Windows-specific** and intentionally
 requires explicit `--wheel`, `--work-parent` and `--output` arguments;
 use an approved system temp parent, not the checkout. Its nonzero exit code

@@ -111,8 +111,14 @@ jobs:
       - name: Generate V2 bank and verify fixture hashes
         run: python benchmark/independent-v2/run.py --project-root "$GITHUB_WORKSPACE" --output "$RUNNER_TEMP/bank-v2"
 
-      - name: Compare deterministic and mock labeler invariants
-        run: python scripts/compare_labeler_modes.py --output "$RUNNER_TEMP/labeler"
+      - name: Compare mock provider when the optional dependency is installed
+        shell: bash
+        run: |
+          if python -c "import p4_semantic_labeler" >/dev/null 2>&1; then
+            python scripts/compare_labeler_modes.py --output "$RUNNER_TEMP/labeler"
+          else
+            echo "NOT_VERIFIED: optional P4-Semantic-Labeler is not installed; injected-provider regression tests still run under pytest." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Archive short regression evidence
         uses: actions/upload-artifact@v4

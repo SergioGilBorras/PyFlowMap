@@ -82,8 +82,10 @@ recycle output from another candidate commit.
 
 ## Optional external labeling
 
-Use `disabled` for ordinary development or `mock` for structural
-invariance. Real `codex` inference sends excerpts to a provider and
+Use `disabled` for ordinary development. The external `mock` provider
+requires the optional `.[labeler]` dependency; it makes no remote inference.
+When that dependency is missing in CI, its result is **NOT_VERIFIED** rather
+than PASS or FAIL. Injected-provider invariance remains covered by pytest. Real `codex` inference sends excerpts to a provider and
 requires separate explicit authorization. Do not use Codex inference
 as part of the default CI.
 
