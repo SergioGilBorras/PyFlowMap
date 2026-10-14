@@ -157,3 +157,23 @@ consume substantial time and provider quota across 81 benchmark programs.
 Verify one formerly successful and one previously timed-out case on the
 local Codex-authenticated workstation before another complete run. This
 change is covered by offline contract/regression tests, not by live Codex CI.
+
+
+## Call-site specificity in the October 2026 Codex pilot
+
+The two real-provider pilot programs passed graph invariants (23 nodes/31
+edges for `independent-v1-c02`; 5 nodes/5 edges for `c19`), but `c02`
+exposed a semantic presentation defect. Four different calls to `emit`
+were all labeled "Return the supplied code unchanged": the label described
+the callee implementation, not the distinctive arguments of the individual
+match branches (`north_east`, `other_quadrant`, `halt`, `unreadable`).
+
+PyFlowMap now extracts each call-site expression from the original source
+AST (never executes it), bounded and matched by source line and callee.
+Ambiguous same-line calls are not guessed. The P4 label request explicitly
+identifies the expression as the action to label, while retaining the
+callee source as reference context. JSON external-label provenance and the
+real-provider CSV both expose `source_call_expression` for review.
+This is verified by deterministic regression tests; full semantic approval
+requires a new **real Codex** pilot rather than assuming that better context
+guarantees an accurate model output.

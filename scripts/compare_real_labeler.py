@@ -90,6 +90,7 @@ def run_case(case: dict, root: Path, timeout: int) -> tuple[dict, list[dict]]:
             "locations": ";".join(node.get("locations", [])),
             "deterministic_label": original.get(node["id"], {}).get("label", ""),
             "codex_label": node.get("label", ""),
+            "source_call_expression": metadata.get("call_site_expression", ""),
             "provider": metadata.get("provider"),
             "warnings": ";".join(map(str, metadata.get("warnings", []))),
             "semantic_fidelity": "REVIEW",
@@ -138,7 +139,8 @@ def save(root: Path, cases: list[dict], rows: list[dict],
     ) as out:
         fields = [
             "case", "suite", "node_id", "symbols", "locations",
-            "deterministic_label", "codex_label", "provider",
+            "deterministic_label", "codex_label", "source_call_expression",
+            "provider",
             "warnings", "semantic_fidelity",
         ]
         writer = csv.DictWriter(out, fieldnames=fields)

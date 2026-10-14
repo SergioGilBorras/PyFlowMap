@@ -3,7 +3,7 @@
 import ast
 import re
 
-from ..models import FlowGraph
+from ..models import FlowGraph, Node
 from ..project import ProjectIndex
 from .contracts import LabelRequest, SemanticLabelOutcome, SemanticLabelProvider
 
@@ -11,6 +11,8 @@ MAX_SOURCE_CHARS = 3000
 MAX_DOCSTRING_CHARS = 350
 MAX_LABEL_CHARS = 80
 MAX_CONTEXT_ITEMS = 3
+MAX_CALL_SITE_CHARS = 180
+MAX_CALL_SITE_FILE_BYTES = 512_000
 
 
 def _source(index: ProjectIndex, symbol_id: str) -> tuple[str, str | None, str]:
@@ -26,6 +28,42 @@ def _source(index: ProjectIndex, symbol_id: str) -> tuple[str, str | None, str]:
         return symbol.path, ast.get_docstring(symbol.node), ""
     snippet = ast.get_source_segment(text, symbol.node) or ""
     return symbol.path, (ast.get_docstring(symbol.node) or "")[:MAX_DOCSTRING_CHARS] or None, snippet[:MAX_SOURCE_CHARS]
+
+
+def _call_site_expression(index: ProjectIndex, node: Node) -> str | None:
+    """Read a matching call AST at this node's original source line, without executing it.
+
+    Refuse ambiguous multi-call sites rather than attributing the wrong
+    arguments to an activity. The result is a bounded source expression.
+    """
+    called = node.label_metadata.get("call_expression")
+    if not isinstance(called, str) or not called:
+        return None
+    for location in node.locations:
+        file_name, sep, line_text = location.rpartition(":")
+        if not sep or not line_text.isdecimal():
+            continue
+        path = (index.root / file_name).resolve()
+        if not path.is_relative_to(index.root) or not path.is_file():
+            continue
+        try:
+            if path.stat().st_size > MAX_CALL_SITE_FILE_BYTES:
+                continue
+            source = path.read_text(encoding="utf-8-sig")
+            tree = ast.parse(source)
+            target_line = int(line_text)
+            calls = [
+                ast.unparse(call)
+                for call in ast.walk(tree)
+                if isinstance(call, ast.Call)
+                and call.lineno == target_line
+                and ast.unparse(call.func) == called
+            ]
+        except (OSError, UnicodeError, SyntaxError, ValueError, RecursionError):
+            continue
+        if len(calls) == 1 and len(calls[0]) <= MAX_CALL_SITE_CHARS:
+            return calls[0]
+    return None
 
 
 def _valid_label(label: object) -> bool:
@@ -66,6 +104,7 @@ def enrich_activity_labels(graph: FlowGraph, index: ProjectIndex,
             node_id=node.id, current_label=node.label, symbols=tuple(node.symbols),
             filename=filename, language=language, docstring=docstring,
             source_snippet=source, preceding=before, following=after,
+            call_site_expression=_call_site_expression(index, node),
         )
         try:
             candidate = provider.label(request)
@@ -95,6 +134,7 @@ def enrich_activity_labels(graph: FlowGraph, index: ProjectIndex,
                 "provider": outcome.provider, "char_count": outcome.char_count,
                 "language": outcome.language, "style": outcome.style,
                 "output_type": outcome.output_type, "warnings": list(outcome.warnings),
+                "call_site_expression": request.call_site_expression,
                 },
             }
             for warning in outcome.warnings:

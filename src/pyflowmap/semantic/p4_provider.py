@@ -34,7 +34,8 @@ class P4SemanticLabelProvider:
 
         # The actual subject is this node's action, not its containing function.
         # Function source/docstrings are only contextual evidence.
-        action = request.current_label.strip()[:200]
+        action = (f"Call {request.call_site_expression}"
+                  if request.call_site_expression else request.current_label.strip()[:200])
         retries_used = 0
         for attempt in range(2 if self.provider == "codex" else 1):
             try:
@@ -46,7 +47,10 @@ class P4SemanticLabelProvider:
                     documentation=request.docstring,
                     source_code=request.source_snippet,
                     text=("Label the specific existing graph activity: " + action
-                          + ". Use the surrounding source as context only."),
+                          + ". If this is a call, preserve the call-site purpose "
+                          "and distinguish literal arguments in each execution "
+                          "branch. The enclosing function is context, not the "
+                          "operation to label. Do not infer runtime values."),
                     before="; ".join(request.preceding) or None,
                     after="; ".join(request.following) or None,
                     purpose=("Provide a faithful caption for ONE static-flow node, "

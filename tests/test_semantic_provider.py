@@ -122,3 +122,54 @@ def test_control_transfer_labels_remain_exact_under_external_provider(tmp_path):
     assert all(node["label_source"] == "deterministic" for node in transfers)
     assert all(node["label"] != "Generic whole-function summary" for node in transfers)
     assert any(node["label_source"] == "external" for node in graph["nodes"])
+
+
+def test_real_call_site_context_distinguishes_pattern_branches(tmp_path):
+    """Real AST provenance, no model inference: four calls need four subjects."""
+    example = (Path(__file__).resolve().parents[1]
+               / "benchmark/independent-v1/fixtures/c02/signal.py")
+
+    class Spy:
+        def __init__(self):
+            self.requests = []
+
+        def label(self, request):
+            self.requests.append(request)
+            return "Readable activity"
+
+    spy = Spy()
+    result = generate_diagram(
+        str(example), entry="signal:interpret", max_nodes=30, max_depth=3,
+        format="mmd", output=str(tmp_path / "signal-labeled"),
+        label_provider=spy,
+    )
+    graph = json.loads(Path(result["files"]["json"]).read_text(encoding="utf-8"))
+    calls = [request.call_site_expression for request in spy.requests
+             if request.symbols[0] == "signal:emit"]
+    assert sorted(calls) == sorted([
+        "emit(('north_east', x, y))",
+        "emit(('other_quadrant', x, y))",
+        "emit('halt')",
+        "emit('unreadable')",
+    ])
+    assert any(node["label"] == "Propagate exception" for node in graph["nodes"])
+
+
+def test_ambiguous_multiple_same_calls_are_not_attributed_wrongly(tmp_path):
+    from pyflowmap.models import Node
+    from pyflowmap.project import ProjectIndex
+    from pyflowmap.semantic.enrich import _call_site_expression
+
+    source = tmp_path / "ambiguity.py"
+    source.write_text(
+        "def act(x):\n    return x\n"
+        "def main():\n    return act('first') + act('second')\n",
+        encoding="utf-8",
+    )
+    index = ProjectIndex(tmp_path)
+    node = Node(
+        id="test", kind="activity", label="Act",
+        symbols=["ambiguity:act"], locations=["ambiguity.py:4"],
+        label_metadata={"call_expression": "act"},
+    )
+    assert _call_site_expression(index, node) is None

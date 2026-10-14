@@ -290,3 +290,33 @@ def test_codex_timeout_retry_is_bounded_and_does_not_mask_failure(monkeypatch):
     with pytest.raises(RuntimeError, match="ProviderTimeout"):
         provider.label(request)
     assert tools.attempts == 2
+
+
+def test_p4_prompt_uses_call_site_arguments_not_just_callee_summary():
+    from types import SimpleNamespace
+
+    from pyflowmap.semantic.contracts import LabelRequest as ActivityLabelRequest
+    from pyflowmap.semantic.p4_provider import P4SemanticLabelProvider
+
+    class Recorder:
+        def generate_label(self, **kwargs):
+            self.kwargs = kwargs
+            return SimpleNamespace(
+                label="Emit the halt marker", provider="codex",
+                warnings=[], char_count=20, output_type="title",
+                language="en", style="neutral",
+            )
+
+    tools = Recorder()
+    provider = P4SemanticLabelProvider(provider="codex", tools=tools)
+    request = ActivityLabelRequest(
+        node_id="n1", current_label="Emit", symbols=("signal:emit",),
+        filename="signal.py", language="en", docstring=None,
+        source_snippet="def emit(code):\n    return code",
+        preceding=(), following=("Return emit('halt')",),
+        call_site_expression="emit('halt')",
+    )
+    provider.label(request)
+    assert tools.kwargs["kind"] == "activity"
+    assert tools.kwargs["name"] == "Call emit('halt')"
+    assert "distinguish literal arguments" in tools.kwargs["text"]
