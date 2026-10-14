@@ -1,7 +1,7 @@
 """Build and smoke-test a clean local PyFlowMap wheel and sdist.
 
-This script never uploads packages. Its temporary environment is created under
-the requested output directory using portable-tempdirs and removed on exit.
+This script never uploads packages. Its scratch files are managed in an
+explicitly authorized working directory and cleaned up when possible.
 """
 from __future__ import annotations
 
@@ -205,20 +205,18 @@ def smoke_install(wheel: Path, work: Path, version: str) -> dict:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build and verify local PyFlowMap release artifacts")
-    parser.add_argument("--output", type=Path, help="Release output directory (default: official validation folder)")
+    parser.add_argument("--output", type=Path, help="Release output directory (default: dist/)")
     parser.add_argument("--work-parent", type=Path, default=ROOT,
                         help="Authorized parent for temporary staging and the clean install venv")
     args = parser.parse_args(argv)
-    output = (args.output or ROOT / "pyflowmap-output/final-validation-1.0/07-release").resolve()
+    output = (args.output or ROOT / "dist").resolve()
     output.mkdir(parents=True, exist_ok=True)
     work_parent = args.work_parent.expanduser().resolve()
     if not work_parent.is_dir():
         raise SystemExit(f"Temporary work parent must already exist: {work_parent}")
     from pyflowmap import __version__
 
-    if __version__ != "1.0.0":
-        raise SystemExit(f"Expected release version 1.0.0, found {__version__}")
-    for old in output.glob("pyflowmap-1.0.0*"):
+    for old in output.glob(f"pyflowmap-{__version__}*"):
         if old.is_file():
             old.unlink()
     with temporary_directory("pyflowmap-release-smoke", parent=work_parent) as temporary:

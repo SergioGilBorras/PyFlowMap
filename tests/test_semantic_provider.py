@@ -79,19 +79,3 @@ def test_images_format_exports_both_images_and_editable_sources(tmp_path):
     assert set(result["files"]) == {"mmd", "json", "svg", "png"}
     assert Path(result["files"]["svg"]).read_text().find("<svg") >= 0
     assert Path(result["files"]["png"]).read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
-
-
-def test_result_readmes_have_previews_and_separate_text():
-    root = Path(__file__).parents[1] / "examples" / "results"
-    for folder in sorted(p for p in root.iterdir() if p.is_dir()):
-        readmes = list(folder.glob("README*.md"))
-        assert readmes, folder
-        for readme in readmes:
-            text = readme.read_text(encoding="utf-8")
-            assert "```mermaid" not in text
-            assert "![" in text and ".svg)" in text
-            assert ".png)" in text and ".txt)" in text
-        for mmd in folder.glob("*.mmd"):
-            assert mmd.with_suffix(".txt").read_bytes() == mmd.read_bytes()
-            assert mmd.with_suffix(".svg").is_file()
-            assert mmd.with_suffix(".png").read_bytes().startswith(b"\x89PNG\r\n\x1a\n")

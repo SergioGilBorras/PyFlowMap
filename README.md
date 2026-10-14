@@ -136,13 +136,12 @@ The precise rules and accepted static limits are in
 python -m pip install -e '.[dev,mcp]'
 python -m pytest -q
 python -m ruff check src tests scripts
-python scripts/build_release.py
+python scripts/build_release.py     # writes wheel, sdist and verification report to dist/
 ```
 
 The repository retains reusable regressions (`tests/`) and independent
-evaluation programs and oracles (`benchmark/`). Generated validation outputs
-belong under `pyflowmap-output/` and must not be committed or shipped in a
-wheel/sdist. The release builder constructs local artifacts and checks them;
+evaluation programs and oracles (`benchmark/`). Generated validation outputs belong under `pyflowmap-output/` and must not be
+committed or shipped in a wheel/sdist. The release builder constructs local artifacts and checks them;
 it does **not** publish to a package index or create a GitHub release.
 
 Technical documentation:
@@ -154,6 +153,8 @@ Technical documentation:
 - [Labeler integration](docs/p4-semantic-labeler-integration.md)
 - [Development validation and reference cases](docs/reference-testing.md)
 - [Windows setup](docs/windows-local-setup.md)
+- [Developer workflows and retained test tools](docs/development.md)
+- [Building and distributing packages](docs/packaging.md)
 - [Future directions](docs/roadmap.md)
 
 ## License

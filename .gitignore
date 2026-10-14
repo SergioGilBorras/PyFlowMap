@@ -14,3 +14,9 @@ pytest-cache-files-*/
 .pytest-tmp-*/
 pyflowmap-tmp-*/
 .DS_Store
+.serena/
+examples/results/
+benchmark-results*/
+pyflowmap-*.egg-info/
+*.whl
+*.tar.gz

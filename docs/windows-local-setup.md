@@ -9,7 +9,6 @@ project.
 - Python 3.11 or later and Git for Windows.
 - Graphviz for SVG/PNG when using `--renderer graphviz`.
 - Access to any pinned Git dependencies in `pyproject.toml`.
-- An optional PowerShell development installer provided in the repository.
 
 In PowerShell, Graphviz may be installed with:
 
@@ -31,15 +30,6 @@ py -3 -m venv .venv
 .\.venv\Scripts\python.exe -m pytest -q
 .\.venv\Scripts\python.exe -m ruff check src tests scripts
 ```
-
-To exercise the official installer, inspect `Setup-PyFlowMap-Local.ps1`
-before running it. It supports `-Action Setup`, `Test`, `Diagrams` and
-`All`, and defaults to deterministic analysis with the semantic provider
-disabled. Its test/diagram phases are **development verification**, not
-required for everyday use of an installed wheel.
-
-The development installer may also analyze a separately supplied project.
-Never let validation scripts modify the source project being analyzed.
 
 ## Use the installed CLI
 
@@ -88,8 +78,8 @@ explicit permission to transmit source excerpts. See the
 
 For release builds use `python scripts/build_release.py` from the checkout.
 The builder must keep tests, benchmarks, generated reports, personal files
-and workspaces out of the wheel/sdist. Running the test suite and installer
-is for development and release quality, not for the product to function.
+and workspaces out of the wheel/sdist. Running tests and building release artifacts are developer tasks, not
+requirements for users of an installed wheel.
 
 See [reference testing](reference-testing.md) for how to regenerate a clean
 verification folder.

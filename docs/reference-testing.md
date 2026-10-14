@@ -52,8 +52,8 @@ incorrect one when testing an evaluator fix.
 
 ## Clean reference run
 
-Recreate `pyflowmap-output/final-validation-1.0/` from an empty output folder
-when preparing a release candidate. Record the exact commit and local state,
+Recreate an ignored output directory such as `pyflowmap-output/release-validation/`
+from an empty folder when preparing a release candidate. Record the exact commit and local state,
 parameters, Python/Graphviz versions, checksums, label-provider selection,
 warnings and evaluation scope.
 
