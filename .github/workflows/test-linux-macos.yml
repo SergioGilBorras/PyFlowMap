@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 'feat/**'
+      - 'refactor/**'
       - 'release/**'
   pull_request:
   workflow_dispatch:
@@ -20,7 +21,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: ['3.11', '3.13']
+        python-version: ['3.11', '3.12', '3.13']
+        exclude:
+          - os: macos-latest
+            python-version: '3.12'
 
     steps:
       - name: Checkout exact commit
@@ -78,3 +82,37 @@ jobs:
           "$venv/bin/pyflowmap" analyze "$RUNNER_TEMP/demo.py" --format all --renderer graphviz --output "$RUNNER_TEMP/diagrams"
           "$venv/bin/python" -c 'import pyflowmap.mcp_server; import importlib.metadata as m; print("Installed PyFlowMap:", m.version("pyflowmap"))'
           dot -V
+
+  release-package:
+    name: Build verified wheel and sdist
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+
+      - name: Configure Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Graphviz
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq graphviz
+
+      - name: Install development dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e '.[dev,mcp]'
+
+      - name: Build allowlisted packages and clean-install smoke
+        run: python scripts/build_release.py --output dist --work-parent "$RUNNER_TEMP"
+
+      - name: Upload verified packages and SHA report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pyflowmap-release-${{ github.sha }}
+          path: |
+            dist/*.whl
+            dist/*.tar.gz
+            dist/release-build-report.json
+          if-no-files-found: error
+          retention-days: 14
