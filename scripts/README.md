@@ -1,40 +1,65 @@
-# Developer scripts
+# Developer utilities (not end-user commands)
 
-These four Python programs are **developer/CI utilities**. None is part of
-the installed PyFlowMap wheel or sdist. Run them from the repository root
-using a Python environment with the project's relevant extras installed.
+`scripts/` is the conventional folder for **repository maintainers, release
+engineers and CI**, not for people installing and using the `pyflowmap`
+command. End users need only the installed wheel (or a normal pip
+installation), the CLI, and optionally Graphviz/MCP. The scripts do not
+ship inside wheel or sdist, and none is required to analyze Python.
 
-| File | Keep? | Purpose | Typical command |
-| --- | --- | --- | --- |
-| `build_release.py` | **Yes** | Build allowlisted wheel/sdist, install wheel in an isolated venv and verify CLI/MCP/rendering; write hashes and build report | `python scripts/build_release.py` |
-| `compare_labeler_modes.py` | **Yes** | Verify `disabled` vs `mock` graph invariance on 15 cases without any AI requests (English labels by default; `--language es` optional) | `python scripts/compare_labeler_modes.py --output pyflowmap-output/labeler-comparison` |
-| `verify_offline_release_install.py` | **Yes, diagnostic** | Check a wheel using reconstructed **verified local wheels** on Windows without downloading dependencies; distinguish launcher BLOCKED, FAIL and PASS | `python scripts/verify_offline_release_install.py --help` |
-| `verify_portable_tempdirs.py` | **Yes, dependency integrity** | Check that the installed managed-tempdir dependency matches the exact pinned commit | `python scripts/verify_portable_tempdirs.py` |
+Do not rename this folder: GitHub Actions, tests and contributor guides call
+these paths. A more descriptive heading and clear ownership avoid a breaking
+repository-wide rename.
 
-## Distribution output and temporary workspaces
+## Tools and output
 
-The normal command `python scripts/build_release.py` writes the installable
-wheel, sdist and `release-build-report.json` in the **local** ignored
-`dist/` directory. Its isolated staging and clean-install environments are
-created under the OS system temp directory (Windows `%TEMP%`) and
-cleaned up when possible. To choose another *approved* output folder,
-pass `--output /path/to/output`.
+| Utility | Developer task | Output |
+| --- | --- | --- |
+| `build_release.py` | Build an allowlisted wheel and sdist; verify isolated pip installation, graphics, CLI and MCP | `dist/` by default (or `--output`) with a SHA-256 `release-build-report.json` |
+| `run_full_validation.py` | Run fresh tests, structural and semantic benchmark oracles, metamorphic checks, V1/V2 generators, and a clean package build; optionally compare mock labels | A **new** `%TEMP%\pyflowmap-output\full-*` folder |
+| `compare_labeler_modes.py` | Compare topology and provenance with `disabled` versus optional `mock` labels on the baseline (`--corpus all` includes 28 V1 and 30 V2 cases) | `labeler-comparison.json` and separate diagrams; **no Codex** |
+| `verify_offline_release_install.py` | Windows-only diagnostic for installing a verified local wheel without downloading dependencies | Caller-specified JSON report; distinguishes PASS, PARTIAL and FAIL |
+| `verify_portable_tempdirs.py` | Check the installed managed-temporary-directory dependency matches the exact pinned Git commit | Console status |
 
-The `compare_labeler_modes.py` utility requires the optional
-`.[labeler]` dependency from the separate P4-Semantic-Labeler repository.
-Its `mock` mode does not contact Codex, but the absence of that library
-must be reported as **NOT_VERIFIED**, not as a product failure. The regular
-pytest suite verifies injected-provider structural invariance without it.
+Run from the repository root using the appropriate Python virtual
+environment. Examples (PowerShell):
 
-The offline installer diagnostic is **Windows-specific** and intentionally
-requires explicit `--wheel`, `--work-parent` and `--output` arguments;
-use an approved system temp parent, not the checkout. Its nonzero exit code
-when the launcher is `PARTIAL` or `FAIL` is deliberate.
+```powershell
+.\.venv\Scripts\python.exe scripts\build_release.py
+.\.venv\Scripts\python.exe scripts\run_full_validation.py
+.\.venv\Scripts\python.exe scripts\run_full_validation.py --with-labeler
+```
 
-No script should create `pytest-cache-files-*` or `pyflowmap-pytest-*`
-inside the repository. Root `conftest.py` manages test workspaces under
-the OS temp directory and disables the checkout's pytest cache.
+The `--with-labeler` run requires `pip install -e '.[dev,mcp,labeler]'` in
+advance. It uses the synthetic `mock` provider; real inference with `codex`
+is deliberately excluded. The baseline oracles validate selected semantics
+on 15+8 cases, whereas V1/V2 are **generation and structural checks**:
+their 58 cases remain `NOT_EVALUATED` semantically until separately reviewed.
 
-For full developer setup see [development](../docs/development.md),
-for the output contract see [packaging](../docs/packaging.md), and for semantic
-test entry points see [benchmark](../benchmark/README.md).
+## Temporary workspace and safety policy
+
+The full validation runner chooses a unique new directory below the current
+Windows `%TEMP%` (or the POSIX system temp root), redirects pytest,
+bytecode and Ruff caches, and places **all its results** there. It does not
+delete earlier runs, overwrite fixtures, alter `.serena/`, or clean unknown
+folders. This is a *fresh run*, not a permission-changing cleanup tool.
+
+When run separately, `build_release.py` deliberately writes final packages
+to the ignored repository `dist/`; only its staging directories live in the
+system temporary folder. Pass `--output` inside `%TEMP%` when you want even
+release deliverables outside the checkout. `verify_offline_release_install.py`
+requires explicit `--wheel`, `--work-parent` and `--output`.
+
+The test fixture at repository-root `conftest.py` configures pytest
+temporary workspaces under `%TEMP%` and disables pytest's cache provider.
+No PyFlowMap tool intentionally creates `pytest-cache-files-*` or
+`_avast_` in the checkout. However, `_avast_` can be created by endpoint
+protection outside Python's control: identify its owner before any cleanup.
+Never force-delete protected ACL paths.
+
+## Documentation
+
+- [Development setup](../docs/development.md)
+- [Testing and semantic status](../docs/reference-testing.md)
+- [Exact output layout](../pyflowmap-output/README.md)
+- [Packaging and release artifacts](../docs/packaging.md)
+- [Regression corpora](../benchmark/README.md)

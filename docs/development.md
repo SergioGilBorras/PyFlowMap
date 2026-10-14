@@ -92,3 +92,20 @@ as part of the default CI.
 See the [script catalog](../scripts/README.md), [benchmark layout](../benchmark/README.md),
 [package building](packaging.md) and
 [reference testing](reference-testing.md).
+
+
+## Fresh validation without writing results to source
+
+Use `python scripts/run_full_validation.py` for a single orchestrated clean
+run under the OS temporary directory. It covers pytest, Ruff, all retained
+benchmark corpora, metamorphic checks, and an isolated release build.
+Pass `--with-labeler` only after installing the optional `.[labeler]` extra;
+the provider is `mock` and does not invoke Codex. See
+[validation scope](reference-testing.md) and
+[generated directory contract](../pyflowmap-output/README.md).
+
+The test runner routes transient pytest, bytecode and Ruff caches into its
+temporary workspace. Run `ruff` independently with `RUFF_CACHE_DIR`
+configured to an approved system-temp path if you also want its cache
+outside the checkout. PyFlowMap does not control antivirus-generated
+folders such as `_avast_`.

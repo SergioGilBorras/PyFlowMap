@@ -15,6 +15,7 @@ from portable_tempdirs import temporary_directory
 
 _OWNER = None
 _PREVIOUS_TEMP_ROOT: str | None = None
+_PREVIOUS_SYSTEM_TEMP: dict[str, str | None] = {}
 
 
 def _temporary_parent() -> Path:
@@ -36,7 +37,13 @@ def pytest_configure(config):
     global _OWNER, _PREVIOUS_TEMP_ROOT
     if _OWNER is not None:
         return
-    _OWNER = temporary_directory("pyflowmap-pytest", parent=_temporary_parent())
+    parent = _temporary_parent()
+    # tempfile prefers TMPDIR/TEMP/TMP in that order. Do not let an inherited
+    # TMPDIR or TMP pointing at the checkout create test scratch in source.
+    for key in ("TMPDIR", "TMP"):
+        _PREVIOUS_SYSTEM_TEMP[key] = os.environ.get(key)
+        os.environ[key] = str(parent)
+    _OWNER = temporary_directory("pyflowmap-pytest", parent=parent)
     _PREVIOUS_TEMP_ROOT = os.environ.get("PYFLOWMAP_TEMP_ROOT")
     os.environ["PYFLOWMAP_TEMP_ROOT"] = str(_OWNER.path)
     config.option.basetemp = str(_OWNER.path / "basetemp")
@@ -72,3 +79,9 @@ def pytest_unconfigure(config):
         else:
             os.environ["PYFLOWMAP_TEMP_ROOT"] = _PREVIOUS_TEMP_ROOT
         _PREVIOUS_TEMP_ROOT = None
+        for key, old in _PREVIOUS_SYSTEM_TEMP.items():
+            if old is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = old
+        _PREVIOUS_SYSTEM_TEMP.clear()

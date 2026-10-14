@@ -70,3 +70,15 @@ def test_no_stale_benchmark_runner_paths_in_docs():
         assert "benchmark/run.py" not in data, source
         assert "benchmark/metamorphic.py" not in data, source
         assert "benchmark/final-validation-1.0" not in data, source
+
+
+
+def test_fresh_validation_runner_help_is_available_in_english():
+    result = subprocess.run(
+        [sys.executable, "scripts/run_full_validation.py", "--help"],
+        cwd=ROOT, text=True, encoding="utf-8", errors="replace",
+        capture_output=True, check=False, timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "--with-labeler" in result.stdout
+    assert "TEMP" in result.stdout

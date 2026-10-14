@@ -140,9 +140,27 @@ python scripts/build_release.py     # writes wheel, sdist and verification repor
 ```
 
 The repository retains reusable regressions (`tests/`) and independent
-evaluation programs and oracles (`benchmark/`). Generated validation outputs belong under `pyflowmap-output/` and must not be
-committed or shipped in a wheel/sdist. The release builder constructs local artifacts and checks them;
-it does **not** publish to a package index or create a GitHub release.
+evaluation programs and oracles (`benchmark/`). These are development
+assets, not dependencies of the installed package. The release builder checks
+local artifacts; it does **not** publish them.
+
+### Where things live
+
+- [`examples/`](examples/README.md) contains small **input programs** that demonstrate
+  what to analyze; the examples are not generated outputs.
+- [`pyflowmap-output/`](pyflowmap-output/README.md) documents **generated
+  diagrams, galleries and benchmark reports**. The tracked directory contains
+  only its README. For complete validation runs, write all actual outputs
+  under `%TEMP%\pyflowmap-output` on Windows.
+- [`scripts/`](scripts/README.md) holds **developer-only tools** (not end-user
+  commands or runtime dependencies). Keep this conventional folder name to
+  preserve documented commands and CI paths.
+- `dist/` is the ignored destination for explicitly requested local release
+  deliverables, not a test workspace.
+
+For a fresh, isolated end-to-end validation of the deterministic analyzer and
+optional mock-labeler integration, follow [the validation guide](docs/reference-testing.md).
+The real `codex` provider is never run by this test workflow.
 
 Technical documentation:
 
@@ -153,10 +171,10 @@ Technical documentation:
 - [Labeler integration](docs/p4-semantic-labeler-integration.md)
 - [Development validation and reference cases](docs/reference-testing.md)
 - [Developer guide and reusable scripts](docs/development.md)
-- [Build wheel and sdist locally](docs/packaging.md)
+- [Building wheel and sdist locally](docs/packaging.md)
 - [Windows setup](docs/windows-local-setup.md)
-- [Developer workflows and retained test tools](docs/development.md)
-- [Building and distributing packages](docs/packaging.md)
+- [Example input programs](examples/README.md)
+- [Generated output directory contract](pyflowmap-output/README.md)
 - [Future directions](docs/roadmap.md)
 
 ## License

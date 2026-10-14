@@ -69,3 +69,43 @@ source checkout.
 
 Real `codex` labeling is optional and requires explicit authorization to
 transmit selected code excerpts. `mock` exercises integration only.
+
+
+## Complete fresh local validation
+
+Use the developer-only `scripts/run_full_validation.py` runner rather than
+manually reusing old `pyflowmap-output/` results. It generates a new
+`%TEMP%\pyflowmap-output\full-*` directory on Windows with test logs, 15+8
+canonical semantic evaluations, metamorphic regressions, V1/V2 generation
+reports, a package build and a `semantic-review-queue.md`.
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e '.[dev,mcp]'
+.\.venv\Scripts\python.exe scripts\run_full_validation.py
+```
+
+The second mode compares `disabled` with synthetic `mock` labels across the
+15 baseline + 28 V1 + 30 V2 programs. It requires access to the optional
+private P4 labeler dependency and does not execute real Codex inference:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e '.[dev,mcp,labeler]'
+.\.venv\Scripts\python.exe scripts\run_full_validation.py --with-labeler
+```
+
+The runner also redirects temp/cache variables for subprocesses, and
+checks whether `pytest-cache-files-*` or `_avast_` **newly appeared** in
+the repository root during its run. New paths are reported, never deleted
+or attributed to PyFlowMap without evidence. For the standalone pytest
+command, root `conftest.py` redirects temporary workspaces and disables
+pytest's cache provider. OS/antivirus activity is not under Python control.
+
+The scripts do **not** delete existing results: a fresh, unique target avoids
+stale evidence without risking accidental deletion of user files or
+protected ACL paths. Review old ignored results separately before cleanup.
+
+An automatic `GENERATED` status for V1/V2 is not a complete semantic
+assessment. The review queue records them as `NOT_EVALUATED`; a complete
+semantic approval requires examining the graph's exact paths and assigning
+independent obligations or conducting manual review, not simply generating
+images.
