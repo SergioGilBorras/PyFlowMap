@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-      - 'feat/**'
-      - 'refactor/**'
       - 'release/**'
   pull_request:
   workflow_dispatch:

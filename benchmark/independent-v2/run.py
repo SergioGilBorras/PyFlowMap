@@ -159,7 +159,7 @@ def main() -> int:
             print(f"{case['id']}  {case['domain']:<24} {case['entry']:<30} {module_count} modules")
     if args.list or args.validate_only:
         if args.validate_only:
-            print(f"Fixture syntax validated: {len(CASES)} casos")
+            print(f"Fixture syntax validated: {len(CASES)} cases")
         return 0
     out = args.output.expanduser().resolve()
     if out.exists() and any(out.iterdir()):

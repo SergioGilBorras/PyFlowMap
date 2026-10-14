@@ -11,7 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def command(case: dict, provider: str, destination: Path) -> dict:
+def command(case: dict, provider: str, destination: Path, language: str = 'en') -> dict:
     source = (ROOT / "benchmark/fixtures" / case["source"]).resolve()
     if not source.is_relative_to((ROOT / "benchmark/fixtures").resolve()):
         raise ValueError(f"Fixture path escapes benchmark root: {case['source']}")
@@ -19,7 +19,7 @@ def command(case: dict, provider: str, destination: Path) -> dict:
     args = [
         sys.executable, "-m", "pyflowmap", "analyze", str(source), "--entry", case["entry"],
         "--semantic-provider", provider, "--format", "mmd", "--renderer", "mermaid",
-        "--language", "es", "--output", str(output),
+        "--language", language, "--output", str(output),
     ]
     env = os.environ.copy()
     env["PYTHONIOENCODING"] = "utf-8"
@@ -53,9 +53,11 @@ def semantic_shape(graph: dict) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run disabled/mock label comparison on the historical bank")
+    parser = argparse.ArgumentParser(description="Compare disabled/mock semantic labels on the 15-case cross-domain regression bank")
     parser.add_argument("--output", type=Path,
                         default=ROOT / "pyflowmap-output/labeler-comparison")
+    parser.add_argument("--language", choices=["en", "es"], default="en",
+                        help="Diagram label language (English by default)")
     args = parser.parse_args(argv)
     output = args.output.resolve()
     cases = json.loads((ROOT / "benchmark/cases.json").read_text(encoding="utf-8"))["cases"]
@@ -63,8 +65,8 @@ def main(argv: list[str] | None = None) -> int:
     failures = []
     for case in cases:
         try:
-            base = command(case, "disabled", output / "disabled")
-            mock = command(case, "mock", output / "mock")
+            base = command(case, "disabled", output / "disabled", args.language)
+            mock = command(case, "mock", output / "mock", args.language)
             same = semantic_shape(base) == semantic_shape(mock)
             external = [node for node in mock.get("nodes", []) if node.get("label_source") == "external"]
             labels = [str(node.get("label", "")) for node in external]
@@ -101,6 +103,7 @@ def main(argv: list[str] | None = None) -> int:
             failures.append(case["id"])
     report = {
         "provider_modes": ["disabled", "mock"],
+        "language": args.language,
         "real_inference": "not run; no Codex provider invocation",
         "invariants": ["node IDs/kinds/symbols/locations", "edges", "semantic warnings"],
         "quality_scope": "empty/length/difference metrics only; factual grounding requires review",

@@ -7,7 +7,7 @@ using a Python environment with the project's relevant extras installed.
 | File | Keep? | Purpose | Typical command |
 | --- | --- | --- | --- |
 | `build_release.py` | **Yes** | Build allowlisted wheel/sdist, install wheel in an isolated venv and verify CLI/MCP/rendering; write hashes and build report | `python scripts/build_release.py` |
-| `compare_labeler_modes.py` | **Yes** | Verify `disabled` vs `mock` graph invariance on 15 cases without any AI requests | `python scripts/compare_labeler_modes.py --output pyflowmap-output/labeler-comparison` |
+| `compare_labeler_modes.py` | **Yes** | Verify `disabled` vs `mock` graph invariance on 15 cases without any AI requests (English labels by default; `--language es` optional) | `python scripts/compare_labeler_modes.py --output pyflowmap-output/labeler-comparison` |
 | `verify_offline_release_install.py` | **Yes, diagnostic** | Check a wheel using reconstructed **verified local wheels** on Windows without downloading dependencies; distinguish launcher BLOCKED, FAIL and PASS | `python scripts/verify_offline_release_install.py --help` |
 | `verify_portable_tempdirs.py` | **Yes, dependency integrity** | Check that the installed managed-tempdir dependency matches the exact pinned commit | `python scripts/verify_portable_tempdirs.py` |
 
