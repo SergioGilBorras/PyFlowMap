@@ -15,7 +15,7 @@ import subprocess
 import sys
 import tempfile
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -233,7 +233,7 @@ def main(argv: list[str] | None = None) -> int:
     new_paths = sorted(unexpected_root_paths() - before)
     summary = {
         "source_commit": commit,
-        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "generated_at_utc": datetime.now(UTC).isoformat(),
         "python": sys.version,
         "system_temp": str(system_temp),
         "output": str(output),
