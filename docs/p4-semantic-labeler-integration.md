@@ -1,134 +1,90 @@
-# P4-Semantic-Labeler v0.1.0 integration
+# P4-Semantic-Labeler integration
 
-PyFlowMap uses **the external published Python library**, not a copied algorithm,
-HTTP microservice, MCP bridge or Codex wrapper. The package is available from the
-private GitHub repository `SergioGilBorras/P4-Semantic-Labeler` at tag `v0.1.0`.
+P4-Semantic-Labeler is an **optional external Python library** for enriching
+existing activity labels. It is not required for static analysis, is not
+embedded into PyFlowMap and never builds or changes the control-flow graph.
 
-## Installation (Git access to the private repository is required)
+The integration targets the library's tagged API `v0.1.0` in the private
+GitHub repository `SergioGilBorras/P4-Semantic-Labeler`. Installation of
+optional extras requires Git access to that repository.
 
-Install PyFlowMap's optional extra from your PyFlowMap checkout:
+## Install an optional provider
+
+From the PyFlowMap checkout:
 
 ```bash
 python -m pip install -e '.[labeler]'
 python -m pip check
 ```
 
-For Codex support, which includes P4's `codex` extra:
+For **real Codex inference**, install the dedicated extra, authenticate and
+make an explicit provider selection:
 
 ```bash
 python -m pip install -e '.[labeler-codex]'
-python -m pip check
 codex login
+pyflowmap analyze ./project --entry app:main --semantic-provider codex --format mmd
 ```
 
-The pinned underlying dependency is:
+**Only use the real provider when code transmission and the associated cost
+have been approved.** Merely installing an extra never authorizes inference.
+PyFlowMap defaults to `--semantic-provider disabled`.
 
-```text
-p4-semantic-labeler[codex] @ git+https://github.com/SergioGilBorras/P4-Semantic-Labeler.git@v0.1.0
-```
-
-This is a Git URL, **not** a PyPI publication. Installation also fetches the
-version-pinned dependencies of P4-Semantic-Labeler. CI in this repository does
-not access another private GitHub repository: adapter tests use public-API-shaped
-doubles. Execute an optional real mock-provider smoke test in a trusted Git-
-connected environment to validate packaging and dependency resolution.
-
-## Default is offline; opt into a provider
-
-Without any option PyFlowMap uses deterministic AST-derived labels only.
+## Test the integration without inference
 
 ```bash
-# No inference, including if Codex has previously been authenticated:
-pyflowmap analyze ./project --entry module:main --format images
-
-# Integration smoke test WITHOUT real model inference:
-pyflowmap analyze ./project --entry module:main \
-  --semantic-provider mock --semantic-style neutral \
-  --semantic-max-chars 70 --format images
-
-# Explicit real Codex use: only after authorizing transmission of the code
-# snippets to the model and running codex login:
-pyflowmap analyze ./project --entry module:main \
-  --semantic-provider codex --semantic-style technical \
-  --semantic-max-chars 70 --format images
+pyflowmap analyze ./project --entry app:main --semantic-provider mock --semantic-max-chars 70 --format mmd
 ```
 
-The same optional arguments are accepted by PyFlowMap's existing
-`generate_diagram` and `generate_activity_diagram` MCP tools. No new server is
-created. The Codex CLI and its required authentication are external dependencies;
-**PyFlowMap never runs Codex by default**, and CI never runs Codex.
+Mock output is synthetic and must not be described as semantically validated.
+The optional labeler is never necessary for `inspect`, deterministic analysis,
+or rendering.
 
-## Python adapter API
+## Python API
 
 ```python
-from pyflowmap.integrations.semantic_labeler_tools import (
-    SemanticLabelerTools,
-    generate_label,
-    generate_summary,
-    agenerate_label,
-    generate_labels_batch,
-)
+from pyflowmap.integrations.semantic_labeler_tools import SemanticLabelerTools
 
-# The mock provider returns synthetic name formatting, NOT true AI semantics.
-tools = SemanticLabelerTools(provider="mock", reduction_attempts=0)
-title = tools.generate_label(
-    name="process_pending_orders", kind="function",
-    documentation="Validate orders and prepare delivery.",
-    language="es", style="formal", max_chars=48,
+tools = SemanticLabelerTools(provider="mock")
+result = tools.generate_label(
+    name="validate_record",
+    kind="function",
+    documentation="Check an input record before saving it.",
+    language="en",
+    style="neutral",
+    max_chars=70,
 )
-summary = tools.generate_summary(
-    name="process_pending_orders", kind="function",
-    source_code="def process_pending_orders(...): ...",
-    language="es", style="academic", max_chars=120,
-)
-print(title.label, title.model_dump())
-print(summary.label, summary.warnings)
+print(result.label)
 ```
 
-Call `await tools.agenerate_label(...)` inside async applications. For batches
-use `tools.generate_labels_batch([{...}, {...}])`, or
-`await tools.agenerate_labels_batch([...])` inside an event loop. The original
-P4 `LabelResult` / `BatchResult` is returned with full metadata and per-item
-errors; no caller must guess whether output was truncated or synthetic.
+The adapter also supports summary requests, async requests and batch labeling
+through the same external library interface. A separate HTTP service or
+additional MCP server is not required. The existing PyFlowMap MCP tools can
+accept the optional semantic-provider parameters.
 
-## Diagram-level use (library)
+## Data boundaries
 
-```python
-from pyflowmap.service import generate_diagram
+For eligible, statically resolved activity nodes, PyFlowMap can pass:
 
-output = generate_diagram(
-    "./project", entry="module:main", semantic_provider="mock",
-    semantic_style="neutral", semantic_max_chars=70, format="images"
-)
-print(output["warnings"])
-```
+- The source symbol and module/class name.
+- Up to 350 characters of docstring.
+- Up to 3,000 characters of selected source code.
+- The current label and up to three nearby activity labels on either side.
+- Language, output style and character budget.
 
-Only **existing activity nodes** with statically resolved symbols are sent for
-enrichment. The labeler sees the unmodified symbol name, optional class/module,
-first 350 docstring characters, at most 3,000 source characters for the selected
-method, current description, and up to three preceding/following step labels.
-Source code is never executed by PyFlowMap. Labeler access to private code must
-be explicitly authorized before choosing `codex`.
+The adapter can replace the **activity label text** and record label metadata
+and warnings. It cannot alter decision predicates, symbols, locations, edge
+routing, node identities or topology.
 
-The original `symbols` and `locations` remain intact in JSON; the `label_metadata`
-field on each enriched node stores `provider`, `char_count`, `language`, `style`,
-`output_type`, and `warnings`. Warnings, including
-`output_truncated: meaning may be incomplete`, are also surfaced in the result's
-root-level `warnings` list. The `mock_provider` warning means an example label
-is not an AI-semantic interpretation.
+The optional provider may fail; an explicit failure must be visible rather
+than silently reported as successful semantic labeling. Source comments
+and docstrings are input data and must never be treated as model commands.
 
-P4 provider failures in explicit mock/codex mode raise an error rather than
-claiming a fallback label was produced. The existing custom injected
-`label_provider=` protocol remains backward-compatible and best-effort.
+## Verification status
 
-## Current bounds
+Tests with `disabled` and `mock` establish structural invariance of the
+integration, not the quality or availability of the real remote provider.
+Actual Codex inference must be assessed separately in an authorized
+environment on suitable examples before being advertised as verified.
 
-- PyFlowMap activity-node labels are limited to 80 characters, with a configurable
-  P4 `max_chars` of 1–80. Separate standalone summary calls may use longer limits
-  within P4's configured maximum.
-- Models cannot change edges, predicates, topology or source provenance.
-- No HTTP calls, no new MCP service, and no inference during ordinary analysis.
-- Python 3.11+ is required; to use Codex the Codex CLI must be installed and
-  authenticated, and the user must explicitly select `semantic_provider=codex`.
-- `SemanticLabelerTools.generate_label()` is synchronous; use `agenerate_label()`
-  inside async event loops. Batch APIs preserve individual errors from P4.
+See [semantic labeling](semantic-labeling.md) for the general contract.
