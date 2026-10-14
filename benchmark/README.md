@@ -7,7 +7,7 @@ not part of the installed wheel or sdist, and the source examples are
 | Corpus | Coverage | Runner | What it proves |
 | --- | --- | --- | --- |
 | Cross-domain baseline | 15 programs | `benchmark/run.py` | Structural checks and selected Python semantic oracles |
-| Control-flow regression | 8 programs | Controlled evaluation (`benchmark/final-validation-1.0/`) | Known semantic edge cases; no longer a blind holdout |
+| Control-flow regression | 8 programs | `benchmark/control-flow/` (same canonical runner) | Known semantic edge cases; no longer a blind holdout |
 | Independent-bank V1 | 28 cases / 33 Python modules | `benchmark/independent-v1/run.py` | Generates inspectable outputs and preserves source hashes |
 | Independent-bank V2 | 30 cases / 38 Python modules | `benchmark/independent-v2/run.py` | Generates inspectable outputs and preserves source hashes |
 
@@ -24,7 +24,9 @@ Install the development extras and Graphviz first (see
 python -m pytest -q
 python -m ruff check src tests scripts
 
-python benchmark/run.py --output pyflowmap-output/baseline --render
+python -m benchmark.runners.run --output pyflowmap-output/baseline --render
+python -m benchmark.runners.run --cases-file benchmark/control-flow/cases.json --fixtures-root benchmark/control-flow/fixtures --output pyflowmap-output/control-flow --render
+python -m benchmark.runners.metamorphic --output pyflowmap-output/metamorphic
 python benchmark/independent-v1/run.py --project-root . --output pyflowmap-output/bank-v1
 python benchmark/independent-v2/run.py --project-root . --output pyflowmap-output/bank-v2
 ```
@@ -50,14 +52,14 @@ choice, not necessarily a semantic defect.
 - `NOT_EVALUATED`: no semantic judgment was made.
 - `UNSUPPORTED`: construction beyond the declared contract.
 
-The canonical evaluator is `benchmark/oracles_current.py`, currently
-delegating to `oracles_phase5_2.py`. The earlier `oracles_phase*` modules
+The canonical evaluator is `benchmark/evaluation/oracles_current.py`, currently
+delegating to `oracles_phase5_2.py`. The `oracles_phase*` modules
 are **actively used** as components of the composed evaluator and in
 mutation tests. Keep them until equivalence with a consolidated
 replacement is demonstrated. Their names do not indicate that the
 production analyzer exposes old versions.
 
-Fixtures under `benchmark/oracle-audit/` provide mutation/regression
+Fixtures under `benchmark/regressions/` provide mutation/regression
 counterexamples. They are intentionally retained without past-result
 reports or duplicate launchers.
 
@@ -74,3 +76,19 @@ reports or duplicate launchers.
   installed PyFlowMap package.
 
 See [test and release policy](../docs/reference-testing.md).
+
+## Folder map
+
+| Directory | Responsibility |
+| --- | --- |
+| `evaluation/` | Canonical semantic oracles and their dependencies; [details](evaluation/README.md) |
+| `runners/` | CLI benchmark/metamorphic evaluation runners; [details](runners/README.md) |
+| `tests/` | Tests of evaluators, mutated graphs and regression conditions; [details](tests/README.md) |
+| `fixtures/` | 15 cross-domain Python programs; [details](fixtures/README.md) |
+| `control-flow/` | 8 existing Python control-flow regression programs; [details](control-flow/README.md) |
+| `regressions/` | Oracle negative/positive mutation fixtures; [details](regressions/README.md) |
+| `independent-v1/` | 28-case bank with original source hashes and own runner |
+| `independent-v2/` | 30-case bank with original source hashes and own runner |
+
+The top level is intentionally limited to the source manifest, this guide,
+and the `__init__.py` for running developer tools with `python -m`.

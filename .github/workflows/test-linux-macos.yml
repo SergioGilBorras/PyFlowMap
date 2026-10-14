@@ -104,7 +104,7 @@ jobs:
           python -m pip install -e '.[dev,mcp]'
 
       - name: Build allowlisted packages and clean-install smoke
-        run: python scripts/build_release.py --output dist --work-parent "$RUNNER_TEMP"
+        run: python scripts/build_release.py
 
       - name: Upload verified packages and SHA report
         uses: actions/upload-artifact@v4

@@ -152,6 +152,8 @@ Technical documentation:
 - [Optional semantic labeling](docs/semantic-labeling.md)
 - [Labeler integration](docs/p4-semantic-labeler-integration.md)
 - [Development validation and reference cases](docs/reference-testing.md)
+- [Developer guide and reusable scripts](docs/development.md)
+- [Build wheel and sdist locally](docs/packaging.md)
 - [Windows setup](docs/windows-local-setup.md)
 - [Developer workflows and retained test tools](docs/development.md)
 - [Building and distributing packages](docs/packaging.md)

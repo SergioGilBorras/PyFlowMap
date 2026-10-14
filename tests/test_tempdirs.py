@@ -35,3 +35,9 @@ def test_managed_tempdir_cleans_after_exception():
         raise AssertionError("the body exception should propagate")
 
     assert allocated is not None and not allocated.exists()
+
+
+def test_pytest_workspace_is_in_system_temp_not_checkout(tmp_path):
+    project_root = Path(__file__).resolve().parents[1]
+    assert tmp_path.resolve().is_relative_to(Path(tempfile.gettempdir()).resolve())
+    assert not tmp_path.resolve().is_relative_to(project_root)

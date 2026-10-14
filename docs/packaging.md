@@ -9,6 +9,7 @@ and license**. There is no production installer PowerShell script.
 ```bash
 python -m pip install -e '.[dev,mcp]'
 python scripts/build_release.py
+# Outputs: dist/*.whl, dist/*.tar.gz and dist/release-build-report.json
 ```
 
 The release builder:
@@ -35,6 +36,14 @@ python -m venv /tmp/pyflowmap-test
 /tmp/pyflowmap-test/bin/python -m pip install ./dist/pyflowmap-1.0.0-py3-none-any.whl
 /tmp/pyflowmap-test/bin/pyflowmap --help
 /tmp/pyflowmap-test/bin/python -m pip check
+```
+
+On Windows PowerShell, from the repository root with the development
+venv installed:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\build_release.py
+Get-ChildItem .\dist\
 ```
 
 On Windows use `Scripts\python.exe` and `Scripts\pyflowmap.exe` rather
