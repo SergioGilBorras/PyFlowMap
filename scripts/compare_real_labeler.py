@@ -18,6 +18,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from compare_labeler_modes import cases_for, semantic_shape
+
 from pyflowmap.integrations.semantic_labeler_tools import DEFAULT_CODEX_TIMEOUT_SECONDS
 
 ROOT = Path(__file__).resolve().parents[1]
