@@ -21,3 +21,9 @@ benchmark-results*/
 pyflowmap-*.egg-info/
 *.whl
 *.tar.gz
+
+# Generated outputs are local and never belong in source distributions.
+output_validacion/*
+!output_validacion/README.md
+output_graphs/*
+!output_graphs/README.md

@@ -78,6 +78,7 @@ development tests. First prove any alternative preserves that contract.
 
 `tests/`, `benchmark/`, fixtures, source banks, generated diagram
 galleries, developer scripts, CI workflows, private credentials,
-`.serena/`, `.venv/` and the contents of `pyflowmap-output/`.
+`.serena/`, `.venv/` and the generated contents of `output_validacion/`
+and `output_graphs/`.
 
 See [development](development.md) for retained engineering tools.

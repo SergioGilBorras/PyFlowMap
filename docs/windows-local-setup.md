@@ -35,8 +35,8 @@ py -3 -m venv .venv
 
 ```powershell
 .\.venv\Scripts\pyflowmap.exe --version
-.\.venv\Scripts\pyflowmap.exe inspect .\examples
-.\.venv\Scripts\pyflowmap.exe analyze .\examples --renderer graphviz --format all --output .\pyflowmap-output\manual
+.\.venv\Scripts\pyflowmap.exe inspect .\tests\fixtures\sample_project
+.\.venv\Scripts\pyflowmap.exe analyze .\tests\fixtures\sample_project --entry pipeline:main --renderer graphviz --format all
 ```
 
 When Windows execution restrictions block `.exe` shims, diagnose the host
@@ -45,7 +45,7 @@ uses the same installed Python package:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pyflowmap.cli --help
-.\.venv\Scripts\python.exe -m pyflowmap.cli inspect .\examples
+.\.venv\Scripts\python.exe -m pyflowmap.cli inspect .\tests\fixtures\sample_project
 ```
 
 Python sources analyzed by PyFlowMap are parsed without importing or
@@ -85,3 +85,28 @@ requirements for users of an installed wheel.
 
 See [reference testing](reference-testing.md) for how to regenerate a clean
 verification folder.
+
+## Real Codex evaluation and consumer output
+
+After installing `.[dev,mcp,labeler-codex]`, authenticate Codex and inspect
+the MCP connectors configured for Codex. Opt into real labeling for future
+CLI and MCP invocations with the user environment setting:
+
+```powershell
+[Environment]::SetEnvironmentVariable('PYFLOWMAP_DEFAULT_SEMANTIC_PROVIDER','codex','User')
+```
+
+Open a new shell after configuring the preference. Explicit
+`--semantic-provider disabled` still works, and nothing is transmitted
+implicitly in an unconfigured installation. Without `--output`, diagrams
+are placed in `output_graphs/<timestamp>_<id>/` under the working directory.
+
+To run ALL 81 benchmark cases in both modes, on your authorized checkout:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\validate_all.py --acknowledge-source-transmission
+```
+
+The run creates `output_validacion/validation-<timestamp>_<id>/`.
+Scratch files and caches stay in `%TEMP%`. A failed run keeps evidence;
+it does not falsely claim semantic correctness or overwrite protected files.

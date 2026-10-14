@@ -30,10 +30,6 @@ def all_cases() -> list[dict]:
         cases.append({
             **case, "suite": "control-flow", "id": "control-flow-" + case["id"],
         })
-    cases.append({
-        "id": "example-basic-pipeline", "suite": "examples",
-        "source": "basic_pipeline.py", "entry": "basic_pipeline:main",
-    })
     return cases
 
 
@@ -43,7 +39,6 @@ def analyze(case: dict, provider: str, root: Path, timeout: int) -> dict:
         "independent-v1": ROOT / "benchmark/independent-v1",
         "independent-v2": ROOT / "benchmark/independent-v2",
         "control-flow": ROOT / "benchmark/control-flow/fixtures",
-        "examples": ROOT / "examples",
     }
     source_root = source_roots[case["suite"]].resolve()
     source = (source_root / case["source"]).resolve()
@@ -124,7 +119,7 @@ def save(root: Path, cases: list[dict], rows: list[dict],
     report = {
         "provider_modes": ["disabled", "codex"],
         "real_inference": "Codex invoked for successful codex-labeled cases",
-        "scope": "81 benchmark programs and one illustrative input; labels require human review",
+        "scope": "81 benchmark programs; labels require human review",
         "cases_requested": len(cases),
         "cases_completed": len(rows),
         "generated_at_utc": datetime.now(UTC).isoformat(),
@@ -150,7 +145,7 @@ def save(root: Path, cases: list[dict], rows: list[dict],
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Live Codex labels for 81 regression cases and one example"
+        description="Live Codex labels for 81 regression cases"
     )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument(

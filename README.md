@@ -144,24 +144,41 @@ evaluation programs and oracles (`benchmark/`). These are development
 assets, not dependencies of the installed package. The release builder checks
 local artifacts; it does **not** publish them.
 
-### Where things live
+### Outputs and one-command validation
 
-- [`examples/`](examples/README.md) contains small **input programs** that demonstrate
-  what to analyze; the examples are not generated outputs.
-- [`pyflowmap-output/`](pyflowmap-output/README.md) documents **generated
-  diagrams, galleries and benchmark reports**. The tracked directory contains
-  only its README. For complete validation runs, write all actual outputs
-  under `%TEMP%\pyflowmap-output` on Windows.
-- [`scripts/`](scripts/README.md) holds **developer-only tools** (not end-user
-  commands or runtime dependencies). Keep this conventional folder name to
-  preserve documented commands and CI paths.
-- `dist/` is the ignored destination for explicitly requested local release
-  deliverables, not a test workspace.
+- [`output_graphs/`](output_graphs/README.md) is the consumer's diagram history.
+  Without `--output`, each analysis creates a separate dated folder under
+  the **current working directory**. Explicit `--output` remains supported.
+- [`output_validacion/`](output_validacion/README.md) is developer-only
+  validation evidence. It holds a clearly named dated run, 81 preserved
+  benchmark cases in deterministic and real-Codex mode, all test reports,
+  semantic review and built packages. No mock is part of the global command.
+- [`benchmark/`](benchmark/README.md) supplies the 81 retained source
+  cases and evaluation criteria. [`scripts/`](scripts/README.md) contains
+  only developer tools; both are excluded from the installed distribution.
+- `%TEMP%` (the OS temp directory) holds test scratch work and caches, not
+  generated end-user diagrams. `dist/` remains the optional ignored
+  destination of a separately requested local package build.
 
-For a fresh end-to-end verification that includes **real Codex inference**
-(on the local authorized workstation, not CI), follow
-[the live validation guide](docs/reference-testing.md). Ordinary CI and pytest
-remain deterministic and do not call an external model.
+After installing `.[dev,mcp,labeler-codex]`, authenticating the Codex CLI,
+and reviewing its inherited MCP connectors, **one command** runs the full
+live evaluation on the authorized local machine:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\validate_all.py --acknowledge-source-transmission
+```
+
+A successful new evaluation prunes only prior runs identified as belonging
+to the validator; failed runs and unknown data are preserved for diagnosis.
+Codex produces real labels but their semantic faithfulness still needs
+independent review. CI never uses the live provider. No package is published
+by this command.
+
+Consumer labeling can be set to Codex as an **explicit, persistent environment
+preference** after setup: `PYFLOWMAP_DEFAULT_SEMANTIC_PROVIDER=codex`.
+An unconfigured installation remains offline to avoid unexpectedly sending
+private source code. Explicit `--semantic-provider disabled` overrides the
+preference.
 
 Technical documentation:
 
@@ -174,8 +191,8 @@ Technical documentation:
 - [Developer guide and reusable scripts](docs/development.md)
 - [Building wheel and sdist locally](docs/packaging.md)
 - [Windows setup](docs/windows-local-setup.md)
-- [Example input programs](examples/README.md)
-- [Generated output directory contract](pyflowmap-output/README.md)
+- [Consumer diagram output](output_graphs/README.md)
+- [Complete validation output](output_validacion/README.md)
 - [Future directions](docs/roadmap.md)
 
 ## License

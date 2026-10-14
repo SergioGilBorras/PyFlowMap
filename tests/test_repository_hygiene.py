@@ -9,7 +9,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = [ROOT / "README.md", *sorted((ROOT / "docs").glob("*.md")),
         *sorted((ROOT / "benchmark").rglob("README.md")),
-        ROOT / "scripts" / "README.md"]
+        ROOT / "scripts" / "README.md",
+        ROOT / "output_validacion" / "README.md",
+        ROOT / "output_graphs" / "README.md"]
 
 
 def test_documentation_relative_links_resolve():
@@ -27,7 +29,12 @@ def test_no_generated_or_installer_artifacts_in_tracked_source():
     assert {p.name for p in (ROOT / "benchmark").glob("*.py")} == {"__init__.py"}
     gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
     assert ".serena/" in gitignore
-    assert "pyflowmap-output/" in gitignore
+    assert "output_validacion/*" in gitignore
+    assert "output_graphs/*" in gitignore
+    assert not (ROOT / "examples" / "basic_pipeline.py").exists()
+    assert not (ROOT / "examples" / "semantic_labeler_integration.py").exists()
+    assert (ROOT / "output_validacion" / "README.md").is_file()
+    assert (ROOT / "output_graphs" / "README.md").is_file()
     assert "dist/" in gitignore
     assert "addopts = \"-p no:cacheprovider\"" in (ROOT / "pyproject.toml").read_text(encoding="utf-8")
 
@@ -96,3 +103,23 @@ def test_live_inference_requires_explicit_acknowledgement():
     assert result.returncode != 0
     assert "--acknowledge-source-transmission" in result.stderr
     assert not (ROOT / "never-create-this-output").exists()
+
+
+def test_canonical_validation_exposes_explicit_codex_consent():
+    result = subprocess.run(
+        [sys.executable, "scripts/validate_all.py", "--help"],
+        cwd=ROOT, capture_output=True, text=True, encoding="utf-8",
+        check=False, timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "--acknowledge-source-transmission" in result.stdout
+
+
+def test_global_validation_refuses_unacknowledged_inference():
+    result = subprocess.run(
+        [sys.executable, "scripts/validate_all.py"],
+        cwd=ROOT, capture_output=True, text=True, encoding="utf-8",
+        check=False, timeout=30,
+    )
+    assert result.returncode != 0
+    assert "--acknowledge-source-transmission" in result.stderr

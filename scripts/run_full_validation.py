@@ -10,6 +10,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -89,7 +90,7 @@ def collect_review(output: Path) -> tuple[list[str], dict]:
     ]
     summaries = {}
     for suite in ("baseline", "control-flow"):
-        report_file = output / "disabled" / suite / "report.json"
+        report_file = output / "benchmark" / "disabled" / suite / "report.json"
         if not report_file.exists():
             lines.append(f"- {suite}: REPORT_MISSING")
             summaries[suite] = {"status": "NOT_VERIFIED"}
@@ -105,7 +106,7 @@ def collect_review(output: Path) -> tuple[list[str], dict]:
                     f"structure={row.get('structural_status', 'UNKNOWN')}"
                 )
     for suite in ("independent-v1", "independent-v2"):
-        report_file = output / "disabled" / suite / "run-report.json"
+        report_file = output / "benchmark" / "disabled" / suite / "run-report.json"
         if not report_file.exists():
             lines.append(f"- {suite}: REPORT_MISSING")
             summaries[suite] = {"status": "NOT_VERIFIED"}
@@ -134,23 +135,29 @@ def collect_review(output: Path) -> tuple[list[str], dict]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Fresh validation: scratch in TEMP; outputs in TEMP or repo pyflowmap-output"
+        description="Fresh validation: scratch in OS TEMP; outputs in TEMP or output_validacion"
     )
     parser.add_argument(
         "--with-labeler", action="store_true",
         help="Additionally compare disabled/mock on all 73 cases (requires .[labeler]; no Codex)"
     )
     parser.add_argument("--with-real-labeler", action="store_true",
-                        help="Real authenticated Codex inference: 81 fixtures plus example")
+                        help="Real authenticated Codex inference across all 81 benchmark fixtures")
     parser.add_argument("--acknowledge-source-transmission", action="store_true",
                         help="Explicit authorization for sending source excerpts to Codex")
     parser.add_argument("--output-parent", type=Path,
-                        help="Optional results root: OS TEMP or repo pyflowmap-output/")
+                        help="Results parent: OS TEMP, or repo output_validacion/")
+    parser.add_argument("--result-name", help="Date-stamped destination name (for global validation)")
     args = parser.parse_args(argv)
     if args.with_real_labeler and args.with_labeler:
         parser.error("Select mock or real labeling, never both")
     if args.with_real_labeler and not args.acknowledge_source_transmission:
         parser.error("Real inference requires --acknowledge-source-transmission")
+    if args.with_real_labeler:
+        if not shutil.which("codex"):
+            parser.error("Codex CLI unavailable; install Codex and authenticate")
+        if os.environ.get("P4_LABELER_CODEX_WORKSPACE"):
+            parser.error("Unset P4_LABELER_CODEX_WORKSPACE for isolated inference")
 
     if args.with_labeler and importlib.util.find_spec("p4_semantic_labeler") is None:
         parser.error("Install the optional extra first: python -m pip install -e '.[dev,mcp,labeler]'")
@@ -160,11 +167,22 @@ def main(argv: list[str] | None = None) -> int:
     system_temp = original_system_temp()
     parent = (args.output_parent.expanduser().resolve() if args.output_parent
               else system_temp / "pyflowmap-output")
-    checkout_outputs = (ROOT / "pyflowmap-output").resolve()
+    checkout_outputs = (ROOT / "output_validacion").resolve()
     if parent != checkout_outputs and not parent.is_relative_to(system_temp):
-        parser.error("Output parent must be in OS TEMP or repo pyflowmap-output/")
+        parser.error("Output parent must be in OS TEMP or repo output_validacion/")
     parent.mkdir(parents=True, exist_ok=True)
-    output = Path(tempfile.mkdtemp(prefix="full-", dir=parent)).resolve()
+    if args.result_name:
+        if not re.fullmatch(r"validation-\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}_[0-9a-f]{6}", args.result_name):
+            parser.error("--result-name must be a managed timestamped run name")
+        output = parent / args.result_name
+        output.mkdir(exist_ok=False)
+    else:
+        output = Path(tempfile.mkdtemp(prefix="validation-", dir=parent)).resolve()
+    (output / ".pyflowmap-managed-validation.json").write_text(
+        json.dumps({"kind": "pyflowmap-validation", "schema": 1,
+                    "run": output.name, "created_by": "scripts/run_full_validation.py"}) + "\n",
+        encoding="utf-8",
+    )
     work = Path(tempfile.mkdtemp(prefix="pyflowmap-work-", dir=system_temp)).resolve()
     logs = output / "logs"
     logs.mkdir()
@@ -177,6 +195,7 @@ def main(argv: list[str] | None = None) -> int:
         "PYTHONIOENCODING": "utf-8",
         "PIP_CACHE_DIR": str(work / "pip-cache"),
         "RUFF_CACHE_DIR": str(work / "ruff-cache"),
+        "PYFLOWMAP_DEFAULT_SEMANTIC_PROVIDER": "disabled",  # pytest stays offline
     })
     for key in ("PIP_CACHE_DIR", "RUFF_CACHE_DIR"):
         Path(environment[key]).mkdir()
@@ -209,7 +228,7 @@ def main(argv: list[str] | None = None) -> int:
         run("pytest", [py, "-m", "pytest", "-q"])
         run("ruff", [py, "-m", "ruff", "check", "src", "tests", "scripts"])
         run("portable-tempdirs", [py, "scripts/verify_portable_tempdirs.py"])
-        disabled = output / "disabled"
+        disabled = output / "benchmark" / "disabled"
         run("baseline", [py, "-m", "benchmark.runners.run", "--render",
                          "--output", str(disabled / "baseline")])
         run("control-flow", [
@@ -235,13 +254,13 @@ def main(argv: list[str] | None = None) -> int:
             run("real-labeler", [
                 py, "scripts/compare_real_labeler.py",
                 "--acknowledge-source-transmission",
-                "--output", str(output / "real-labeler"),
+                "--output", str(output / "benchmark" / "codex"),
             ])
         run("release-build", [
-            py, "scripts/build_release.py", "--output", str(output / "packages"),
+            py, "scripts/build_release.py", "--output", str(output / "packaging"),
         ])
         if steps["release-build"]["status"] == "PASS":
-            package = check_package(output / "packages", commit)
+            package = check_package(output / "packaging", commit)
         else:
             package = {"status": "NOT_VERIFIED", "errors": ["Build did not pass"]}
         _queue, statuses = collect_review(output)
@@ -265,6 +284,9 @@ def main(argv: list[str] | None = None) -> int:
         "package": package,
         "new_checkout_temp_paths": new_paths,
         "real_label_semantic_fidelity": "REVIEW" if args.with_real_labeler else "NOT_EVALUATED",
+        "run_kind": "pyflowmap-validation",
+        "source_banks": {"baseline": 15, "control-flow": 8,
+                         "independent-v1": 28, "independent-v2": 30},
     }
     (output / "validation-summary.json").write_text(
         json.dumps(summary, indent=2, ensure_ascii=False) + "\n",

@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 import sys
 
 from . import __version__
@@ -97,8 +98,8 @@ def main(argv: list[str] | None = None) -> int:
     analyze.add_argument("--output", help="Destination directory or single-format filename")
     analyze.add_argument(
         "--semantic-provider", choices=["disabled", "mock", "codex"],
-        default="disabled",
-        help="Optional labels: none, synthetic integration test, or explicit Codex"
+        default=os.environ.get("PYFLOWMAP_DEFAULT_SEMANTIC_PROVIDER", "disabled"),
+        help="Default disabled; opt in to Codex with PYFLOWMAP_DEFAULT_SEMANTIC_PROVIDER"
     )
     analyze.add_argument("--semantic-style", default="neutral",
                          help="Style requested from an optional semantic labeler")
