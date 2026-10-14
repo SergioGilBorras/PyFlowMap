@@ -1,5 +1,5 @@
 {
-  "name": "PyFlowMap 1.0 fresh acceptance set",
+  "name": "Python control-flow regression bank",
   "cases": [
     {"id": "match-flow", "domain": "generic", "patterns": "ordered match, guard, assignment, later use", "source": "match_flow.py", "entry": "match_flow:dispatch", "min_decisions": 0},
     {"id": "loop-exhaustion", "domain": "generic", "patterns": "for else, continue, break and early return", "source": "loop_exhaustion.py", "entry": "loop_exhaustion:locate", "min_decisions": 0},
