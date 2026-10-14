@@ -78,3 +78,44 @@ def test_only_owned_validation_runs_are_cleanup_candidates(tmp_path):
     marker = run / ".pyflowmap-managed-validation.json"
     marker.write_text('{"kind": "other"}', encoding="utf-8")
     assert not managed(run, tmp_path)
+
+
+
+def test_successful_global_validation_preserves_prior_managed_runs_by_default(
+    tmp_path, monkeypatch
+):
+    """Even an authenticated successful run never silently prunes evidence."""
+    from types import SimpleNamespace
+
+    util = runpy.run_path(str(ROOT / "scripts" / "validate_all.py"))
+    validation_main = util["main"]
+    globals_ = validation_main.__globals__
+    monkeypatch.setitem(globals_, "ROOT", tmp_path)
+    monkeypatch.setitem(globals_, "OUTPUT", tmp_path / "output_validacion")
+    monkeypatch.setitem(
+        globals_, "report_is_technically_complete",
+        lambda path: (True, "TECHNICAL_PASS_SEMANTIC_REVIEW"),
+    )
+    monkeypatch.setattr("subprocess.run", lambda *args, **kwargs: SimpleNamespace(
+        returncode=0
+    ))
+
+    historical = tmp_path / "output_validacion" / "validation-2026-10-14_21-13-07_6698f8"
+    historical.mkdir(parents=True)
+    (historical / ".pyflowmap-managed-validation.json").write_text(
+        json.dumps({
+            "kind": "pyflowmap-validation", "schema": 1, "run": historical.name,
+        }),
+        encoding="utf-8",
+    )
+    evidence = historical / "validation-summary.json"
+    evidence.write_text('{"failed": 6}', encoding="utf-8")
+    assert util["managed_run"](historical, historical.parent)
+
+    def forbid_delete(path):
+        raise AssertionError(f"Validation must not delete history: {path}")
+
+    monkeypatch.setattr("shutil.rmtree", forbid_delete)
+    assert validation_main(["--acknowledge-source-transmission"]) == 0
+    assert evidence.read_text(encoding="utf-8") == '{"failed": 6}'
+    assert len(list(historical.parent.glob("validation-*"))) == 1

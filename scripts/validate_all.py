@@ -1,8 +1,9 @@
-"""Run the complete two-mode validation and retain only the latest managed PASS.
+"""Run complete two-mode validation with historical results preserved by default.
 
-All temporary work stays under OS TEMP. This script never cleans unrecognized
-directories or overrides permissions, symlinks or Windows reparse points.
-Real inference makes external authenticated Codex requests with source snippets.
+All scratch work stays in OS TEMP. Earlier validation runs are never removed
+unless --prune-managed-history is explicitly requested. Unrecognized paths,
+symlinks and Windows reparse points are never pruned. Real inference makes
+external authenticated Codex requests with source snippets.
 """
 from __future__ import annotations
 
@@ -81,6 +82,11 @@ def main(argv: list[str] | None = None) -> int:
         "--acknowledge-source-transmission", action="store_true",
         help="Required: authorize sending benchmark code excerpts to Codex"
     )
+    parser.add_argument(
+        "--prune-managed-history", action="store_true",
+        help="Opt-in: delete older recognized managed validation runs after a "
+             "complete technical PASS; default is to preserve every run",
+    )
     args = parser.parse_args(argv)
     if not args.acknowledge_source_transmission:
         parser.error("Explicit --acknowledge-source-transmission is required")
@@ -108,18 +114,23 @@ def main(argv: list[str] | None = None) -> int:
     if not ok:
         print(state + "; previous runs preserved.", file=sys.stderr)
         return 1
+    # Full successful validations are evidence too: never delete them
+    # implicitly. Removing old runs requires a deliberate operator flag.
     warnings = []
-    for previous in sorted(OUTPUT.iterdir()):
-        if previous == destination or not previous.is_dir():
-            continue
-        if managed_run(previous, OUTPUT):
-            try:
-                shutil.rmtree(previous)
-                print(f"Removed previous managed results: {previous.name}")
-            except OSError as exc:
-                warnings.append(f"Could not remove {previous.name}: {exc}")
-        else:
-            warnings.append(f"Preserved unrecognized directory: {previous.name}")
+    if args.prune_managed_history:
+        for previous in sorted(OUTPUT.iterdir()):
+            if previous == destination or not previous.is_dir():
+                continue
+            if managed_run(previous, OUTPUT):
+                try:
+                    shutil.rmtree(previous)
+                    print(f"Removed previous managed results: {previous.name}")
+                except OSError as exc:
+                    warnings.append(f"Could not remove {previous.name}: {exc}")
+            else:
+                warnings.append(f"Preserved unrecognized directory: {previous.name}")
+    else:
+        print("HISTORY: all previous validation runs preserved (default)")
     print(f"VALIDATION: {state}")
     print(f"Latest results: {destination}")
     for warning in warnings:

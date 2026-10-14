@@ -7,7 +7,7 @@ renaming it would break CI and existing developer commands.
 
 | Program | Purpose |
 | --- | --- |
-| `validate_all.py` | **Canonical global command**: tests, all 81 benchmark cases without and with real Codex, invariant/quality evidence, and package build; safe one-run retention |
+| `validate_all.py` | **Canonical global command**: tests, all 81 benchmark cases without and with real Codex, invariant/quality evidence, and package build; historical runs preserved by default |
 | `run_full_validation.py` | Lower-level orchestrator, also usable without the real labeler for CI diagnostics |
 | `compare_real_labeler.py` | Per-case real Codex inference, compare 81 source diagrams, export label review CSV |
 | `compare_labeler_modes.py` | Legacy **mock** integration diagnosis; never evidence of genuine inference |
@@ -32,10 +32,12 @@ transmission acknowledgement flag. It never starts in GitHub CI.
 
 The inspectable reports go to
 [`output_validacion/`](../output_validacion/README.md), under a dated
-`validation-YYYY-MM-DD_HH-MM-SS_<id>` directory. On successful replacement
-the script prunes only older, self-marked run directories. It deliberately
-preserves failed-run diagnostics, unknown data, `.serena/`, `.git/`,
-legacy `pyflowmap-output/` and all protected Windows paths. Temporary
+`validation-YYYY-MM-DD_HH-MM-SS_<id>` directory. The global command now
+**preserves all previous runs by default**, including successful and failed
+ones. Optional `--prune-managed-history` explicitly opts into removal of older
+self-marked runs after full PASS; avoid that flag when keeping evidence.
+Unknown data, `.serena/`, `.git/`, legacy `pyflowmap-output/` and all
+protected Windows paths are always preserved. Temporary
 working directories and caches are under `%TEMP%`, outside the repository.
 `_avast_` may be antivirus-owned and is not forcibly removed.
 

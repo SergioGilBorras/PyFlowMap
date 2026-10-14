@@ -36,9 +36,11 @@ validation. This is a test/report directory, not a pip distribution payload.
 
 The runner creates its caches and scratch work only below OS TEMP. Results
 are ignored by Git; **only this README is tracked**. A validated, successful
-new run replaces earlier *recognized, generated* runs. A failing run preserves
-its diagnostic files and the last successful evidence. Unknown directories,
-symlinks, Windows reparse points and protected ACL paths are not deleted.
+new run **preserves every historical run by default**, including earlier
+failed diagnostics. The optional `--prune-managed-history` flag explicitly
+authorizes pruning only earlier recognized, generated runs after full PASS;
+it should not be used when retaining evidence. Unknown directories, symlinks,
+Windows reparse points and protected ACL paths are never deleted.
 
 **Semantic quality:** actual Codex responses are verified for provenance and
 unchanged graph structure. Their meaning requires manual review. V1/V2

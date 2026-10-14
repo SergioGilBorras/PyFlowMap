@@ -59,10 +59,11 @@ by changing labels or lowering criteria.
 
 All caches and scratch work remain in the OS temporary directory
 (`%TEMP%` on Windows). Output directories are ignored by Git. On a
-technically successful replacement, only previously **marked, recognized**
-generated validation runs are pruned; unknown directories, symlinks and
-protected paths are preserved. If a step fails, the failed reports remain
-inspectable and the previous successful evidence is not deleted. No
+technically successful run, **all earlier validation evidence is preserved
+by default**, including previous failed runs. Deletion of older marked,
+recognized generated runs is available only with the optional, explicit
+`--prune-managed-history` flag; unknown directories, symlinks and protected
+paths are never pruned. If a step fails, all previous results remain intact. No
 unknown or legacy `pyflowmap-output/` directory is automatically cleaned.
 The running old Windows validation is not modified.
 
@@ -239,3 +240,16 @@ fixture with a deliberately misleading provider, checks all three pending
 return values and unchanged edges. This change has not yet been verified
 with a new authenticated model call and does not retroactively grant full
 semantic approval to historical results.
+
+
+## Preserving the 14 October full-run evidence
+
+The earlier documentation allowed `scripts/validate_all.py` to remove
+previously recognized validation directories automatically after technical
+PASS, which was not suitable for preserving the user's original six-failure
+diagnostic evidence. The command now retains all old validation directories
+**by default**, even after a complete PASS. The existing safety-checked
+managed-run pruning function is available only behind the explicit
+`--prune-managed-history` opt-in. The standard command shown in this guide
+does not include that flag. Offline tests verify that a simulated successful
+run cannot silently delete a prior marked run.
