@@ -6,7 +6,7 @@ not part of the installed wheel or sdist, and the source examples are
 
 | Corpus | Coverage | Runner | What it proves |
 | --- | --- | --- | --- |
-| Cross-domain baseline | 15 programs | `benchmark/run.py` | Structural checks and selected Python semantic oracles |
+| Cross-domain baseline | 15 programs | `benchmark/runners/run.py` | Structural checks and selected Python semantic oracles |
 | Control-flow regression | 8 programs | `benchmark/control-flow/` (same canonical runner) | Known semantic edge cases; no longer a blind holdout |
 | Independent-bank V1 | 28 cases / 33 Python modules | `benchmark/independent-v1/run.py` | Generates inspectable outputs and preserves source hashes |
 | Independent-bank V2 | 30 cases / 38 Python modules | `benchmark/independent-v2/run.py` | Generates inspectable outputs and preserves source hashes |
@@ -39,7 +39,7 @@ Use `--list` or `--validate-only` to check the retained bank before
 running it. Source hashes are recorded in each bank's
 `source-hashes.json`.
 
-The baseline runner also supports `--only` and `--strict`. Strict mode
+The baseline runner also supports `--only`, `--language en|es` and `--strict`. Strict mode
 can return a nonzero status for **REVIEW**: that is a stricter policy
 choice, not necessarily a semantic defect.
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Independent AST-graph benchmark; NEVER executes any program under fixtures/."""
+"""Evaluate Python-source benchmarks without executing fixture programs."""
 from __future__ import annotations
 
 import argparse
@@ -190,13 +190,13 @@ def _metadata_call_sites(metadata) -> list[tuple[str, str]]:
 
 
 def run_case(case: dict, out: Path, render: bool, timeout: int, max_depth: int,
-             max_nodes: int, fixtures_root: Path = FIXTURES) -> dict:
+             max_nodes: int, fixtures_root: Path = FIXTURES, language: str = 'en') -> dict:
     source, markers = check_sources(case, fixtures_root)
     output = out / 'cases' / case['id']
     output.mkdir(parents=True, exist_ok=True)
     command = [sys.executable, '-m', 'pyflowmap', 'analyze', str(source),
                '--entry', case['entry'], '--diagram-type', 'activity',
-               '--semantic-provider', 'disabled', '--language', 'es',
+               '--semantic-provider', 'disabled', '--language', language,
                '--max-nodes', str(max_nodes), '--max-depth', str(max_depth),
                '--format', 'images' if render else 'mmd', '--renderer', 'graphviz',
                '--output', str(output)]
@@ -256,9 +256,9 @@ def reports(out: Path, rows: list[dict], render: bool) -> None:
                                                      'critical_metadata', 'critical_missing', 'analyzer_warnings'])
         writer.writeheader()
         writer.writerows([{k: r.get(k) for k in writer.fieldnames} for r in rows])
-    lines = ['# Banco transversal de PyFlowMap', '',
-             'Generado sin ejecutar los programas analizados ni usar IA. PASS/FAIL/REVIEW/UNSUPPORTED reflejan criterios semánticos; la estructura se informa aparte.', '',
-             '| Caso | Dominio | Semántica | Estructura | Nodos | Aristas | Decisiones | Calls visibles / metadata / ausentes |',
+    lines = ['# PyFlowMap cross-domain benchmark', '',
+             'Fixture programs were parsed but never executed. No AI provider was used; semantic and structural checks are reported separately.', '',
+             '| Case | Domain | Semantics | Structure | Nodes | Edges | Decisions | Calls visible / metadata / missing |',
              '|---|---|---|---|---:|---:|---:|---:|']
     gallery: list[str] = []
     for row in rows:
@@ -273,42 +273,44 @@ def reports(out: Path, rows: list[dict], render: bool) -> None:
         for e in row.get('errors', []):
             lines.append('- ERROR: ' + str(e))
         for w in row.get('warnings', []):
-            lines.append('- REVISAR: ' + str(w))
+            lines.append('- REVIEW: ' + str(w))
         for feature in row.get('semantic', {}).get('features', []):
-            lines.append(f"- SEMÁNTICA {feature['status']} — {feature['feature']}: {feature['message']}")
+            lines.append(f"- SEMANTIC {feature['status']} — {feature['feature']}: {feature['message']}")
         if row.get('status') == 'PASS':
-            lines.append('- Se cumplen los oráculos semánticos comprobados y las comprobaciones estructurales.')
+            lines.append('- All checked semantic and structural obligations passed.')
         if row.get('files'):
-            lines.append('- Grafo: `' + str(row['files'].get('json', '')) + '`')
+            lines.append('- Graph: `' + str(row['files'].get('json', '')) + '`')
         if render and row.get('files', {}).get('svg'):
             svg = Path(row['files']['svg'])
             rel = os.path.relpath(svg, out).replace('\\', '/')
             gallery.append(f'<section><h2>{esc(row["id"])} — {esc(row["domain"])}</h2>'
-                           f'<p>{esc(row["patterns"])} · semántica: {esc(row.get("semantic_status", "REVIEW"))}; '
-                           f'estructura: {esc(row.get("structural_status", "REVIEW"))}</p>'
+                           f'<p>{esc(row["patterns"])} · semantics: {esc(row.get("semantic_status", "REVIEW"))}; '
+                           f'structure: {esc(row.get("structural_status", "REVIEW"))}</p>'
                            f'<object data="{esc(rel)}" type="image/svg+xml" width="100%" height="550"></object>'
-                           f'<p><a href="{esc(rel)}">Abrir SVG con zoom</a></p></section>')
+                           f'<p><a href="{esc(rel)}">Open full-size SVG</a></p></section>')
     (out / 'REPORT.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
     if render:
-        page = '<!doctype html><html lang="es"><meta charset="utf-8"><title>PyFlowMap: benchmark transversal</title>'
+        page = '<!doctype html><html lang="en"><meta charset="utf-8"><title>PyFlowMap: cross-domain benchmark</title>'
         page += '<style>body{font:16px system-ui;max-width:1200px;margin:auto;padding:2em}section{border-top:1px solid #ddd;margin-top:2em}object{border:1px solid #ddd}</style>'
-        page += '<h1>PyFlowMap: diagramas sobre 15 programas de distintos dominios</h1>'
-        page += '<p>Inspección visual; ninguna imagen sustituye los oráculos estructurales.</p>'
+        page += '<h1>PyFlowMap: cross-domain activity diagrams</h1>'
+        page += '<p>Visual inspection supplements, but does not replace, semantic and structural checks.</p>'
         page += '\n'.join(gallery) + '</html>'
         (out / 'gallery.html').write_text(page, encoding='utf-8')
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description='Banco de programas Python; los fixtures nunca se ejecutan.')
+    parser = argparse.ArgumentParser(description='Evaluate Python sources without running fixture code.')
     parser.add_argument('--output', type=Path, default=Path.cwd() / 'pyflowmap-output' / 'benchmark')
     parser.add_argument('--cases-file', type=Path, default=CASES,
-                        help='JSON de casos; por defecto, el banco histórico de 15 casos')
+                        help='Case manifest; defaults to the 15-case cross-domain bank')
     parser.add_argument('--fixtures-root', type=Path, default=FIXTURES,
-                        help='Raíz de fuentes relativa a source en el JSON')
-    parser.add_argument('--render', action='store_true', help='Generar SVG y PNG (requiere Graphviz dot)')
-    parser.add_argument('--strict', action='store_true', help='Fallar tambien si falta un call site crítico o decision esperada')
-    parser.add_argument('--only', nargs='*', help='IDs de casos que se quieren ejecutar')
-    parser.add_argument('--list', action='store_true', help='Mostrar casos sin ejecutar PyFlowMap')
+                        help='Directory containing paths referenced by the case manifest')
+    parser.add_argument('--render', action='store_true', help='Render SVG and PNG (requires Graphviz dot)')
+    parser.add_argument('--strict', action='store_true', help='Treat REVIEW or missing expected evidence as failure')
+    parser.add_argument('--only', nargs='*', help='Case IDs to evaluate')
+    parser.add_argument('--list', action='store_true', help='List cases without running PyFlowMap')
+    parser.add_argument('--language', choices=['en', 'es'], default='en',
+                        help='Diagram label language (English by default)')
     parser.add_argument('--max-depth', type=int, default=3)
     parser.add_argument('--max-nodes', type=int, default=30)
     parser.add_argument('--timeout', type=int, default=180)
@@ -316,37 +318,37 @@ def main() -> int:
     cases_path = args.cases_file.resolve()
     fixtures_root = args.fixtures_root.resolve()
     if not cases_path.is_file() or not fixtures_root.is_dir():
-        parser.error('--cases-file y --fixtures-root deben existir')
+        parser.error('--cases-file must be a file and --fixtures-root must be a directory')
     cases = json.loads(cases_path.read_text(encoding='utf-8'))['cases']
     if args.only:
         unknown = set(args.only) - {c['id'] for c in cases}
         if unknown:
-            parser.error('IDs desconocidos: ' + ', '.join(sorted(unknown)))
+            parser.error('Unknown case IDs: ' + ', '.join(sorted(unknown)))
         cases = [c for c in cases if c['id'] in args.only]
     if args.list:
         for case in cases:
             _source, markers = check_sources(case, fixtures_root)
-            print(f"{case['id']:<14} {case['patterns']:<55} ({len(markers)} call sites marcados)")
+            print(f"{case['id']:<14} {case['patterns']:<55} ({len(markers)} marked call sites)")
         return 0
     if args.render and not shutil.which("dot"):
-        parser.error("Graphviz dot no esta disponible; instala Graphviz o ejecuta sin --render")
+        parser.error("Graphviz dot is unavailable; install Graphviz or omit --render")
     out = args.output.resolve()
     # Never allow benchmark reports to be generated within fixtures (would pollute inputs).
     if out.is_relative_to(fixtures_root):
-        parser.error('--output debe estar fuera de benchmark/fixtures')
+        parser.error('--output must be outside the fixture source directory')
     out.mkdir(parents=True, exist_ok=True)
     rows = []
     for case in cases:
         row = run_case(case, out, args.render, args.timeout, args.max_depth, args.max_nodes,
-                       fixtures_root)
+                       fixtures_root, args.language)
         rows.append(row)
         print(f"{case['id']:<14} {row['status']:<7} "
-              f"{row.get('node_count', '-')} nodos, {row.get('edge_count', '-')} aristas "
-              f"críticos={row.get('critical_direct', 0)}/{len(row['marks'])}")
+              f"{row.get('node_count', '-')} nodes, {row.get('edge_count', '-')} edges "
+              f"critical={row.get('critical_direct', 0)}/{len(row['marks'])}")
     reports(out, rows, args.render)
-    print(f'\nInformes: {out / "REPORT.md"}, {out / "report.csv"}, {out / "report.json"}')
+    print(f'\nReports: {out / "REPORT.md"}, {out / "report.csv"}, {out / "report.json"}')
     if args.render:
-        print(f'Galería: {out / "gallery.html"}')
+        print(f'Gallery: {out / "gallery.html"}')
     failed = [r for r in rows if r['errors'] or r.get('semantic_status') == 'FAIL']
     if args.strict:
         failed.extend(r for r in rows if r.get('status') != 'PASS')

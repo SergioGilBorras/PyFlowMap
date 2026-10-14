@@ -17,6 +17,9 @@ python -m benchmark.runners.run --cases-file benchmark/control-flow/cases.json -
 python -m benchmark.runners.metamorphic --output pyflowmap-output/metamorphic
 ```
 
+All generated reports are in English by default; use `--language es` to
+test Spanish activity labels explicitly.
+
 The `--strict` flag is stronger than ordinary semantic checking: an
 uncertain REVIEW may become a nonzero exit even if no reproducible FAIL is
 present. Source corpora remain unmodified. Temporary transformation
