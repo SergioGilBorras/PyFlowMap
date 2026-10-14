@@ -50,7 +50,8 @@ def test_real_runner_records_provider_timeout_and_continues(monkeypatch, tmp_pat
 
 
 
-def test_invalid_external_label_is_not_misreported_as_generic_error():
+def test_invalid_external_label_is_not_misreported_as_generic_error(monkeypatch):
+    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
     from compare_real_labeler import classify_failure
 
     error = RuntimeError(
