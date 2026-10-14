@@ -190,3 +190,37 @@ def test_cli_provider_option_is_explicit(fake_p4, tmp_path, capsys):
                  "--semantic-provider", "mock", "--format", "mmd",
                  "--output", str(tmp_path / "cli")]) == 0
     assert '"semantic_provider": "mock"' in capsys.readouterr().out
+
+
+
+def test_p4_prompt_targets_one_graph_activity_not_its_containing_function():
+    from types import SimpleNamespace
+
+    from pyflowmap.semantic.contracts import LabelRequest as ActivityLabelRequest
+    from pyflowmap.semantic.p4_provider import P4SemanticLabelProvider
+
+    class RecordingTools:
+        def generate_label(self, **kwargs):
+            self.request = kwargs
+            return SimpleNamespace(
+                label="Append item to selected values", provider="codex",
+                warnings=[], char_count=30, output_type="title",
+                language="en", style="neutral",
+            )
+
+    tools = RecordingTools()
+    provider = P4SemanticLabelProvider(provider="codex", tools=tools)
+    request = ActivityLabelRequest(
+        node_id="a1", current_label="Call selected.append(item)",
+        symbols=("pipeline:main",), filename="pipeline.py",
+        language="en", docstring=None,
+        source_snippet="def main():\n    selected.append(item)",
+        preceding=("Only if valid",), following=("Next item",),
+    )
+    result = provider.label(request)
+    assert result.provider == "codex"
+    assert tools.request["name"] == "Call selected.append(item)"
+    assert tools.request["kind"] == "activity"
+    assert "ONE static-flow node" in tools.request["purpose"]
+    assert "specific existing graph activity" in tools.request["text"]
+    assert "def main()" in tools.request["source_code"]

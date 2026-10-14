@@ -23,19 +23,28 @@ class P4SemanticLabelProvider:
         full = request.symbols[0]
         module, sep, qualified = full.partition(":")
         name = qualified or full
-        owner, dot, method = name.rpartition(".")
+        owner, dot, _method = name.rpartition(".")
         try:
+            # P4 labels SUBJECTS. Using the containing function as the
+            # subject encourages it to summarize the *whole function* for
+            # every activity node, even unrelated statements. The actual
+            # subject must be the individual deterministic activity.
+            action = request.current_label.strip()[:200]
             result = self.tools.generate_label(
-            name=method if dot else name,
-            kind="method" if dot else "function",
-            module=module if sep else None,
-            class_name=owner if dot else None,
-            documentation=request.docstring,
-            source_code=request.source_snippet,
-            before="; ".join(request.preceding) or None,
-            after="; ".join(request.following) or None,
-            purpose=f"Activity diagram. Initial description: {request.current_label}",
-            language=request.language, style=self.style, max_chars=self.max_chars,
+                name=action,
+                kind="activity",
+                module=module if sep else None,
+                class_name=owner if dot else None,
+                documentation=request.docstring,
+                source_code=request.source_snippet,
+                text=("Label the specific existing graph activity: " + action
+                      + ". Use the surrounding source as context only."),
+                before="; ".join(request.preceding) or None,
+                after="; ".join(request.following) or None,
+                purpose=("Provide a faithful caption for ONE static-flow node, "
+                         "not a summary of the enclosing function. Preserve "
+                         "conditions, uncertainty, and the exact action."),
+                language=request.language, style=self.style, max_chars=self.max_chars,
             )
         except Exception as exc:  # surface provider failure without private context
             raise RuntimeError(f"P4 semantic labeling failed ({type(exc).__name__})") from exc

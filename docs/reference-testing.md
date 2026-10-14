@@ -122,3 +122,14 @@ subset, using a fresh TEMP result directory and
 `scripts/compare_real_labeler.py --only CASE_ID ...` and the required
 `--acknowledge-source-transmission` flag. A complete re-run and factual
 label review are still necessary; never turn timeouts into semantic PASS.
+
+## Node-specific P4 label requests
+
+An additional pre-fix semantic issue was that PyFlowMap sent the **enclosing
+function** as P4's subject for every graph activity. A real model often then
+returned a complete function summary for assignment/call nodes, even after
+the transfer-caption protections. P4 requests now use the actual activity
+node as subject (`kind=activity`), keep the function's source as context,
+and explicitly ask for a faithful *single-node* label. This change is
+covered by a contract regression test but still needs checking against
+real Codex responses; it is not evidence of factual-semantic PASS yet.
