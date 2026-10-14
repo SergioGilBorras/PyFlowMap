@@ -149,7 +149,9 @@ def main() -> int:
     ap.add_argument('--timeout', type=int, default=180)
     ap.add_argument('--package', action='store_true', help='Bundle source fixtures and generated results into an optional ZIP')
     args = ap.parse_args()
-    expected = json.loads((ROOT / 'source-hashes.json').read_text(encoding='utf-8'))
+    stored = json.loads((ROOT / 'source-hashes.json').read_text(encoding='utf-8'))
+    # V1 records paths relative to the bank root; the runner fingerprints fixtures/.
+    expected = {path.removeprefix('fixtures/'): digest for path, digest in stored.items()}
     if fingerprint(ROOT / 'fixtures') != expected:
         ap.error('Fixture SHA-256 checksums differ from source-hashes.json; refusing modified inputs.')
     for case in CASES:
