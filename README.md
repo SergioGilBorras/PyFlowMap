@@ -158,9 +158,10 @@ local artifacts; it does **not** publish them.
 - `dist/` is the ignored destination for explicitly requested local release
   deliverables, not a test workspace.
 
-For a fresh, isolated end-to-end validation of the deterministic analyzer and
-optional mock-labeler integration, follow [the validation guide](docs/reference-testing.md).
-The real `codex` provider is never run by this test workflow.
+For a fresh end-to-end verification that includes **real Codex inference**
+(on the local authorized workstation, not CI), follow
+[the live validation guide](docs/reference-testing.md). Ordinary CI and pytest
+remain deterministic and do not call an external model.
 
 Technical documentation:
 

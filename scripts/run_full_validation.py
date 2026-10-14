@@ -1,7 +1,7 @@
 """Run a fresh offline/static verification in OS TEMP without reusing results.
 
-Never invokes the real Codex provider, modifies fixture sources, deletes previous
-runs, or writes validation artifacts into the source checkout.
+Real Codex inference is explicit opt-in. This never deletes historical
+runs or modifies fixture sources; scratch stays in OS TEMP.
 """
 from __future__ import annotations
 
@@ -123,7 +123,7 @@ def collect_review(output: Path) -> tuple[list[str], dict]:
         "",
         "The 58 independent-bank cases have no complete semantic oracle yet.",
         "Their GENERATED status never counts as semantic PASS.",
-        "The mock labeler checks structure and integration, not truthfulness.",
+        "Real Codex label quality remains REVIEW until independently evaluated.",
         "",
     ])
     (output / "semantic-review-queue.md").write_text(
@@ -134,13 +134,23 @@ def collect_review(output: Path) -> tuple[list[str], dict]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Fresh PyFlowMap verification with all outputs under OS TEMP"
+        description="Fresh validation: scratch in TEMP; outputs in TEMP or repo pyflowmap-output"
     )
     parser.add_argument(
         "--with-labeler", action="store_true",
         help="Additionally compare disabled/mock on all 73 cases (requires .[labeler]; no Codex)"
     )
+    parser.add_argument("--with-real-labeler", action="store_true",
+                        help="Real authenticated Codex inference: 81 fixtures plus example")
+    parser.add_argument("--acknowledge-source-transmission", action="store_true",
+                        help="Explicit authorization for sending source excerpts to Codex")
+    parser.add_argument("--output-parent", type=Path,
+                        help="Optional results root: OS TEMP or repo pyflowmap-output/")
     args = parser.parse_args(argv)
+    if args.with_real_labeler and args.with_labeler:
+        parser.error("Select mock or real labeling, never both")
+    if args.with_real_labeler and not args.acknowledge_source_transmission:
+        parser.error("Real inference requires --acknowledge-source-transmission")
 
     if args.with_labeler and importlib.util.find_spec("p4_semantic_labeler") is None:
         parser.error("Install the optional extra first: python -m pip install -e '.[dev,mcp,labeler]'")
@@ -148,13 +158,14 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("Graphviz 'dot' is required for full rendering tests")
 
     system_temp = original_system_temp()
-    parent = system_temp / "pyflowmap-output"
-    parent.mkdir(exist_ok=True)
-    if not parent.resolve().is_relative_to(system_temp):
-        parser.error("Output parent escapes system TEMP")
+    parent = (args.output_parent.expanduser().resolve() if args.output_parent
+              else system_temp / "pyflowmap-output")
+    checkout_outputs = (ROOT / "pyflowmap-output").resolve()
+    if parent != checkout_outputs and not parent.is_relative_to(system_temp):
+        parser.error("Output parent must be in OS TEMP or repo pyflowmap-output/")
+    parent.mkdir(parents=True, exist_ok=True)
     output = Path(tempfile.mkdtemp(prefix="full-", dir=parent)).resolve()
-    work = output / "work"
-    work.mkdir()
+    work = Path(tempfile.mkdtemp(prefix="pyflowmap-work-", dir=system_temp)).resolve()
     logs = output / "logs"
     logs.mkdir()
 
@@ -182,7 +193,8 @@ def main(argv: list[str] | None = None) -> int:
             try:
                 result = subprocess.run(
                     argv, cwd=ROOT, env=environment, stdout=stream,
-                    stderr=subprocess.STDOUT, check=False, timeout=3600,
+                    stderr=subprocess.STDOUT, check=False,
+                    timeout=None if name == "real-labeler" else 3600,
                 )
                 rc = result.returncode
             except (OSError, subprocess.TimeoutExpired) as exc:
@@ -218,6 +230,13 @@ def main(argv: list[str] | None = None) -> int:
                 "--output", str(output / "mock" / "comparison"),
             ])
             run("labeler-example", [py, "examples/semantic_labeler_integration.py"])
+        if args.with_real_labeler:
+            environment.setdefault("P4_LABELER_PROVIDER_TIMEOUT", "120")
+            run("real-labeler", [
+                py, "scripts/compare_real_labeler.py",
+                "--acknowledge-source-transmission",
+                "--output", str(output / "real-labeler"),
+            ])
         run("release-build", [
             py, "scripts/build_release.py", "--output", str(output / "packages"),
         ])
@@ -236,13 +255,16 @@ def main(argv: list[str] | None = None) -> int:
         "generated_at_utc": datetime.now(UTC).isoformat(),
         "python": sys.version,
         "system_temp": str(system_temp),
+        "temp_workspace": str(work),
         "output": str(output),
-        "modes": ["disabled", "mock"] if args.with_labeler else ["disabled"],
-        "real_codex_inference": "NOT_RUN",
+        "modes": (["disabled", "codex"] if args.with_real_labeler else
+                  ["disabled", "mock"] if args.with_labeler else ["disabled"]),
+        "real_codex_inference": "ATTEMPTED" if args.with_real_labeler else "NOT_RUN",
         "steps": steps,
         "semantic_evidence": statuses,
         "package": package,
         "new_checkout_temp_paths": new_paths,
+        "real_label_semantic_fidelity": "REVIEW" if args.with_real_labeler else "NOT_EVALUATED",
     }
     (output / "validation-summary.json").write_text(
         json.dumps(summary, indent=2, ensure_ascii=False) + "\n",

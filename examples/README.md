@@ -35,3 +35,20 @@ To exercise only the optional mock labeler adapter (not a diagram run):
 Do not execute this demo as a proxy for semantic-flow testing. Use the
 [full validation guide](../docs/reference-testing.md) for oracles and
 [output layout](../pyflowmap-output/README.md) for all report formats.
+
+
+## Real inference example (different from the mock adapter demo)
+
+`basic_pipeline.py` is an **input**, not a generated output. To request
+genuine Codex semantic labels instead of the optional synthetic mock,
+install `.[labeler-codex]`, authenticate with `codex login` and analyze:
+
+```powershell
+.\.venv\Scripts\python.exe -m pyflowmap.cli analyze .\examples\basic_pipeline.py --entry basic_pipeline:main --semantic-provider codex --format all --renderer graphviz --output (Join-Path $env:TEMP 'pyflowmap-output\examples\basic-codex')
+```
+
+This sends selected source excerpts to Codex. Compare the new generated
+JSON and image with a separate `--semantic-provider disabled` invocation.
+The test program itself is never executed during analysis. The separate
+`semantic_labeler_integration.py` script remains a *mock-only API demo*,
+not evidence that real inference was tested.

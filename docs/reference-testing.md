@@ -109,3 +109,32 @@ assessment. The review queue records them as `NOT_EVALUATED`; a complete
 semantic approval requires examining the graph's exact paths and assigning
 independent obligations or conducting manual review, not simply generating
 images.
+
+
+## Actual live Codex inference — separate from mock
+
+Use real inference for 81 retained regression cases (15 baseline, 8
+control-flow, 28 V1, 30 V2), plus `examples/basic_pipeline.py`. This
+requires the optional `.[labeler-codex]` extra, Codex CLI login, and
+explicit permission to transmit selected source excerpts. The upstream
+bridge isolates the filesystem workspace but permits inherited external MCP
+tools, which may have side effects; inspect their configuration before use.
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e '.[dev,mcp,labeler-codex]'
+codex login
+.\.venv\Scripts\python.exe scripts\run_full_validation.py --with-real-labeler --acknowledge-source-transmission --output-parent .\pyflowmap-output
+```
+
+The earlier `--with-labeler` flag tests only `mock`; it is not a substitute
+for this live run. Unit tests and offline oracles still use deterministic
+execution for reproducibility. The live run saves `real-labeler-report.json`
+plus `label-quality-review.csv` and separate `disabled/` and `codex/`
+diagrams. These establish real provider provenance and invariant graph shape,
+**not** automatically the factual correctness of generated labels. V1/V2
+remain `NOT_EVALUATED` by an independent semantic oracle until reviewed.
+
+Only **temporary internals** are forced below `%TEMP%`. Inspectable output
+may be stored in the ignored repository `pyflowmap-output/` using
+`--output-parent`, or in system TEMP by default. Existing results are not
+overwritten or deleted.

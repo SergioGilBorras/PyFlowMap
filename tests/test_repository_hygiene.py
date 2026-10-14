@@ -80,5 +80,19 @@ def test_fresh_validation_runner_help_is_available_in_english():
         capture_output=True, check=False, timeout=30,
     )
     assert result.returncode == 0, result.stderr
-    assert "--with-labeler" in result.stdout
+    assert "--with-real-labeler" in result.stdout
+    assert "--acknowledge-source-transmission" in result.stdout
+    assert "--output-parent" in result.stdout
     assert "TEMP" in result.stdout
+
+
+def test_live_inference_requires_explicit_acknowledgement():
+    result = subprocess.run(
+        [sys.executable, "scripts/compare_real_labeler.py",
+         "--output", "never-create-this-output"],
+        cwd=ROOT, text=True, encoding="utf-8", errors="replace",
+        capture_output=True, check=False, timeout=30,
+    )
+    assert result.returncode != 0
+    assert "--acknowledge-source-transmission" in result.stderr
+    assert not (ROOT / "never-create-this-output").exists()

@@ -109,3 +109,15 @@ temporary workspace. Run `ruff` independently with `RUFF_CACHE_DIR`
 configured to an approved system-temp path if you also want its cache
 outside the checkout. PyFlowMap does not control antivirus-generated
 folders such as `_avast_`.
+
+
+## Live semantic labeling check
+
+A full real-provider validation is different from `mock` integration tests:
+install `.[labeler-codex]`, authenticate the Codex CLI, inspect the
+external MCP configuration, and run `scripts/run_full_validation.py
+--with-real-labeler --acknowledge-source-transmission`. Pass
+`--output-parent .\pyflowmap-output` to keep inspectable result files in the
+ignored repository output directory; all temporary cache and scratch files
+remain in the system TEMP. Do not claim that real labels establish static
+control-flow correctness without independent semantic review.
