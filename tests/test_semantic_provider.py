@@ -90,3 +90,35 @@ def test_reusable_pipeline_fixture_generates_own_artifacts(tmp_path):
     assert all(Path(filename).is_file() for filename in result["files"].values())
     graph = json.loads(Path(result["files"]["json"]).read_text(encoding="utf-8"))
     assert graph["nodes"] and graph["edges"]
+
+
+
+def test_control_transfer_labels_remain_exact_under_external_provider(tmp_path):
+    source = tmp_path / "control.py"
+    source.write_text(
+        "def main(value):\n"
+        "    if value is None:\n"
+        "        raise ValueError('missing')\n"
+        "    return value.lower()\n",
+        encoding="utf-8",
+    )
+
+    class AllLabels:
+        def label(self, request):
+            return "Generic whole-function summary"
+
+    path = tmp_path / "enriched"
+    result = generate_diagram(
+        str(source), entry="control:main", format="mmd",
+        output=str(path), max_nodes=40, max_depth=3,
+        label_provider=AllLabels(),
+    )
+    graph = json.loads(Path(result["files"]["json"]).read_text(encoding="utf-8"))
+    transfers = [node for node in graph["nodes"]
+                 if node["kind"] == "activity"
+                 and ("control_transfer" in node["label_metadata"]
+                      or "generator_event" in node["label_metadata"])]
+    assert transfers, "The regression fixture must cover an activity transfer"
+    assert all(node["label_source"] == "deterministic" for node in transfers)
+    assert all(node["label"] != "Generic whole-function summary" for node in transfers)
+    assert any(node["label_source"] == "external" for node in graph["nodes"])

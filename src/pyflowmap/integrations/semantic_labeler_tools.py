@@ -5,6 +5,7 @@ PyFlowMap remains usable with zero optional dependencies when disabled.
 """
 
 import asyncio
+from dataclasses import replace
 from functools import lru_cache
 from typing import Any
 
@@ -46,8 +47,15 @@ class SemanticLabelerTools:
             raise ValueError("Semantic labeling is disabled; explicitly select mock or codex")
         if self._labeler is None:
             _, Labeler, _, _, Settings, _ = _imports()
-            self._labeler = Labeler(settings=Settings(
-                provider=self.provider, reduction_attempts=self.reduction_attempts))
+            # P4's default provider timeout is 20s. Honor the documented
+            # P4_LABELER_PROVIDER_TIMEOUT (and other validated settings)
+            # while keeping the caller's explicit provider selection.
+            config = replace(
+                Settings.from_env(),
+                provider=self.provider,
+                reduction_attempts=self.reduction_attempts,
+            )
+            self._labeler = Labeler(settings=config)
         return self._labeler
 
     @staticmethod

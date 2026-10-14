@@ -96,3 +96,29 @@ See [static analysis semantics](analysis-rules.md),
 [benchmark contracts](../benchmark/README.md),
 [developer utilities](../scripts/README.md), and
 [consumer graph outputs](../output_graphs/README.md).
+
+## Live Codex timeout correction (14 October 2026)
+
+A partial Windows run on the pre-fix build processed 51/82 cases before
+manual interruption: 14 provider PASS and 37 `ProviderTimeout` failures.
+The 14 successful cases produced 100 genuine Codex labels; 31 replaced
+the explicit `Propagate exception` transfer caption with a general
+function summary. These are not 37 independent graph-semantic failures.
+
+The cause of the unexpectedly short provider timeout was in
+`SemanticLabelerTools._client()`: it instantiated P4 `Settings` directly,
+thereby discarding `P4_LABELER_PROVIDER_TIMEOUT`. P4's built-in default is
+20 seconds. The adapter now constructs validated settings from the
+environment, retaining the explicitly requested provider and reduction
+attempts. The full runner provides 120 seconds unless the operator
+overrides that setting; this alone does not prove provider reliability.
+
+External labels also no longer replace source-derived control-transfer or
+generator-event labels. Such nodes retain deterministic descriptions of
+`raise`, propagated exceptions, `break`, `continue` and `yield`.
+
+Before launching another full suite, diagnose with a small *real* Codex
+subset, using a fresh TEMP result directory and
+`scripts/compare_real_labeler.py --only CASE_ID ...` and the required
+`--acknowledge-source-transmission` flag. A complete re-run and factual
+label review are still necessary; never turn timeouts into semantic PASS.
