@@ -215,7 +215,7 @@ def _declared_type_dependencies(index: ProjectIndex, module: str,
     return sorted(found)
 
 
-def analyze_class_diagram(index: ProjectIndex, scope: str | None = None, *
+def analyze_class_diagram(index: ProjectIndex, scope: str | None = None, *,
                           max_classes: int = MAX_CLASSES) -> ClassDiagram:
     if not 1 <= max_classes <= 1000:
         raise ValueError("max_classes must be in 1..1000")
