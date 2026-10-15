@@ -143,10 +143,13 @@ def analyze_package_diagram(index: ProjectIndex, scope: str | None = None, *,
     return result
 
 
-def to_dot(diagram: PackageDiagram, direction: str = "TD") -> str:
-    """Draw a UML package with its small tab at the upper-left, not a file icon."""
+def to_dot(diagram: PackageDiagram, direction: str = "TD", *,
+           style: str = "modern") -> str:
+    """Render UML dependencies; choose formal UML tabs or modern vector cards."""
     if direction not in ("TD", "LR"):
         raise ValueError("direction must be TD or LR")
+    if style not in ("modern", "strict"):
+        raise ValueError("package style must be modern or strict")
     nodes = {pkg.id: f"P{i + 1}" for i, pkg in enumerate(diagram.packages)}
     lines = [
         "digraph uml_packages {",
@@ -157,17 +160,47 @@ def to_dot(diagram: PackageDiagram, direction: str = "TD") -> str:
         ('  edge [style=dashed, arrowhead=vee, color="#526D87", '
          'penwidth=1.3, arrowsize=0.8];'),
     ]
+    if style == "modern":
+        lines[3] = (
+            '  node [shape=box, style="rounded,filled", fillcolor="#FBFDFF", '
+            'color="#A2B6CB", penwidth=1.25, margin="0.22,0.17", '
+            'fontname="Helvetica", fontsize=15];'
+        )
     for package in diagram.packages:
         # Namespaced UML package names; no unproven package import stereotypes.
         name = escape(package.id.replace(".", "::"), quote=True)
-        html = (
-            '<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">'
-            '<TR><TD BORDER="1" SIDES="LTR" COLOR="#344F6D" BGCOLOR="#DFEAF6" WIDTH="88" HEIGHT="18"></TD>'
-            '<TD BORDER="0" WIDTH="137"></TD></TR>'
-            '<TR><TD COLSPAN="2" BORDER="1" COLOR="#344F6D" BGCOLOR="#F7FAFE" WIDTH="225" HEIGHT="68" CELLPADDING="16">'
-            f'<FONT FACE="Helvetica" COLOR="#18324E" POINT-SIZE="16"><B>{name}</B></FONT>'
-            '</TD></TR></TABLE>'
-        )
+        if style == "strict":
+            # The original left-tab UML notation is preserved unchanged.
+            html = (
+                '<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">'
+                '<TR><TD BORDER="1" SIDES="LTR" COLOR="#344F6D" BGCOLOR="#DFEAF6" WIDTH="88" HEIGHT="18"></TD>'
+                '<TD BORDER="0" WIDTH="137"></TD></TR>'
+                '<TR><TD COLSPAN="2" BORDER="1" COLOR="#344F6D" BGCOLOR="#F7FAFE" WIDTH="225" HEIGHT="68" CELLPADDING="16">'
+                f'<FONT FACE="Helvetica" COLOR="#18324E" POINT-SIZE="16"><B>{name}</B></FONT>'
+                '</TD></TR></TABLE>'
+            )
+        else:
+            # Small folder pictogram *inside* a rounded card. Graphviz emits
+            # vector paths in SVG and the same icon in PNG, without assets,
+            # external images, font symbols or postprocessing.
+            icon = (
+                '<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">'
+                '<TR><TD BORDER="1" SIDES="LTR" COLOR="#54789E" '
+                'BGCOLOR="#86ADD7" WIDTH="16" HEIGHT="7"></TD>'
+                '<TD WIDTH="23" HEIGHT="7"></TD></TR>'
+                '<TR><TD COLSPAN="2" BORDER="1" COLOR="#54789E" '
+                'BGCOLOR="#CDE1F7" WIDTH="39" HEIGHT="26">'
+                '<FONT FACE="Helvetica" COLOR="#466E97" POINT-SIZE="10">&#160;</FONT>'
+                '</TD></TR></TABLE>'
+            )
+            html = (
+                '<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">'
+                f'<TR><TD VALIGN="MIDDLE">{icon}</TD>'
+                '<TD WIDTH="17"></TD>'
+                '<TD VALIGN="MIDDLE" ALIGN="LEFT">'
+                f'<FONT FACE="Helvetica" COLOR="#18324E" POINT-SIZE="16"><B>{name}</B></FONT>'
+                '</TD></TR></TABLE>'
+            )
         tooltip = f"{package.id} ({package.location})"
         lines.append(f"  {nodes[package.id]} [label=<{html}>, "
                      f"tooltip={json.dumps(tooltip)}];")

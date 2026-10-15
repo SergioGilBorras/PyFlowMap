@@ -88,6 +88,9 @@ def main(argv: list[str] | None = None) -> int:
                          help="Maximum UML class declarations")
     analyze.add_argument("--max-packages", type=int, default=250,
                          help="Maximum UML package declarations")
+    analyze.add_argument("--package-style", choices=["modern", "strict"],
+                         default="modern",
+                         help="Package-only: modern vector-icon card (default) or strict UML tab")
     analyze.add_argument("--language", choices=["en", "es"], default="en",
                          help="Language for deterministic activity labels")
     analyze.add_argument("--renderer", choices=["auto", "mermaid", "graphviz"],
@@ -126,7 +129,8 @@ def main(argv: list[str] | None = None) -> int:
                                       semantic_max_chars=args.semantic_max_chars,
                                       semantic_reduction_attempts=args.semantic_reduction_attempts,
                                       view=args.view, max_classes=args.max_classes,
-                                      max_packages=args.max_packages)
+                                      max_packages=args.max_packages,
+                                      package_style=args.package_style)
             result.pop("mermaid", None)  # Not every UML family has a Mermaid backend.
         print(json.dumps(result, indent=2, ensure_ascii=False))
         return 0

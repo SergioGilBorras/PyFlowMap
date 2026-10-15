@@ -57,3 +57,29 @@ body; their name remains in the body because members are not displayed.
 Dependency lines stay dashed, with an open arrow pointing to the supplier.
 The offline gallery uses left-to-right layout for these compact examples.
 SVG and PNG remain derived from the same DOT source with no external assets.
+
+
+## Modern and strict package presentation
+
+Use `--package-style modern` (the default) for a restrained, rounded card
+containing a small **vector folder icon** beside the package name. The icon is
+made of Graphviz vector primitives and is embedded in the resulting SVG; no
+raster images, external files, network requests or platform-dependent emoji
+are required. PNG and SVG show the same geometry.
+
+Use `--package-style strict` for the traditional UML 2.5.1
+upper-left-tab package symbol. Its original DOT silhouette is retained.
+
+```powershell
+pyflowmap analyze ./project --diagram-type package --format all --renderer graphviz --package-style modern
+pyflowmap analyze ./project --diagram-type package --format all --renderer graphviz --package-style strict
+```
+
+Only the package-node presentation changes. Import-derived UML dependencies
+and their source provenance are identical between modes, and both preserve
+the same open-arrow dashed edges. The exported JSON and CLI result record
+`package_style`; the offline gallery generates `modern` by default.
+
+**Standards distinction:** `strict` follows the traditional UML package
+shape; `modern` is a clearly identified visual alternative and does not
+claim strict compliance of its pictogram with OMG glyph notation.

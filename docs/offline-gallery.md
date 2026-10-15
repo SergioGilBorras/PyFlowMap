@@ -32,3 +32,12 @@ No se modifican rutas históricas, datos previos ni el CLI actual.
 Abre el `index.html` generado tras descomprimir la salida para revisar
 las tres imágenes y acceder a fuentes editables. El índice no necesita
 JavaScript, CDNs ni conexión a Internet.
+
+
+## Estilo de paquetes
+
+La galería utiliza el estilo vectorial `modern` de manera predeterminada.
+El estilo `strict` con pestaña UML continúa disponible desde el comando
+`pyflowmap analyze ... --diagram-type package --package-style strict`.
+Ambos representan las mismas dependencias; el manifiesto deja constancia
+del estilo mostrado. No se generan carpetas duplicadas ni se borran salidas.

@@ -52,6 +52,7 @@ def generate_gallery(source: str, entry: str, output_parent: str) -> dict:
             kwargs.update(entry=entry, max_nodes=28, max_depth=2)
         if diagram_type == "package":
             kwargs["direction"] = "LR"
+            kwargs["package_style"] = "modern"
         result = generate_diagram(source, **kwargs)
         paths = {}
         for kind, location in result["files"].items():
@@ -62,6 +63,7 @@ def generate_gallery(source: str, entry: str, output_parent: str) -> dict:
         items.append({
             "type": diagram_type, "folder": folder, "files": paths,
             "warnings": result.get("warnings", []),
+            **({"package_style": result["package_style"]} if diagram_type == "package" else {}),
         })
     common = root / "common"
     common.mkdir()
