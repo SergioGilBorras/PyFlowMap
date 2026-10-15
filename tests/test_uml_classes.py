@@ -68,7 +68,7 @@ def test_class_uml_model_and_notation(tmp_path):
     assert "<|--" in mmd
     assert "[dir=back, arrowtail=empty" in dot
     assert "<HR/>" in dot
-    assert "domain.device::Sensor" in dot
+    assert ">domain::device</FONT>" in dot and ">Sensor</B></FONT>" in dot
     assert diagram.to_dict()["uml_version"] == "2.5.1"
 
 
@@ -121,3 +121,39 @@ def test_scope_and_no_class(tmp_path):
     with (pytest.raises(ValueError, match="No class declarations"),
           load_project(tmp_path) as project):
         analyze_class_diagram(project, "domain/__init__.py")
+
+
+def test_evidence_based_class_dependencies_and_isolation(tmp_path):
+    root = tmp_path / "sample"
+    root.mkdir()
+    (root / "types.py").write_text("class Entity:\n    pass\n", encoding="utf-8")
+    (root / "service.py").write_text(
+        "from types import Entity as Record\n"
+        "class Service:\n"
+        "    def run(self, value: Record) -> list[Record]:\n"
+        "        return [value]\n"
+        "class Unrelated:\n    pass\n", encoding="utf-8",
+    )
+    with load_project(root) as project:
+        diagram = analyze_class_diagram(project)
+    assert len(diagram.dependencies) == 1
+    dep = diagram.dependencies[0]
+    assert dep.client == "service:Service"
+    assert dep.supplier == "types:Entity"
+    assert dep.evidence == ("service.py:3",)
+    assert "Unrelated" not in (dep.client, dep.supplier)
+    assert "..>" in to_mermaid(diagram)
+    assert "style=dashed, arrowhead=vee" in to_dot(diagram)
+
+
+def test_showcase_classes_are_connected_only_by_supported_relations():
+    source = Path(__file__).resolve().parents[1] / "examples/uml_showcase"
+    with load_project(source) as project:
+        diagram = analyze_class_diagram(project)
+    assert len(diagram.classes) == 4
+    assert len(diagram.generalizations) == 1
+    assert {(d.client, d.supplier) for d in diagram.dependencies} == {
+        ("orders.service:OrderService", "inventory.models:PhysicalItem"),
+        ("reports.dashboard:Dashboard", "inventory.models:PhysicalItem"),
+    }
+    assert all(d.evidence for d in diagram.dependencies)

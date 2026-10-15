@@ -53,3 +53,7 @@ activity `FlowGraph`. It must preserve file/line/symbol provenance, report
 uncertainty, and be covered by reviewed generic regressions.
 
 See [architecture](architecture.md) and [static analysis limits](analysis-rules.md).
+
+## Vista profesional sin inferencia
+
+La galería en [`scripts/offline_diagram_gallery.py`](offline-gallery.md) muestra los tres tipos en `activity/`, `classes/` y `packages/`, junto a `common/` con metadatos y CSS; no modifica las rutas habituales del CLI.

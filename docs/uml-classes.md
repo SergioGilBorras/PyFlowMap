@@ -55,3 +55,12 @@ Package diagrams now have their own source-backed UML model and Graphviz
 renderer. See [UML package diagrams](uml-packages.md).
 Sequence, state, component and other uncertain families remain long-term
 roadmap items; they are **not** implied by the class diagram command.
+
+
+## UML dependencies supported by annotations
+
+Alongside generalization, explicit class attributes and method argument/return
+annotations now support UML dependencies. The client has a dashed arrow toward
+the type it uses, with an optional use keyword. Evidence is exported in JSON.
+An annotation never proves association, composition, ownership or multiplicity.
+Independent classes remain isolated if no relationship is demonstrable.

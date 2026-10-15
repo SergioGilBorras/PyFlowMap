@@ -48,3 +48,12 @@ Build a **GitHub Pages** project site to publish installation instructions,
 rendered UML class/package examples, activity examples, semantic limits,
 testing evidence and an explicit development roadmap. Complex consumer-context
 UML families remain distant roadmap only, not planned implementation work.
+
+
+## Vector presentation of package outlines
+
+Package symbols use a wider left tab adjoining the rectangular UML package
+body; their name remains in the body because members are not displayed.
+Dependency lines stay dashed, with an open arrow pointing to the supplier.
+The offline gallery uses left-to-right layout for these compact examples.
+SVG and PNG remain derived from the same DOT source with no external assets.

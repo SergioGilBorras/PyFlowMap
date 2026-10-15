@@ -47,9 +47,10 @@ def test_package_model_has_correct_clients_suppliers_and_nesting(tmp_path):
     }
     assert all(edge.evidence for edge in diagram.dependencies)
     dot = to_dot(diagram)
-    assert "shape=folder" in dot
+    assert "shape=plain" in dot
+    assert 'SIDES="LTR"' in dot
     assert "style=dashed, arrowhead=vee" in dot
-    assert '"myapp::feature"' in dot
+    assert ">myapp::feature</B></FONT>" in dot
     assert "arrowhead=empty" not in dot
     assert diagram.to_dict()["uml_version"] == "2.5.1"
 
@@ -94,3 +95,15 @@ def test_package_scope_and_flat_project_do_not_invent_namespaces(tmp_path):
     single.write_text("def main():\n    return 1\n", encoding="utf-8")
     with load_project(single) as index, pytest.raises(ValueError, match="No declared Python packages"):
         analyze_package_diagram(index)
+
+
+def test_package_svg_has_left_tab_not_folder_notch(tmp_path):
+    root = project(tmp_path)
+    with load_project(root) as index:
+        diagram = analyze_package_diagram(index)
+    dot = to_dot(diagram, direction="LR")
+    assert 'SIDES="LTR"' in dot
+    assert 'WIDTH="88" HEIGHT="18"' in dot
+    assert 'arrowhead=vee' in dot and 'style=dashed' in dot
+    assert 'rankdir=LR' in dot
+    assert 'shape=folder' not in dot
