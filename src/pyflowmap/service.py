@@ -15,7 +15,7 @@ from .project import load_project
 from .render import render
 from .semantic import SemanticLabelProvider, enrich_activity_labels
 
-FORMATS = {"mmd", "svg", "png", "images", "all"}
+FORMATS = {"mmd", "svg", "png", "images", "all", "dot"}
 
 
 def inspect_project(source: str, scope: str | None = None) -> dict:
@@ -39,11 +39,14 @@ def generate_diagram(source: str, *, entry: str | None = None, scope: str | None
                      semantic_provider: str = "disabled", semantic_style: str = "neutral",
                      semantic_max_chars: int = 70,
                      semantic_reduction_attempts: int = 1,
-                     view: str = "detailed", max_classes: int = 250) -> dict:
+                     view: str = "detailed", max_classes: int = 250,
+                     max_packages: int = 250) -> dict:
     if format not in FORMATS:
         raise ValueError(f"format must be one of {', '.join(sorted(FORMATS))}")
-    if diagram_type not in ("activity", "class"):
-        raise ValueError(f"Unsupported diagram type '{diagram_type}'; supported: activity, class")
+    if diagram_type not in ("activity", "class", "package"):
+        raise ValueError(f"Unsupported diagram type '{diagram_type}'; supported: activity, class, package")
+    if format == "dot" and diagram_type != "package":
+        raise ValueError("--format dot is only available for UML package diagrams")
     if renderer not in ("auto", "mermaid", "graphviz"):
         raise ValueError("renderer must be auto, mermaid or graphviz")
     if view not in ("detailed", "overview", "hierarchical"):
@@ -52,6 +55,19 @@ def generate_diagram(source: str, *, entry: str | None = None, scope: str | None
         raise ValueError("semantic_provider must be disabled, mock or codex")
     if label_provider is not None and semantic_provider != "disabled":
         raise ValueError("Use either an injected label_provider or semantic_provider, not both")
+    if diagram_type == "package":
+        if entry is not None:
+            raise ValueError("Package diagrams describe a project/scope; omit --entry")
+        if view != "detailed":
+            raise ValueError("Package diagrams do not support activity --view options")
+        if semantic_provider != "disabled" or label_provider is not None:
+            raise ValueError("Package diagrams are deterministic; disable semantic labeling")
+        from .uml.package_export import generate_package_diagram
+
+        return generate_package_diagram(
+            source, scope=scope, format=format, output=output,
+            direction=direction, renderer=renderer, max_packages=max_packages,
+        )
     if diagram_type == "class":
         if entry is not None:
             raise ValueError("Class diagrams describe a project/scope; omit --entry")
