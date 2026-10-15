@@ -34,8 +34,9 @@ analyzer should represent possible paths and document what it cannot know.
 
 ## Optional future capabilities
 
-- Additional diagram families (class, package, sequence, state), each with a
-  dedicated semantic model and evaluation strategy.
+- Package diagrams: planned next using explicit package layout and static imports.
+- Sequence, state, component and other context-dependent diagrams: distant roadmap only;
+  no implementation commitment without evidence-based UML semantics.
 - More flexible but bounded output navigation and serialization.
 - Optional caching and efficiency controls for explicitly enabled labelers.
 
