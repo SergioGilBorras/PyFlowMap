@@ -50,7 +50,7 @@ def generate_gallery(source: str, entry: str, output_parent: str) -> dict:
         }
         if diagram_type == "activity":
             kwargs.update(entry=entry, max_nodes=28, max_depth=2)
-        if kind == "package":
+        if diagram_type == "package":
             kwargs["direction"] = "LR"
         result = generate_diagram(source, **kwargs)
         paths = {}
