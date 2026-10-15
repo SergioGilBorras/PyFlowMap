@@ -21,6 +21,28 @@ Keep this development repository private as the restricted archive. Make a **sep
 5. Assess the direct Git dependency on `portable-tempdirs`, and the optional private `P4-Semantic-Labeler` extras. PyPI upload is separately blocked; do not remove security-relevant tempdir behavior to bypass metadata restrictions.
 6. Confirm the exact allowed public assets and the target repository name, license, branch-protection settings, GitHub Pages plan and release policy with the owner.
 
+## Export manifest and provenance requirements
+
+Before export, maintain a machine-checkable allowlist of paths and their SHA256 hashes for the selected private commit. Include a reviewer decision for **every** tracked path, not only a list of expected extensions. Do not ship the private audit report, backup bundles, logs, generated build outputs, local configuration, access tokens, or secret-scanning findings merely because they were tracked. GitHub Actions workflows need a separate permissions/trigger review before export.
+
+Review the following groups explicitly:
+
+| Group | Required review |
+| --- | --- |
+| `src/`, CLI and MCP entrypoints | Static-only behavior, paths, outbound connections and licensing |
+| `tests/` including reference fixtures | Synthetic provenance, identifiers, Git blob hashes, and no historical original data |
+| `benchmark/`, `output_graphs/`, `output_validacion/` | Rights to samples, archives, reports and any embedded private source |
+| `site/`, `docs/`, `README.md` | SVG/asset rights, external links, paths, and disclosure of private upstream projects |
+| `.github/`, packaging manifests and scripts | Least-privilege tokens, CI triggers, dependencies, and distribution file allowlists |
+
+No single successful secrets scan is conclusive: also inspect large/binary files, Git LFS, submodules/symlinks, generated artifacts, author metadata and references in documentation. For the public snapshot, do not include a Git history audit log containing private filenames or original blob identifiers.
+
+## Dependency-release blockers
+
+Current required dependency: `portable-tempdirs` at a pinned Git commit. Verify an independently redistributable, indexed release and preserve its sandbox, ACL and temporary-directory protections before replacing the direct Git requirement. Optional `labeler` and `labeler-codex` extras point to a private Git repository and must not be advertised as generally installable until reviewed and publicly obtainable.
+
+Publishing a GitHub source release is distinct from PyPI. A public GitHub repository does **not** itself make this project's direct-URL distribution metadata eligible for PyPI.
+
 ## Controlled snapshot creation (separate approved action)
 
 - Export the *approved tracked source tree only* from the selected commit, outside the existing Git working tree and without copying its `.git` directory.
