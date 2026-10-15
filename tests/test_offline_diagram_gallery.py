@@ -33,6 +33,8 @@ def test_three_distinct_families_and_preserved_history(tmp_path, monkeypatch):
             assert item["files"].get("mmd")
         elif item["type"] == "class":
             assert model["generalizations"]
+            assert len(model["dependencies"]) == 2
+            assert all(link["evidence"] for link in model["dependencies"])
             assert item["files"].get("mmd")
         else:
             assert model["dependencies"] and item["files"].get("dot")

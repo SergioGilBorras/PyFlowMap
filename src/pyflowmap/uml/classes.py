@@ -46,10 +46,20 @@ class UmlGeneralization:
     location: str
 
 
+@dataclass(frozen=True)
+class UmlDependency:
+    """A UML dependency grounded in an explicit declared type."""
+
+    client: str
+    supplier: str
+    evidence: tuple[str, ...]
+
+
 @dataclass
 class ClassDiagram:
     classes: list[UmlClassifier] = field(default_factory=list)
     generalizations: list[UmlGeneralization] = field(default_factory=list)
+    dependencies: list[UmlDependency] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
@@ -57,6 +67,7 @@ class ClassDiagram:
             "diagram_type": "class", "uml_version": "2.5.1",
             "classes": [asdict(item) for item in self.classes],
             "generalizations": [asdict(item) for item in self.generalizations],
+            "dependencies": [asdict(item) for item in self.dependencies],
             "warnings": list(self.warnings),
         }
 
@@ -172,7 +183,39 @@ def _resolved_base(index: ProjectIndex, module: str, expr: ast.expr) -> str | No
     return matches[0] if len(matches) == 1 else None
 
 
-def analyze_class_diagram(index: ProjectIndex, scope: str | None = None, *,
+def _declared_type_dependencies(index: ProjectIndex, module: str,
+                                node: ast.ClassDef) -> list[tuple[str, str]]:
+    """Resolve only annotated types; never infer associations or ownership."""
+    annotations: list[tuple[ast.expr, int]] = []
+    for statement in node.body:
+        if isinstance(statement, ast.AnnAssign):
+            annotations.append((statement.annotation, statement.lineno))
+        if not isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        args = statement.args
+        for arg in (*args.posonlyargs, *args.args, *args.kwonlyargs):
+            if arg.annotation is not None:
+                annotations.append((arg.annotation, arg.lineno))
+        for arg in (args.vararg, args.kwarg):
+            if arg is not None and arg.annotation is not None:
+                annotations.append((arg.annotation, arg.lineno))
+        if statement.returns is not None:
+            annotations.append((statement.returns, statement.lineno))
+        if statement.name == "__init__":
+            for init in statement.body:
+                if isinstance(init, ast.AnnAssign):
+                    annotations.append((init.annotation, init.lineno))
+    found: set[tuple[str, str]] = set()
+    for annotation, line in annotations:
+        for expr in ast.walk(annotation):
+            if isinstance(expr, (ast.Name, ast.Attribute)):
+                target = _resolved_base(index, module, expr)
+                if target:
+                    found.add((target, str(line)))
+    return sorted(found)
+
+
+def analyze_class_diagram(index: ProjectIndex, scope: str | None = None, *
                           max_classes: int = MAX_CLASSES) -> ClassDiagram:
     if not 1 <= max_classes <= 1000:
         raise ValueError("max_classes must be in 1..1000")
@@ -189,6 +232,7 @@ def analyze_class_diagram(index: ProjectIndex, scope: str | None = None, *,
         raise ValueError(f"Class diagram contains {len(selected)} classes (limit {max_classes}); narrow --scope")
     result = ClassDiagram(warnings=list(index.warnings))
     ids = set(selected)
+    dependencies: dict[tuple[str, str], set[str]] = {}
     for identifier in selected:
         module, name = identifier.split(":", 1)
         record = index.modules[module]
@@ -196,6 +240,11 @@ def analyze_class_diagram(index: ProjectIndex, scope: str | None = None, *,
         attrs, operations, abstract = _class_features(node, record.path)
         result.classes.append(UmlClassifier(identifier, name, module, record.path,
                                             node.lineno, abstract, attrs, operations))
+        for supplier, line in _declared_type_dependencies(index, module, node):
+            if supplier in ids and supplier != identifier:
+                dependencies.setdefault((identifier, supplier), set()).add(
+                    f"{record.path}:{line}"
+                )
         for base in node.bases:
             parent = _resolved_base(index, module, base)
             if parent in ids and parent != identifier:
@@ -207,6 +256,12 @@ def analyze_class_diagram(index: ProjectIndex, scope: str | None = None, *,
                     f"Unmodeled external, dynamic or out-of-scope superclass at "
                     f"{record.path}:{base.lineno}"
                 )
+    inherited = {(edge.specific, edge.general) for edge in result.generalizations}
+    result.dependencies = [
+        UmlDependency(client, supplier, tuple(sorted(evidence)))
+        for (client, supplier), evidence in sorted(dependencies.items())
+        if (client, supplier) not in inherited
+    ]
     return result
 
 
@@ -245,6 +300,8 @@ def to_mermaid(diagram: ClassDiagram, direction: str = "TD") -> str:
         lines.append("    }")
     for edge in diagram.generalizations:
         lines.append(f"    {by_id[edge.general]} <|-- {by_id[edge.specific]}")
+    for edge in diagram.dependencies:
+        lines.append(f"    {by_id[edge.client]} ..> {by_id[edge.supplier]} : «use»")
     return "\n".join(lines) + "\n"
 
 
@@ -260,11 +317,14 @@ def to_dot(diagram: ClassDiagram, direction: str = "TD") -> str:
         def cell(value: str, *, align: str = "LEFT") -> str:
             return (f'<TR><TD ALIGN="{align}" CELLPADDING="8">'
                     + value + "</TD></TR>")
-        caption = escape(f"{cls.module}::{cls.name}", quote=True)
+        namespace = escape(cls.module.replace(".", "::"), quote=True)
+        caption = escape(cls.name, quote=True)
         if cls.abstract:
             caption = f"<I>{caption}</I>"
-        title = ('<TR><TD ALIGN="CENTER" BGCOLOR="#EAF0F8" CELLPADDING="9">'
-                 f'<FONT COLOR="#172A43" FACE="Helvetica"><B>{caption}</B></FONT>'
+        title = ('<TR><TD ALIGN="CENTER" BGCOLOR="#EAF0F8" CELLPADDING="10">'
+                 f'<FONT COLOR="#657A94" FACE="Helvetica" POINT-SIZE="10">{namespace}</FONT>'
+                 '<BR/>'
+                 f'<FONT COLOR="#172A43" FACE="Helvetica" POINT-SIZE="15"><B>{caption}</B></FONT>'
                  "</TD></TR>")
         def lines_for(values: list[UmlFeature], is_op: bool) -> str:
             if not values:
@@ -289,5 +349,10 @@ def to_dot(diagram: ClassDiagram, direction: str = "TD") -> str:
         # pointing to the superclass at the tail of Graphviz's layout edge.
         lines.append(f"  {by_id[edge.general]} -> {by_id[edge.specific]} "
                      "[dir=back, arrowtail=empty, arrowsize=1.1];")
+    for edge in diagram.dependencies:
+        lines.append(f"  {by_id[edge.client]} -> {by_id[edge.supplier]} "
+                     '[style=dashed, arrowhead=vee, color="#7289A1", '
+                     'fontcolor="#516A83", fontsize=10, label="«use»", '
+                     'arrowsize=0.8, constraint=false];')
     lines.append("}")
     return "\n".join(lines) + "\n"

@@ -150,22 +150,22 @@ def to_dot(diagram: PackageDiagram, direction: str = "TD") -> str:
     nodes = {pkg.id: f"P{i + 1}" for i, pkg in enumerate(diagram.packages)}
     lines = [
         "digraph uml_packages {",
-        ('  graph [bgcolor="white", pad=0.32, nodesep=1.0, ranksep=1.15, '
-         'splines=polyline, outputorder=edgesfirst];'),
+        ('  graph [bgcolor="white", pad=0.40, nodesep=0.95, ranksep=1.1, '
+         'splines=spline, outputorder=edgesfirst];'),
         f"  rankdir={'TB' if direction == 'TD' else 'LR'};",
         '  node [shape=plain, fontname="Helvetica", fontsize=14];',
-        ('  edge [style=dashed, arrowhead=vee, color="#4A6079", '
-         'penwidth=1.2, arrowsize=0.9];'),
+        ('  edge [style=dashed, arrowhead=vee, color="#526D87", '
+         'penwidth=1.3, arrowsize=0.8];'),
     ]
     for package in diagram.packages:
         # Namespaced UML package names; no unproven package import stereotypes.
         name = escape(package.id.replace(".", "::"), quote=True)
         html = (
             '<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">'
-            '<TR><TD BORDER="1" BGCOLOR="#E7EEF6" WIDTH="65" HEIGHT="12"></TD>'
-            '<TD BORDER="0" WIDTH="85"></TD></TR>'
-            '<TR><TD COLSPAN="2" BORDER="1" BGCOLOR="#F9FBFE" CELLPADDING="16">'
-            f'<FONT FACE="Helvetica" COLOR="#1A3049" POINT-SIZE="14">{name}</FONT>'
+            '<TR><TD BORDER="1" SIDES="LTR" COLOR="#344F6D" BGCOLOR="#DFEAF6" WIDTH="88" HEIGHT="18"></TD>'
+            '<TD BORDER="0" WIDTH="137"></TD></TR>'
+            '<TR><TD COLSPAN="2" BORDER="1" COLOR="#344F6D" BGCOLOR="#F7FAFE" WIDTH="225" HEIGHT="68" CELLPADDING="16">'
+            f'<FONT FACE="Helvetica" COLOR="#18324E" POINT-SIZE="16"><B>{name}</B></FONT>'
             '</TD></TR></TABLE>'
         )
         tooltip = f"{package.id} ({package.location})"
