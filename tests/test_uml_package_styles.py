@@ -4,11 +4,11 @@ import json
 from pathlib import Path
 
 import pytest
+
 from pyflowmap.cli import main
 from pyflowmap.project import load_project
 from pyflowmap.service import generate_diagram
 from pyflowmap.uml.packages import analyze_package_diagram, to_dot
-
 
 ROOT = Path(__file__).resolve().parents[1]
 SHOWCASE = ROOT / "examples" / "uml_showcase"
