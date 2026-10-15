@@ -198,3 +198,18 @@ Technical documentation:
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+
+## Experimental UML class diagrams (additive feature branch)
+
+The `class` family extracts declared classes, annotated attributes, methods,
+and verifiable local inheritance with correct UML generalization arrows.
+It does not execute the source or invent associations. See
+[UML class documentation](docs/uml-classes.md).
+
+```powershell
+pyflowmap analyze ./project --diagram-type class --format all --renderer graphviz
+```
+
+The original `activity` family remains the default. Package diagrams and a
+GitHub Pages project site are planned as later, separate stages.

@@ -17,7 +17,7 @@ class _HelpFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescrip
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="pyflowmap",
-        description="Generate static activity diagrams from Python without executing its code.",
+        description="Generate static activity and UML class diagrams without executing code.",
         formatter_class=_HelpFormatter,
         epilog=(
             "Quick start:\n"
@@ -82,8 +82,10 @@ def main(argv: list[str] | None = None) -> int:
     )
     analyze.add_argument("--direction", choices=["TD", "LR"], default="TD",
                          help="Diagram direction: top-down or left-to-right")
-    analyze.add_argument("--diagram-type", default="activity",
-                         help="Diagram family; only activity is currently supported")
+    analyze.add_argument("--diagram-type", choices=["activity", "class"], default="activity",
+                         help="Diagram family: activity flow or static UML class declarations")
+    analyze.add_argument("--max-classes", type=int, default=250,
+                         help="UML class diagram maximum declarations (does not apply to activity)")
     analyze.add_argument("--language", choices=["en", "es"], default="en",
                          help="Language for deterministic activity labels")
     analyze.add_argument("--renderer", choices=["auto", "mermaid", "graphviz"],
@@ -121,7 +123,7 @@ def main(argv: list[str] | None = None) -> int:
                                       semantic_style=args.semantic_style,
                                       semantic_max_chars=args.semantic_max_chars,
                                       semantic_reduction_attempts=args.semantic_reduction_attempts,
-                                      view=args.view)
+                                      view=args.view, max_classes=args.max_classes)
             result.pop("mermaid")  # Mermaid is in the .mmd file; keep CLI output concise.
         print(json.dumps(result, indent=2, ensure_ascii=False))
         return 0

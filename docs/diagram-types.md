@@ -2,9 +2,11 @@
 
 ## Currently supported
 
-PyFlowMap analyzes Python statically and supports one diagram family:
-**activity/flow**, selected by `--diagram-type activity` (the default).
-The flow representation uses Mermaid and can be rendered as SVG/PNG.
+PyFlowMap analyzes Python statically and supports two independent families:
+**activity/flow**, selected by `--diagram-type activity` (the default), and
+**UML class declarations**, selected by `--diagram-type class`.
+Both export Mermaid, JSON and optional SVG/PNG; class images use a dedicated
+UML Graphviz serializer. See [UML classes](uml-classes.md).
 
 Within that family, `--view` offers different **presentations**:
 
@@ -25,7 +27,9 @@ pyflowmap analyze ./project --entry app:main --view overview --format mmd
 ```
 
 Other values of `--diagram-type` are **not supported** and must fail clearly;
-they must never be silently substituted with an activity graph.
+they must never be silently substituted with an activity graph. For `class`,
+`--entry` is not needed and activity-specific `--view` and Codex labeling are
+not available.
 
 ## Possible future diagram families
 
@@ -33,13 +37,12 @@ Ideas for future development, **not currently available as commands**:
 
 | Family | Potential AST evidence | Important limitation |
 | --- | --- | --- |
-| Class | Classes, bases, attributes, annotations | Dynamic metaclasses and associations |
 | Package | Module paths and imports | Dynamic imports and environments |
 | Component | Imports, exposed interfaces, configuration | Conceptual boundaries are heuristic |
 | Sequence | Selected call sites and possible ordering | Dynamic dispatch, branching and async |
 | State | Explicit state fields and transitions | Not reliably inferable in arbitrary Python |
 
-These are proposals, not committed release features.
+These are future proposals, not implemented by the class analyzer.
 
 Any future family should use its own intermediate representation and
 serializer rather than forcing class/package/state semantics into the

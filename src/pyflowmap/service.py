@@ -39,11 +39,11 @@ def generate_diagram(source: str, *, entry: str | None = None, scope: str | None
                      semantic_provider: str = "disabled", semantic_style: str = "neutral",
                      semantic_max_chars: int = 70,
                      semantic_reduction_attempts: int = 1,
-                     view: str = "detailed") -> dict:
+                     view: str = "detailed", max_classes: int = 250) -> dict:
     if format not in FORMATS:
         raise ValueError(f"format must be one of {', '.join(sorted(FORMATS))}")
-    if diagram_type != "activity":
-        raise ValueError(f"Unsupported diagram type '{diagram_type}'; supported: activity")
+    if diagram_type not in ("activity", "class"):
+        raise ValueError(f"Unsupported diagram type '{diagram_type}'; supported: activity, class")
     if renderer not in ("auto", "mermaid", "graphviz"):
         raise ValueError("renderer must be auto, mermaid or graphviz")
     if view not in ("detailed", "overview", "hierarchical"):
@@ -52,6 +52,19 @@ def generate_diagram(source: str, *, entry: str | None = None, scope: str | None
         raise ValueError("semantic_provider must be disabled, mock or codex")
     if label_provider is not None and semantic_provider != "disabled":
         raise ValueError("Use either an injected label_provider or semantic_provider, not both")
+    if diagram_type == "class":
+        if entry is not None:
+            raise ValueError("Class diagrams describe a project/scope; omit --entry")
+        if view != "detailed":
+            raise ValueError("Class diagrams do not support activity --view options")
+        if semantic_provider != "disabled" or label_provider is not None:
+            raise ValueError("Class diagrams are deterministic; disable semantic labeling")
+        from .uml.export import generate_class_diagram
+
+        return generate_class_diagram(
+            source, scope=scope, format=format, output=output,
+            direction=direction, renderer=renderer, max_classes=max_classes,
+        )
     # Lazy-loading the optional package guarantees ordinary analysis is offline.
     if semantic_provider != "disabled":
         from .semantic.p4_provider import P4SemanticLabelProvider
