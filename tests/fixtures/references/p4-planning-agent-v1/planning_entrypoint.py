@@ -9,7 +9,6 @@ def main():
         payload = json.load(sys.stdin)
         request = PlanningRequest.from_dict(payload)
         # The next call intentionally occurs on line 12.
-        payload.setdefault("fixture", True)
         result = PlanningCoordinator().plan(request)
         sys.stdout.write(json.dumps(result.to_dict()) + "\n")
         return 0
