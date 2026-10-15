@@ -145,7 +145,7 @@ def analyze_package_diagram(index: ProjectIndex, scope: str | None = None, *,
 
 def to_dot(diagram: PackageDiagram, direction: str = "TD", *,
            style: str = "modern") -> str:
-    """Render UML dependencies; choose formal UML tabs or modern vector cards."""
+    """Render UML dependencies with formal tabs or one-piece vector folders."""
     if direction not in ("TD", "LR"):
         raise ValueError("direction must be TD or LR")
     if style not in ("modern", "strict"):
@@ -161,10 +161,13 @@ def to_dot(diagram: PackageDiagram, direction: str = "TD", *,
          'penwidth=1.3, arrowsize=0.8];'),
     ]
     if style == "modern":
+        # The folder outline IS the complete node. The name sits inside it.
+        # Graphviz renders identical self-contained vectors in SVG and PNG.
         lines[3] = (
-            '  node [shape=box, style="rounded,filled", fillcolor="#FBFDFF", '
-            'color="#A2B6CB", penwidth=1.25, margin="0.22,0.17", '
-            'fontname="Helvetica", fontsize=15];'
+            '  node [shape=folder, style=filled, fillcolor="#E2F0FC", '
+            'color="#557998", fontcolor="#18354F", penwidth=1.65, '
+            'width=2.85, height=1.05, orientation=90, margin="0.28,0.23", '
+            'fontname="Helvetica", fontsize=17];'
         )
     for package in diagram.packages:
         # Namespaced UML package names; no unproven package import stereotypes.
@@ -179,31 +182,16 @@ def to_dot(diagram: PackageDiagram, direction: str = "TD", *,
                 f'<FONT FACE="Helvetica" COLOR="#18324E" POINT-SIZE="16"><B>{name}</B></FONT>'
                 '</TD></TR></TABLE>'
             )
+            tooltip = f"{package.id} ({package.location})"
+            lines.append(f"  {nodes[package.id]} [label=<{html}>, "
+                         f"tooltip={json.dumps(tooltip)}];")
         else:
-            # Small folder pictogram *inside* a rounded card. Graphviz emits
-            # vector paths in SVG and the same icon in PNG, without assets,
-            # external images, font symbols or postprocessing.
-            icon = (
-                '<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">'
-                '<TR><TD BORDER="1" SIDES="LTR" COLOR="#54789E" '
-                'BGCOLOR="#86ADD7" WIDTH="16" HEIGHT="7"></TD>'
-                '<TD WIDTH="23" HEIGHT="7"></TD></TR>'
-                '<TR><TD COLSPAN="2" BORDER="1" COLOR="#54789E" '
-                'BGCOLOR="#CDE1F7" WIDTH="39" HEIGHT="26">'
-                '<FONT FACE="Helvetica" COLOR="#466E97" POINT-SIZE="10">&#160;</FONT>'
-                '</TD></TR></TABLE>'
-            )
-            html = (
-                '<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">'
-                f'<TR><TD VALIGN="MIDDLE">{icon}</TD>'
-                '<TD WIDTH="17"></TD>'
-                '<TD VALIGN="MIDDLE" ALIGN="LEFT">'
-                f'<FONT FACE="Helvetica" COLOR="#18324E" POINT-SIZE="16"><B>{name}</B></FONT>'
-                '</TD></TR></TABLE>'
-            )
-        tooltip = f"{package.id} ({package.location})"
-        lines.append(f"  {nodes[package.id]} [label=<{html}>, "
-                     f"tooltip={json.dumps(tooltip)}];")
+            # Large and elongated native folder, not a card with a tiny icon.
+            # The full namespace sits inside the folder silhouette.
+            title = package.id.replace(".", "::")
+            tooltip = f"{package.id} ({package.location})"
+            lines.append(f"  {nodes[package.id]} [label={json.dumps(title)}, "
+                         f"tooltip={json.dumps(tooltip)}];")
     for dependency in diagram.dependencies:
         lines.append(f"  {nodes[dependency.client]} -> {nodes[dependency.supplier]};")
     lines.append("}")

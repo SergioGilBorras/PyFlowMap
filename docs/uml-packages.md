@@ -61,11 +61,11 @@ SVG and PNG remain derived from the same DOT source with no external assets.
 
 ## Modern and strict package presentation
 
-Use `--package-style modern` (the default) for a restrained, rounded card
-containing a small **vector folder icon** beside the package name. The icon is
-made of Graphviz vector primitives and is embedded in the resulting SVG; no
-raster images, external files, network requests or platform-dependent emoji
-are required. PNG and SVG show the same geometry.
+Use `--package-style modern` (the default) for one **large, elongated
+vector folder silhouette**, with the full package name centered **inside**
+its body. There is no outer card or separate miniature icon. Graphviz's
+native folder path produces self-contained SVG and matching PNG, without
+raster images, extra asset files, remote requests or emoji fonts.
 
 Use `--package-style strict` for the traditional UML 2.5.1
 upper-left-tab package symbol. Its original DOT silhouette is retained.
