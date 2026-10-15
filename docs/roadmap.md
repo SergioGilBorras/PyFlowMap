@@ -34,7 +34,10 @@ analyzer should represent possible paths and document what it cannot know.
 
 ## Optional future capabilities
 
-- Package diagrams: planned next using explicit package layout and static imports.
+- Validate and refine new static UML class/package diagrams with independent
+  structural oracles and complete export smoke checks.
+- Create a GitHub Pages project site for installation, examples, limitations
+  and cross-platform testing evidence (after UML class/package validation).
 - Sequence, state, component and other context-dependent diagrams: distant roadmap only;
   no implementation commitment without evidence-based UML semantics.
 - More flexible but bounded output navigation and serialization.

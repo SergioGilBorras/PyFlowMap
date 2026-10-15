@@ -2,11 +2,14 @@
 
 ## Currently supported
 
-PyFlowMap analyzes Python statically and supports two independent families:
+PyFlowMap analyzes Python statically and supports three independent families:
 **activity/flow**, selected by `--diagram-type activity` (the default), and
-**UML class declarations**, selected by `--diagram-type class`.
-Both export Mermaid, JSON and optional SVG/PNG; class images use a dedicated
-UML Graphviz serializer. See [UML classes](uml-classes.md).
+**UML class declarations**, selected by `--diagram-type class`, and
+**UML package structure**, selected by `--diagram-type package`.
+Activity and class export Mermaid/JSON and optional SVG/PNG. Packages export
+DOT/JSON and optional SVG/PNG because Mermaid does not support fully compliant
+UML package symbols. See [UML classes](uml-classes.md) and
+[UML packages](uml-packages.md).
 
 Within that family, `--view` offers different **presentations**:
 
@@ -27,9 +30,10 @@ pyflowmap analyze ./project --entry app:main --view overview --format mmd
 ```
 
 Other values of `--diagram-type` are **not supported** and must fail clearly;
-they must never be silently substituted with an activity graph. For `class`,
+they must never be silently substituted with an activity graph. For `class` and `package`,
 `--entry` is not needed and activity-specific `--view` and Codex labeling are
-not available.
+not available. Package diagrams require `--format all` or `--format dot`
+(not Mermaid).
 
 ## Possible future diagram families
 
@@ -37,7 +41,6 @@ Ideas for future development, **not currently available as commands**:
 
 | Family | Potential AST evidence | Important limitation |
 | --- | --- | --- |
-| Package | Module paths and imports | Dynamic imports and environments |
 | Component | Imports, exposed interfaces, configuration | Conceptual boundaries are heuristic |
 | Sequence | Selected call sites and possible ordering | Dynamic dispatch, branching and async |
 | State | Explicit state fields and transitions | Not reliably inferable in arbitrary Python |

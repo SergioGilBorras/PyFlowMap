@@ -51,7 +51,7 @@ existing Codex labeler applies to activity captions, not UML declarations.
 - [OMG UML 2.5.1 specification](https://www.omg.org/spec/UML/2.5.1/)
 - [Mermaid class diagram grammar](https://mermaid.js.org/syntax/classDiagram)
 
-Package diagrams are the next independent module, with no consumer-provided
-configuration required for statically observed project-local dependencies.
+Package diagrams now have their own source-backed UML model and Graphviz
+renderer. See [UML package diagrams](uml-packages.md).
 Sequence, state, component and other uncertain families remain long-term
 roadmap items; they are **not** implied by the class diagram command.

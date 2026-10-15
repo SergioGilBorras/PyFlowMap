@@ -211,5 +211,12 @@ It does not execute the source or invent associations. See
 pyflowmap analyze ./project --diagram-type class --format all --renderer graphviz
 ```
 
-The original `activity` family remains the default. Package diagrams and a
-GitHub Pages project site are planned as later, separate stages.
+The original `activity` family remains the default. UML package diagrams
+are also available with real folder notation and local import dependencies:
+
+```powershell
+pyflowmap analyze ./project --diagram-type package --format all --renderer graphviz
+```
+
+See [UML package documentation](docs/uml-packages.md). A GitHub Pages site is
+planned only after both UML families finish cross-platform verification.
