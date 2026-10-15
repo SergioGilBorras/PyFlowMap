@@ -10,7 +10,6 @@ import ast
 import re
 from dataclasses import asdict, dataclass, field
 from html import escape
-from pathlib import Path
 
 from ..project import ProjectIndex
 
@@ -234,9 +233,9 @@ def to_mermaid(diagram: ClassDiagram, direction: str = "TD") -> str:
         # Labels use a unique qualified name; Mermaid identifiers remain safe.
         title = _safe_member(f"{cls.module}.{cls.name}")
         lines.append(f'    class {key}["{title}"] {{')
-        for field in cls.attributes:
-            lines.append("        " + _safe_member(_feature_text(field, False))
-                         + ("$" if field.static else ""))
+        for attribute in cls.attributes:
+            lines.append("        " + _safe_member(_feature_text(attribute, False))
+                         + ("$" if attribute.static else ""))
         for operation in cls.operations:
             text = _safe_member(_feature_text(operation, True))
             lines.append("        " + text + ("*" if operation.abstract else "")

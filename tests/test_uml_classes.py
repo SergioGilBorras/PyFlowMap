@@ -112,11 +112,11 @@ def test_ambiguous_external_bases_not_synthesized(tmp_path):
 
 
 def test_scope_and_no_class(tmp_path):
-    pkg = example(tmp_path)
+    example(tmp_path)
     with load_project(tmp_path) as project:
         diagram = analyze_class_diagram(project, "domain/base.py")
         assert len(diagram.classes) == 1
         assert not diagram.generalizations
-    with pytest.raises(ValueError, match="No class declarations"):
-        with load_project(tmp_path) as project:
-            analyze_class_diagram(project, "domain/__init__.py")
+    with (pytest.raises(ValueError, match="No class declarations"),
+          load_project(tmp_path) as project):
+        analyze_class_diagram(project, "domain/__init__.py")
