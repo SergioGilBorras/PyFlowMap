@@ -34,10 +34,11 @@ analyzer should represent possible paths and document what it cannot know.
 
 ## Optional future capabilities
 
-- Validate and refine new static UML class/package diagrams with independent
-  structural oracles and complete export smoke checks.
-- Create a GitHub Pages project site for installation, examples, limitations
-  and cross-platform testing evidence (after UML class/package validation).
+- Integrate the independently tested, still-draft UML class/package feature
+  branches without changing the original activity behavior.
+- Review and publish the already prepared GitHub Pages draft **only after**
+  the dependent PRs are merged and the final commit is verified. Page hosting
+  has not been enabled.
 - Sequence, state, component and other context-dependent diagrams: distant roadmap only;
   no implementation commitment without evidence-based UML semantics.
 - More flexible but bounded output navigation and serialization.

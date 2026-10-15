@@ -1,12 +1,14 @@
 # PyFlowMap
 
-PyFlowMap generates **static activity diagrams from Python source code** without
-importing or executing the analyzed project. It preserves possible control-flow
-routes, source references, and warnings when runtime behavior cannot be
-determined from the AST.
+PyFlowMap generates static **activity diagrams and evidence-backed UML class
+and package diagrams** from Python source code, without importing or executing
+the analyzed project. Activity diagrams preserve possible control-flow routes,
+source references, and warnings where runtime behavior is uncertain.
 
-The primary output is an editable Mermaid diagram (`.mmd`) and a source-linked
-graph (`.json`). SVG and PNG are available through Graphviz or Mermaid CLI.
+Activity and class diagrams export editable Mermaid (`.mmd`); package diagrams
+export editable Graphviz (`.dot`). All three include source-linked JSON and
+can render SVG and PNG using a suitable backend. The UML families are currently
+staged in draft feature branches, not yet released on the default branch.
 The analyzer is domain-independent: it does not require an agent framework,
 a particular application, or a semantic language model.
 
@@ -168,8 +170,10 @@ live evaluation on the authorized local machine:
 .\.venv\Scripts\python.exe scripts\validate_all.py --acknowledge-source-transmission
 ```
 
-A successful new evaluation prunes only prior runs identified as belonging
-to the validator; failed runs and unknown data are preserved for diagnosis.
+The validator preserves **every historical run by default**, including failed
+diagnostics and previous successful evidence. Removing older recognized runs
+requires the explicit `--prune-managed-history` opt-in; do not use that flag
+when preserving evidence.
 Codex produces real labels but their semantic faithfulness still needs
 independent review. CI never uses the live provider. No package is published
 by this command.
@@ -194,13 +198,16 @@ Technical documentation:
 - [Consumer diagram output](output_graphs/README.md)
 - [Complete validation output](output_validacion/README.md)
 - [Future directions](docs/roadmap.md)
+- [UML class diagrams](docs/uml-classes.md)
+- [UML package diagrams](docs/uml-packages.md)
+- [Three-family offline gallery](docs/offline-gallery.md)
 
 ## License
 
 MIT. See [LICENSE](LICENSE).
 
 
-## Experimental UML class diagrams (additive feature branch)
+## UML class and package diagrams (draft feature branches)
 
 The `class` family extracts declared classes, annotated attributes, methods,
 and verifiable local inheritance with correct UML generalization arrows.
@@ -211,15 +218,24 @@ It does not execute the source or invent associations. See
 pyflowmap analyze ./project --diagram-type class --format all --renderer graphviz
 ```
 
-The original `activity` family remains the default. UML package diagrams
-are also available with real folder notation and local import dependencies:
+The original `activity` family remains the default. Package diagrams
+represent source-backed package dependencies. The default `modern` style uses
+a single elongated vector folder with its name inside; `strict` preserves
+the traditional tabbed UML package notation:
 
 ```powershell
 pyflowmap analyze ./project --diagram-type package --format all --renderer graphviz
 ```
 
-See [UML package documentation](docs/uml-packages.md). A GitHub Pages site is
-planned only after both UML families finish cross-platform verification.
+Use `--package-style strict` for the traditional UML package shape. Visible
+package names begin with a capital letter for presentation only; the Python
+identifiers and JSON dependency endpoints retain their original case.
+
+See [UML package documentation](docs/uml-packages.md). An offline GitHub
+Pages preview already exists in the draft `site/` directory; no Pages
+deployment has been enabled. The stacked feature PRs must be reviewed and
+merged in their dependency order before the examples become available on
+the default branch.
 
 ## Galería offline: actividad, clases y paquetes
 

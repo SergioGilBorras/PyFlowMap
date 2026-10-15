@@ -16,10 +16,12 @@ A project with no declared packages fails rather than drawing fictitious ones.
 
 ## Faithful notation and limits
 
-- Each **UML Package** is drawn as a tabbed-folder symbol (Graphviz `folder`).
-  Qualified names such as `myapp::feature` retain nesting without claiming
-  a special ownership relation. The JSON additionally provides `parent`,
-  declared modules and source location.
+- Each project-local **UML Package** has an independent AST-backed identity.
+  With `--package-style strict`, it uses the traditional tabbed UML outline;
+  with `modern` (default), a single elongated vector folder contains its
+  visible name. Qualified names use `::` as a visual separator but do not
+  assert a new ownership relation. JSON records the original IDs, parent,
+  declared modules and source locations.
 - A source import resolved to another **project-local package** may be drawn
   as a UML **Dependency**: dashed line, open-chevron arrow toward the supplier
   package. Exact importing file/line evidence is recorded in JSON. The
@@ -42,21 +44,17 @@ packages. Python source is never imported or executed.
 References: [OMG UML 2.5.1](https://www.omg.org/spec/UML/2.5.1/),
 [Graphviz UML notation example](https://graphviz.org/Gallery/directed/UML_Class_diagram.html).
 
-## Next stage
+## Publication status and diagram layout
 
-Build a **GitHub Pages** project site to publish installation instructions,
-rendered UML class/package examples, activity examples, semantic limits,
-testing evidence and an explicit development roadmap. Complex consumer-context
-UML families remain distant roadmap only, not planned implementation work.
+A static GitHub Pages draft has been prepared for review in a separate PR,
+but the site is **not deployed or public**. Complex context-dependent UML
+families remain a distant roadmap, not planned implementation work.
 
-
-## Vector presentation of package outlines
-
-Package symbols use a wider left tab adjoining the rectangular UML package
-body; their name remains in the body because members are not displayed.
-Dependency lines stay dashed, with an open arrow pointing to the supplier.
-The offline gallery uses left-to-right layout for these compact examples.
-SVG and PNG remain derived from the same DOT source with no external assets.
+The `strict` variant retains the original upper-left tab. The `modern`
+variant is a *single* vector folder shape with the namespace centered inside;
+there is no surrounding card or miniature icon. Both variants use identical
+dashed dependency arrows toward the supplier. The offline gallery uses
+left-to-right layout, and SVG and PNG derive from the same DOT source.
 
 
 ## Modern and strict package presentation
@@ -83,3 +81,11 @@ the same open-arrow dashed edges. The exported JSON and CLI result record
 **Standards distinction:** `strict` follows the traditional UML package
 shape; `modern` is a clearly identified visual alternative and does not
 claim strict compliance of its pictogram with OMG glyph notation.
+
+## Display capitalization
+
+Only the **visible caption** capitalizes the initial of each package name
+segment: `reports` → `Reports`, `myapp.feature` → `Myapp::Feature`.
+This applies to both visual styles. The Python source is case-sensitive:
+package IDs, source paths, tooltips, JSON and dependency endpoints keep their
+original spelling and capitalization. Nothing is renamed in the model.

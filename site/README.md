@@ -41,3 +41,11 @@ Los enlaces del pie apuntan al repositorio y al texto de la licencia MIT,
 no a rutas de ramas que podrían desaparecer o a archivos que aún no existen
 en `main`. Los comandos UML solo estarán en `main` tras integrar sus PR.
 No desplegar Pages antes de esa fase.
+
+## Synchronization before publishing
+
+The live website has **not** been deployed. This preview belongs to stacked
+draft feature branches; its installation commands require the UML branches
+to be integrated into the default branch first. Regenerate package preview
+SVG from the final `modern` renderer before publication; do not replace
+a real generated SVG with hand-edited shapes or text.
