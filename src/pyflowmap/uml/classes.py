@@ -142,8 +142,10 @@ def _class_features(node: ast.ClassDef, path: str) -> tuple[list[UmlFeature], li
                         if (isinstance(target, ast.Attribute)
                                 and isinstance(target.value, ast.Name)
                                 and target.value.id == "self"):
+                            previous = attrs.get(target.attr)
                             attrs[target.attr] = UmlFeature(
-                                target.attr, _visibility(target.attr), typ,
+                                target.attr, _visibility(target.attr),
+                                typ or (previous.type if previous else None),
                                 location=f"{path}:{init.lineno}",
                             )
     return list(attrs.values()), operations, abstract
@@ -280,7 +282,9 @@ def to_dot(diagram: ClassDiagram, direction: str = "TD") -> str:
         tip = escape(f"{cls.module}.{cls.name} ({cls.path}:{cls.line})", quote=True)
         lines.append(f'  {by_id[cls.id]} [label=<{body}>, tooltip="{tip}"];')
     for edge in diagram.generalizations:
-        lines.append(f"  {by_id[edge.specific]} -> {by_id[edge.general]} "
-                     "[arrowhead=empty, arrowsize=1.1];")
+        # Rank superclasses above subclasses, with the open UML triangle
+        # pointing to the superclass at the tail of Graphviz's layout edge.
+        lines.append(f"  {by_id[edge.general]} -> {by_id[edge.specific]} "
+                     "[dir=back, arrowtail=empty, arrowsize=1.1];")
     lines.append("}")
     return "\n".join(lines) + "\n"

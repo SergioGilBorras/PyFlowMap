@@ -29,6 +29,7 @@ def example(tmp_path):
         "    tag: str\n"
         "    def __init__(self, value: int):\n"
         "        self.value: int = value\n"
+        "        self.tag = 'registered'\n"
         "    def _read(self) -> int:\n"
         "        return self.value\n"
         "    @staticmethod\n"
@@ -65,7 +66,7 @@ def test_class_uml_model_and_notation(tmp_path):
     assert "classDiagram" in mmd
     assert "+parse(text: str): int$" in mmd
     assert "<|--" in mmd
-    assert "[arrowhead=empty" in dot
+    assert "[dir=back, arrowtail=empty" in dot
     assert "<HR/>" in dot
     assert "domain.device::Sensor" in dot
     assert diagram.to_dict()["uml_version"] == "2.5.1"
