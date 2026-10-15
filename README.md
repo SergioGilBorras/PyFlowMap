@@ -10,11 +10,12 @@ export editable Graphviz (`.dot`). All three include source-linked JSON and
 can render SVG and PNG using a suitable backend. All three families are
 integrated on `main`. GitHub Pages, tagged releases and PyPI publication
 are separate operations and have **not yet been carried out**.
-**Public-visibility blocker:** the repository currently retains verbatim fixtures
-from a separate private project. Review redistribution permission and all
-reachable Git history before changing visibility; see the
-[publication checklist](docs/publication.md). Removing fixtures only from the
-latest commit would not remove them from existing history.
+**Public-visibility blocker:** PR #11 has replaced the ten private-origin
+fixture files in the current `main` tree with synthetic examples and passed
+cross-platform CI. The original blobs remain reachable through earlier
+commits; historical refs, logs and artifacts still require security review.
+See the [publication checklist](docs/publication.md) before making the
+repository public.
 The analyzer is domain-independent: it does not require an agent framework,
 a particular application, or a semantic language model.
 
