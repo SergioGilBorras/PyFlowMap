@@ -58,7 +58,7 @@ def test_styles_generate_self_contained_vector_svg_and_equivalent_json(tmp_path)
             assert "<image " not in svg and "xlink:href=" not in svg
             assert "<polygon" in svg or "<path" in svg
             assert "<text" in svg
-            assert "<title>reports</title>" in svg
+            assert ">reports</text>" in svg
     for payload in models.values():
         payload.pop("package_style")
     assert models["modern"] == models["strict"]
