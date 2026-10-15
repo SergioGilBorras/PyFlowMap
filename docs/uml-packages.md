@@ -46,9 +46,10 @@ References: [OMG UML 2.5.1](https://www.omg.org/spec/UML/2.5.1/),
 
 ## Publication status and diagram layout
 
-A static GitHub Pages draft has been prepared for review in a separate PR,
-but the site is **not deployed or public**. Complex context-dependent UML
-families remain a distant roadmap, not planned implementation work.
+The static Pages site has been merged into `main` under `site/`, but is
+**not yet deployed**. Its publication requires configuring GitHub Pages
+and executing a manual deployment workflow. Context-dependent UML families
+remain distant roadmap ideas, not supported features.
 
 The `strict` variant retains the original upper-left tab. The `modern`
 variant is a *single* vector folder shape with the namespace centered inside;

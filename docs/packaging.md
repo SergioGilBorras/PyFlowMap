@@ -65,10 +65,10 @@ A job that is still queued or failed is **not** package validation.
 The current `pyproject.toml` declares `portable-tempdirs` by an exact
 Git commit URL, and an optional P4-Semantic-Labeler extra from a private
 Git repository. These can be used in authorized Git/local installs;
-they are **not a conventional dependency strategy for a public PyPI
-release**. Before publishing to PyPI, replace direct Git requirements
-with suitable published dependencies or an approved, separately tested
-packaging arrangement.
+they are **direct URL dependencies incompatible with public PyPI uploaded
+metadata**. Before any PyPI publication, replace them with suitable
+versioned packages or a separately tested and approved solution. GitHub
+source releases and package-index publishing are distinct operations.
 
 Do not silently remove the temporary-directory dependency: it
 provides a safety/ACL contract used by ZIP input handling and

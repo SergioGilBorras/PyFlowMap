@@ -5,13 +5,19 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pyflowmap"
 dynamic = ["version"]
-description = "Deterministic Python activity-flow extraction with Mermaid, image export, and MCP"
+description = "Static Python activity, UML class and package diagrams with source traceability"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 authors = [{name = "PyFlowMap contributors"}]
-keywords = ["python", "mermaid", "static-analysis", "flowchart", "mcp"]
+keywords = ["python", "mermaid", "static-analysis", "uml", "class-diagram", "package-diagram", "mcp"]
 classifiers = ["Programming Language :: Python :: 3", "Programming Language :: Python :: 3 :: Only", "Topic :: Software Development :: Documentation"]
+
+[project.urls]
+Homepage = "https://github.com/SergioGilBorras/PyFlowMap"
+Repository = "https://github.com/SergioGilBorras/PyFlowMap"
+Documentation = "https://github.com/SergioGilBorras/PyFlowMap/tree/main/docs"
+Issues = "https://github.com/SergioGilBorras/PyFlowMap/issues"
 dependencies = [
     "portable-tempdirs @ git+https://github.com/SergioGilBorras/portable-tempdirs.git@fd6dbd640630e6911a53b4d756089099ec870a8b",
 ]
