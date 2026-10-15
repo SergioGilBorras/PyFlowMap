@@ -252,17 +252,20 @@ def to_dot(diagram: ClassDiagram, direction: str = "TD") -> str:
     if direction not in ("TD", "LR"):
         raise ValueError("direction must be TD or LR")
     by_id = {c.id: f"C{i + 1}" for i, c in enumerate(diagram.classes)}
-    lines = ["digraph uml_classes {", "  graph [bgcolor=white, nodesep=0.6, ranksep=0.85];",
+    lines = ["digraph uml_classes {", "  graph [bgcolor=white, pad=0.28, nodesep=0.9, ranksep=1.05, outputorder=edgesfirst];",
              f"  rankdir={'TB' if direction == 'TD' else 'LR'};",
-             "  node [shape=plain, fontname=Arial];", "  edge [color=black];"]
+             '  node [shape=plain, fontname="Helvetica", fontsize=12];',
+             '  edge [color="#3D5269", penwidth=1.15];']
     for cls in diagram.classes:
         def cell(value: str, *, align: str = "LEFT") -> str:
-            return (f'<TR><TD ALIGN="{align}" CELLPADDING="6">'
+            return (f'<TR><TD ALIGN="{align}" CELLPADDING="8">'
                     + value + "</TD></TR>")
         caption = escape(f"{cls.module}::{cls.name}", quote=True)
         if cls.abstract:
             caption = f"<I>{caption}</I>"
-        title = cell(f"<B>{caption}</B>", align="CENTER")
+        title = ('<TR><TD ALIGN="CENTER" BGCOLOR="#EAF0F8" CELLPADDING="9">'
+                 f'<FONT COLOR="#172A43" FACE="Helvetica"><B>{caption}</B></FONT>'
+                 "</TD></TR>")
         def lines_for(values: list[UmlFeature], is_op: bool) -> str:
             if not values:
                 return cell("&#160;")
@@ -276,7 +279,7 @@ def to_dot(diagram: ClassDiagram, direction: str = "TD") -> str:
                 snippets.append(txt)
             return cell('<BR ALIGN="LEFT"/>'.join(snippets))
         body = (f'<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" '
-                f'BGCOLOR="white">{title}'
+                f'BGCOLOR="white" COLOR="#52677F">{title}'
                 f'<HR/>{lines_for(cls.attributes, False)}'
                 f'<HR/>{lines_for(cls.operations, True)}</TABLE>')
         tip = escape(f"{cls.module}.{cls.name} ({cls.path}:{cls.line})", quote=True)

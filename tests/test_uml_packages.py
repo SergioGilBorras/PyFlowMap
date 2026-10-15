@@ -47,9 +47,10 @@ def test_package_model_has_correct_clients_suppliers_and_nesting(tmp_path):
     }
     assert all(edge.evidence for edge in diagram.dependencies)
     dot = to_dot(diagram)
-    assert "shape=folder" in dot
+    assert "shape=plain" in dot
+    assert '<TD BORDER="1" BGCOLOR="#E7EEF6"' in dot
     assert "style=dashed, arrowhead=vee" in dot
-    assert '"myapp::feature"' in dot
+    assert ">myapp::feature</FONT>" in dot
     assert "arrowhead=empty" not in dot
     assert diagram.to_dict()["uml_version"] == "2.5.1"
 

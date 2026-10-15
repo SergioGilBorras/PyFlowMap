@@ -220,3 +220,7 @@ pyflowmap analyze ./project --diagram-type package --format all --renderer graph
 
 See [UML package documentation](docs/uml-packages.md). A GitHub Pages site is
 planned only after both UML families finish cross-platform verification.
+
+## Galería offline: actividad, clases y paquetes
+
+Ejecuta `python scripts/offline_diagram_gallery.py` con el entorno de desarrollo instalado y Graphviz. Obtendrás una carpeta nueva con diagramas separados en `activity/`, `classes/`, `packages/` y recursos comunes en `common/`, más un `index.html` local profesional. Sin Codex ni LLM. [Instrucciones](docs/offline-gallery.md).

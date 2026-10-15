@@ -10,6 +10,7 @@ from __future__ import annotations
 import ast
 import json
 from dataclasses import asdict, dataclass, field
+from html import escape
 from pathlib import PurePosixPath
 
 from ..project import ProjectIndex
@@ -143,20 +144,34 @@ def analyze_package_diagram(index: ProjectIndex, scope: str | None = None, *,
 
 
 def to_dot(diagram: PackageDiagram, direction: str = "TD") -> str:
+    """Draw a UML package with its small tab at the upper-left, not a file icon."""
     if direction not in ("TD", "LR"):
         raise ValueError("direction must be TD or LR")
     nodes = {pkg.id: f"P{i + 1}" for i, pkg in enumerate(diagram.packages)}
-    lines = ["digraph uml_packages {", "  graph [bgcolor=white, nodesep=0.8, ranksep=1.0];",
-             f"  rankdir={'TB' if direction == 'TD' else 'LR'};",
-             "  node [shape=folder, fontname=Arial, fontsize=14, color=black,",
-             "        style=filled, fillcolor=white, margin=\"0.28,0.14\"];",
-             "  edge [style=dashed, arrowhead=vee, color=black, arrowsize=1.0];"]
+    lines = [
+        "digraph uml_packages {",
+        '  graph [bgcolor="white", pad=0.32, nodesep=1.0, ranksep=1.15, '
+        'splines=polyline, outputorder=edgesfirst];',
+        f"  rankdir={'TB' if direction == 'TD' else 'LR'};",
+        '  node [shape=plain, fontname="Helvetica", fontsize=14];',
+        '  edge [style=dashed, arrowhead=vee, color="#4A6079", '
+        'penwidth=1.2, arrowsize=0.9];',
+    ]
     for package in diagram.packages:
-        label = package.id.replace(".", "::")
+        # Namespaced UML package names; no unproven package import stereotypes.
+        name = escape(package.id.replace(".", "::"), quote=True)
+        html = (
+            '<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">'
+            '<TR><TD BORDER="1" BGCOLOR="#E7EEF6" WIDTH="65" HEIGHT="12"></TD>'
+            '<TD BORDER="0" WIDTH="85"></TD></TR>'
+            '<TR><TD COLSPAN="2" BORDER="1" BGCOLOR="#F9FBFE" CELLPADDING="16">'
+            f'<FONT FACE="Helvetica" COLOR="#1A3049" POINT-SIZE="14">{name}</FONT>'
+            '</TD></TR></TABLE>'
+        )
         tooltip = f"{package.id} ({package.location})"
-        lines.append(f"  {nodes[package.id]} [label={json.dumps(label)}, "
+        lines.append(f"  {nodes[package.id]} [label=<{html}>, "
                      f"tooltip={json.dumps(tooltip)}];")
-    for dep in diagram.dependencies:
-        lines.append(f"  {nodes[dep.client]} -> {nodes[dep.supplier]};")
+    for dependency in diagram.dependencies:
+        lines.append(f"  {nodes[dependency.client]} -> {nodes[dependency.supplier]};")
     lines.append("}")
     return "\n".join(lines) + "\n"
