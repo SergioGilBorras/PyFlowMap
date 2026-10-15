@@ -13,6 +13,7 @@ from scripts.validate_diagram_families import (
     validate_packages,
 )
 
+
 def test_manifest_covers_each_family():
     cases = load_cases()
     assert len(cases) == 21

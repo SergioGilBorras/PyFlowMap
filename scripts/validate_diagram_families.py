@@ -162,9 +162,9 @@ def run_bank(output_parent: Path) -> dict:
         styles = STYLES if family == "package" else (None,)
         for style in styles:
             start = time.monotonic()
-            opts = dict(source=str(source), diagram_type=family,
-                        renderer="graphviz", format="all", semantic_provider="disabled",
-                        output=str(root / family / identifier / (style or "diagram")))
+            opts = {"source": str(source), "diagram_type": family,
+                    "renderer": "graphviz", "format": "all", "semantic_provider": "disabled",
+                    "output": str(root / family / identifier / (style or "diagram"))}
             if family == "activity":
                 opts.update(entry=case["entry"], max_nodes=30, max_depth=3)
             elif family == "package":
