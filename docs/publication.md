@@ -15,6 +15,18 @@ code that should remain private. GitHub Actions logs, history and artifacts
 also become visible to everyone. This checklist does not certify that old
 commits are free of sensitive information.
 
+**Important redistributability blocker found in the current `main` tree:**
+`tests/fixtures/references/p4-planning-agent-v1/` contains ten verbatim
+Git blobs identified in `tests/fixtures/references/manifest.json` as coming
+from the **private** `SergioGilBorras/P4-Planning-Agent` repository.
+A simple current-tree scan did not detect familiar literal credential markers
+in these ten files, but that neither grants redistribution rights nor proves
+the full Git history/CI logs are clear. Before making PyFlowMap public,
+obtain explicit approval to disclose these reference files or replace them
+with licensed/synthetic, functionally equivalent regression fixtures and
+rerun tests. Simply deleting them from the tip of `main` would **not**
+erase them from earlier reachable commits or branches.
+
 Also verify permission to redistribute benchmark fixtures and examples,
 check the MIT license, and review whether any private Git dependency in the
 installation instructions should be public and available to consumers.
