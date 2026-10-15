@@ -9,7 +9,7 @@ def main():
         source = json.load(sys.stdin)
         request = PlanningRequest.from_dict(source)
         coordinator = PlanningCoordinator()
-        result = coordinator.plan(request)
+\n        result = coordinator.plan(request)
         sys.stdout.write(json.dumps(result.to_dict()) + "\n")
         return 0
     except (ValueError, json.JSONDecodeError):
