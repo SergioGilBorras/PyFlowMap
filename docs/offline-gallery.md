@@ -36,7 +36,10 @@ JavaScript, CDNs ni conexión a Internet.
 
 ## Estilo de paquetes
 
-La galería utiliza el estilo vectorial `modern` de manera predeterminada.
+La galería utiliza el estilo vectorial `modern` de manera predeterminada:
+una carpeta horizontal grande y única, con el nombre dentro, sin tarjeta
+exterior ni icono pequeño. Los nombres se muestran con inicial mayúscula
+sin modificar los identificadores Python.
 El estilo `strict` con pestaña UML continúa disponible desde el comando
 `pyflowmap analyze ... --diagram-type package --package-style strict`.
 Ambos representan las mismas dependencias; el manifiesto deja constancia
