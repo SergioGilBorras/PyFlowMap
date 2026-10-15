@@ -32,7 +32,7 @@
 <title>P1</title>
 <g id="a_node1"><a xlink:title="inventory (inventory/__init__.py)">
 <polygon fill="#e2f0fc" stroke="#557998" stroke-width="1.65" points="568,-146 571,-150 592,-150 595,-146 773,-146 773,-70 568,-70 568,-146"/>
-<text text-anchor="middle" x="670.5" y="-103.9" font-family="Helvetica,sans-Serif" font-size="17.00" fill="#18354f">inventory</text>
+<text text-anchor="middle" x="670.5" y="-103.9" font-family="Helvetica,sans-Serif" font-size="17.00" fill="#18354f">Inventory</text>
 </a>
 </g>
 </g>
@@ -41,7 +41,7 @@
 <title>P2</title>
 <g id="a_node2"><a xlink:title="orders (orders/__init__.py)">
 <polygon fill="#e2f0fc" stroke="#557998" stroke-width="1.65" points="284,-76 287,-80 308,-80 311,-76 489,-76 489,0 284,0 284,-76"/>
-<text text-anchor="middle" x="386.5" y="-33.9" font-family="Helvetica,sans-Serif" font-size="17.00" fill="#18354f">orders</text>
+<text text-anchor="middle" x="386.5" y="-33.9" font-family="Helvetica,sans-Serif" font-size="17.00" fill="#18354f">Orders</text>
 </a>
 </g>
 </g>
@@ -50,7 +50,7 @@
 <title>P3</title>
 <g id="a_node3"><a xlink:title="reports (reports/__init__.py)">
 <polygon fill="#e2f0fc" stroke="#557998" stroke-width="1.65" points="0,-146 3,-150 24,-150 27,-146 205,-146 205,-70 0,-70 0,-146"/>
-<text text-anchor="middle" x="102.5" y="-103.9" font-family="Helvetica,sans-Serif" font-size="17.00" fill="#18354f">reports</text>
+<text text-anchor="middle" x="102.5" y="-103.9" font-family="Helvetica,sans-Serif" font-size="17.00" fill="#18354f">Reports</text>
 </a>
 </g>
 </g>

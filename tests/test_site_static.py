@@ -39,6 +39,8 @@ def test_pages_site_contains_three_real_self_contained_svgs():
         assert img.get("alt")
         content = (SITE / img["src"]).read_text(encoding="utf-8")
         assert "<svg " in content and "</svg>" in content
+        if img["src"] == "assets/packages.svg":
+            assert all(f">{name}</text>" in content for name in ("Reports", "Orders", "Inventory"))
         assert "<image " not in content and "xlink:href=" not in content
     assert (SITE / "assets/site.css").is_file()
 
