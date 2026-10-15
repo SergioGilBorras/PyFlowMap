@@ -1,0 +1,69 @@
+name: Deploy PyFlowMap Pages (manual)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout the exact commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Verify the static website before uploading it
+        shell: bash
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+
+          root = Path("site")
+          assert (root / "index.html").is_file()
+          assert (root / "assets/site.css").is_file()
+
+          class LocalLinks(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.paths = []
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  for field in ("src", "href"):
+                      p = attrs.get(field, "")
+                      if p and not p.startswith(("https://", "http://", "#", "mailto:", "./")):
+                          self.paths.append(p)
+
+          parser = LocalLinks()
+          parser.feed((root / "index.html").read_text(encoding="utf-8"))
+          assert all((root / p).is_file() for p in parser.paths), parser.paths
+          for name in ("activity", "classes", "packages"):
+              ET.parse(root / "assets" / f"{name}.svg")
+          print("Pages static preflight PASS")
+          PY
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload only site/
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
