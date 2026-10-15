@@ -1,0 +1,78 @@
+name: PyFlowMap Windows validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'feat/**'
+      - 'release/**'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-package-smoke:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.13']
+
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+
+      - name: Configure Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Graphviz
+        shell: pwsh
+        run: choco install graphviz --no-progress -y
+
+      - name: Install development dependencies
+        run: |
+          python -m pip install --upgrade pip build
+          python -m pip install -e '.[dev,mcp]'
+
+      - name: Unit and regression tests
+        run: python -m pytest -q
+
+      - name: Ruff
+        run: ruff check src tests scripts
+
+      - name: Build wheel and sdist
+        run: python -m build --wheel --sdist --outdir dist
+
+      - name: Install wheel and smoke-test installed commands
+        shell: pwsh
+        run: |
+          $wheel = Get-ChildItem dist -Filter '*.whl' | Select-Object -First 1
+          if (-not $wheel) { throw 'Wheel was not built.' }
+          $venv = Join-Path $env:RUNNER_TEMP 'pyflowmap-wheel'
+          python -m venv $venv
+          $python = Join-Path $venv 'Scripts/python.exe'
+          $command = Join-Path $venv 'Scripts/pyflowmap.exe'
+          & $python -m pip install --upgrade pip
+          & $python -m pip install "$($wheel.FullName)[mcp]"
+          & $python -m pip check
+          & $python -m pyflowmap.cli --help
+          & $python -m pyflowmap.cli --version
+          & $command --help
+          & $command --version
+          @'
+          def demo(value):
+              if value:
+                  return "yes"
+              return "no"
+          '@ | Set-Content -Encoding utf8 (Join-Path $env:RUNNER_TEMP 'demo.py')
+          $output = Join-Path $env:RUNNER_TEMP 'diagrams'
+          & $command analyze (Join-Path $env:RUNNER_TEMP 'demo.py') --format all --renderer graphviz --output $output
+          foreach ($format in @('json', 'mmd', 'svg', 'png')) {
+            if (-not (Get-ChildItem $output -Filter "*.$format" -Recurse)) { throw "Missing $format output" }
+          }
+          & $python -c 'import pyflowmap.mcp_server; import importlib.metadata as m; print(m.version("pyflowmap"))'
+          dot -V

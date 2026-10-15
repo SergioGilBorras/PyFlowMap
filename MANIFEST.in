@@ -1,0 +1,11 @@
+include README.md LICENSE
+recursive-include src/pyflowmap *.py
+prune tests
+prune benchmark
+prune docs
+prune examples
+prune scripts
+prune pyflowmap-output
+prune benchmark-results
+prune .serena
+global-exclude *.py[cod] __pycache__ *.zip .env .env.*

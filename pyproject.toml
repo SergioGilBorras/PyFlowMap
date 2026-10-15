@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyflowmap"
+dynamic = ["version"]
+description = "Deterministic Python activity-flow extraction with Mermaid, image export, and MCP"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{name = "PyFlowMap contributors"}]
+keywords = ["python", "mermaid", "static-analysis", "flowchart", "mcp"]
+classifiers = ["Programming Language :: Python :: 3", "Programming Language :: Python :: 3 :: Only", "Topic :: Software Development :: Documentation"]
+dependencies = [
+    "portable-tempdirs @ git+https://github.com/SergioGilBorras/portable-tempdirs.git@fd6dbd640630e6911a53b4d756089099ec870a8b",
+]
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.10,<3"]
+dev = ["pytest>=8", "ruff>=0.6", "setuptools>=69", "wheel"]
+# GitHub tag dependency is OPTIONAL; Codex is never installed by default.
+labeler = ["p4-semantic-labeler @ git+https://github.com/SergioGilBorras/P4-Semantic-Labeler.git@v0.1.0"]
+labeler-codex = ["p4-semantic-labeler[codex] @ git+https://github.com/SergioGilBorras/P4-Semantic-Labeler.git@v0.1.0"]
+
+[project.scripts]
+pyflowmap = "pyflowmap.cli:main"
+pyflowmap-mcp = "pyflowmap.mcp_server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+version = {attr = "pyflowmap.__version__"}
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "benchmark"]
+
+[tool.ruff]
+line-length = 100
+# Preserve upstream P4 Git blobs byte-for-byte; these files are fixtures, not project code.
+extend-exclude = ["tests/fixtures/references/**"]

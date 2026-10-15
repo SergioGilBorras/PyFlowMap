@@ -1,0 +1,21 @@
+{
+  "versions": {
+    "p4-planning-v1": {
+      "repository": "SergioGilBorras/P4-Planning-Agent",
+      "commit_sha": "8e68c720bef75e24acd6b3ed8a237b41fa3a838d",
+      "directory": "p4-planning-agent-v1",
+      "blobs": {
+        "planning_entrypoint.py": "a0ca66d2b9c194891417efe2e87460a603f747ce",
+        "planning/coordinator.py": "924d2a30fd77a45a195c65f189dc308d95ed40bb",
+        "planning/models.py": "b62bbb3163bf732a591e17eae1a971eeed2845c7",
+        "planning/requirement_agent.py": "97566b0b0abae43ee6680e8a6ba0a930c8554437",
+        "planning/decomposition_agent.py": "c202123853eac886685af143dfa53975c234a22b",
+        "planning/reuse_research_agent.py": "f79f658cf74aec051e8e665aab2051dcb3b3ae00",
+        "planning/technical_planning_agent.py": "0022d0af8ef2451196938b05573881f63f9a7c3c",
+        "adapters/llm.py": "138d33cbe444fcd1c76b8291bdb3437b6d8a033b",
+        "adapters/project_context.py": "04e178845e3e62bbdfe1c0d8f86518e9bf587703",
+        "adapters/web_research.py": "cc0ceafb6da69457a93e7961428957e46b771627"
+      }
+    }
+  }
+}

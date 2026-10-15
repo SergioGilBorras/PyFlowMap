@@ -1,0 +1,307 @@
+{
+  "name": "PyFlowMap — Banco transversal independiente V1",
+  "generated": "2026-10-13",
+  "case_count": 28,
+  "python_target": "3.13",
+  "kind": "blind-first-run",
+  "parameters": {
+    "max_nodes": 30,
+    "max_depth": 3,
+    "language": "es",
+    "renderer": "graphviz",
+    "format": "all",
+    "semantic_provider": "disabled"
+  },
+  "cases": [
+    {
+      "id": "c01",
+      "domain": "comercio",
+      "entry": "pricing:compute_offer",
+      "source": "fixtures/c01",
+      "tags": [
+        "retornos",
+        "if anidados",
+        "expresion condicional"
+      ]
+    },
+    {
+      "id": "c02",
+      "domain": "cartografia",
+      "entry": "signal:interpret",
+      "source": "fixtures/c02",
+      "tags": [
+        "match/case",
+        "guardas",
+        "capturas",
+        "comodin"
+      ]
+    },
+    {
+      "id": "c03",
+      "domain": "agricultura",
+      "entry": "harvest:allocate",
+      "source": "fixtures/c03",
+      "tags": [
+        "for/else",
+        "break",
+        "continue",
+        "acumulacion"
+      ]
+    },
+    {
+      "id": "c04",
+      "domain": "mecanica",
+      "entry": "pressure:stabilize",
+      "source": "fixtures/c04",
+      "tags": [
+        "while/else",
+        "continue",
+        "break"
+      ]
+    },
+    {
+      "id": "c05",
+      "domain": "publicacion",
+      "entry": "thumbnail:make_preview",
+      "source": "fixtures/c05",
+      "tags": [
+        "return en try/finally y cleanup"
+      ]
+    },
+    {
+      "id": "c06",
+      "domain": "gestion_documental",
+      "entry": "archive:publish",
+      "source": "fixtures/c06",
+      "tags": [
+        "with anidados",
+        "salida temprana"
+      ]
+    },
+    {
+      "id": "c07",
+      "domain": "investigacion",
+      "entry": "jobs:run_remote",
+      "source": "fixtures/c07",
+      "tags": [
+        "async with",
+        "await",
+        "excepcion"
+      ]
+    },
+    {
+      "id": "c08",
+      "domain": "inventario",
+      "entry": "stock:reconcile",
+      "source": "fixtures/c08",
+      "tags": [
+        "try except else finally",
+        "return",
+        "raise"
+      ]
+    },
+    {
+      "id": "c09",
+      "domain": "robotica",
+      "entry": "motion:step",
+      "source": "fixtures/c09",
+      "tags": [
+        "cortocircuito",
+        "efectos y ternario"
+      ]
+    },
+    {
+      "id": "c10",
+      "domain": "astronomia",
+      "entry": "calibration:calibrate",
+      "source": "fixtures/c10",
+      "tags": [
+        "llamadas entre modulos y alias de importacion"
+      ]
+    },
+    {
+      "id": "c11",
+      "domain": "transporte",
+      "entry": "ticket:allocate_seats",
+      "source": "fixtures/c11",
+      "tags": [
+        "funcion local",
+        "nonlocal",
+        "while",
+        "return"
+      ]
+    },
+    {
+      "id": "c12",
+      "domain": "contabilidad",
+      "entry": "ledger:transfer",
+      "source": "fixtures/c12",
+      "tags": [
+        "decorador y wrapper con rutas"
+      ]
+    },
+    {
+      "id": "c13",
+      "domain": "educacion",
+      "entry": "scores:build_index",
+      "source": "fixtures/c13",
+      "tags": [
+        "lista/dict comprension y generador perezoso"
+      ]
+    },
+    {
+      "id": "c14",
+      "domain": "musica",
+      "entry": "queue:iterate_tracks",
+      "source": "fixtures/c14",
+      "tags": [
+        "yield",
+        "yield from",
+        "return en generador"
+      ]
+    },
+    {
+      "id": "c15",
+      "domain": "ciencias",
+      "entry": "tree:aggregate",
+      "source": "fixtures/c15",
+      "tags": [
+        "recursion",
+        "nodo base",
+        "excepcion"
+      ]
+    },
+    {
+      "id": "c16",
+      "domain": "interfaces",
+      "entry": "events:handle_event",
+      "source": "fixtures/c16",
+      "tags": [
+        "dos match anidados",
+        "guardas y retornos"
+      ]
+    },
+    {
+      "id": "c17",
+      "domain": "bibliografia",
+      "entry": "parser:parse_item",
+      "source": "fixtures/c17",
+      "tags": [
+        "operador walrus",
+        "assert",
+        "excepcion"
+      ]
+    },
+    {
+      "id": "c18",
+      "domain": "laboratorio",
+      "entry": "tests:finalize",
+      "source": "fixtures/c18",
+      "tags": [
+        "return en finally sustituye excepcion/return"
+      ]
+    },
+    {
+      "id": "c19",
+      "domain": "flota",
+      "entry": "vehicles:ElectricVan.operate",
+      "source": "fixtures/c19",
+      "tags": [
+        "herencia",
+        "super y override"
+      ]
+    },
+    {
+      "id": "c20",
+      "domain": "matematicas",
+      "entry": "boundaries:clip_range",
+      "source": "fixtures/c20",
+      "tags": [
+        "comparacion encadenada",
+        "multiples retornos"
+      ]
+    },
+    {
+      "id": "c21",
+      "domain": "extensibilidad",
+      "entry": "router:dispatch_action",
+      "source": "fixtures/c21",
+      "tags": [
+        "getattr dinamico y destino ambiguo"
+      ]
+    },
+    {
+      "id": "c22",
+      "domain": "telemetria",
+      "entry": "batch:consume_stream",
+      "source": "fixtures/c22",
+      "tags": [
+        "async for",
+        "try/except",
+        "await"
+      ]
+    },
+    {
+      "id": "c23",
+      "domain": "prevencion",
+      "entry": "emergency:shutdown",
+      "source": "fixtures/c23",
+      "tags": [
+        "with",
+        "raise",
+        "catch",
+        "return"
+      ]
+    },
+    {
+      "id": "c24",
+      "domain": "geometria",
+      "entry": "shapes:classify",
+      "source": "fixtures/c24",
+      "tags": [
+        "patrones de clase",
+        "OR",
+        "guardas"
+      ]
+    },
+    {
+      "id": "c25",
+      "domain": "mensajeria",
+      "entry": "delivery:flush_messages",
+      "source": "fixtures/c25",
+      "tags": [
+        "bucle anidado con break",
+        "for/else",
+        "finally"
+      ]
+    },
+    {
+      "id": "c26",
+      "domain": "datos_clinicos_sinteticos",
+      "entry": "records:export_data",
+      "source": "fixtures/c26",
+      "tags": [
+        "async with",
+        "retorno temprano y limpieza"
+      ]
+    },
+    {
+      "id": "c27",
+      "domain": "ensamblado_modular",
+      "entry": "launcher:launch",
+      "source": "fixtures/c27",
+      "tags": [
+        "importaciones desde paquetes y alias de funcion"
+      ]
+    },
+    {
+      "id": "c28",
+      "domain": "analisis_numerico",
+      "entry": "analysis:metrics",
+      "source": "fixtures/c28",
+      "tags": [
+        "generador perezoso frente a lista eager"
+      ]
+    }
+  ]
+}

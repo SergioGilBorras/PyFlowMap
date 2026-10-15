@@ -1,0 +1,364 @@
+{
+  "name": "PyFlowMap — Segunda batería independiente V2",
+  "generated": "2026-10-13",
+  "case_count": 30,
+  "python_target": "3.13",
+  "kind": "first-run-evaluation",
+  "parameters": {
+    "max_nodes": 30,
+    "max_depth": 3,
+    "language": "es",
+    "renderer": "graphviz",
+    "format": "all",
+    "semantic_provider": "disabled"
+  },
+  "cases": [
+    {
+      "id": "v01",
+      "domain": "bibliotecas digitales",
+      "entry": "catalog:route_request",
+      "source": "fixtures/v01",
+      "tags": [
+        "match/case",
+        "captura AS",
+        "guardas",
+        "retornos"
+      ]
+    },
+    {
+      "id": "v02",
+      "domain": "cultivos hidropónicos",
+      "entry": "nutrients:select_formula",
+      "source": "fixtures/v02",
+      "tags": [
+        "for/else",
+        "try/except",
+        "break",
+        "return"
+      ]
+    },
+    {
+      "id": "v03",
+      "domain": "centro ferroviario",
+      "entry": "switches:move_train",
+      "source": "fixtures/v03",
+      "tags": [
+        "while/else",
+        "bucles anidados",
+        "break",
+        "continue"
+      ]
+    },
+    {
+      "id": "v04",
+      "domain": "audio",
+      "entry": "mixer:render_sample",
+      "source": "fixtures/v04",
+      "tags": [
+        "try/finally",
+        "return pendiente",
+        "sustitución en finally"
+      ]
+    },
+    {
+      "id": "v05",
+      "domain": "gestión de archivos",
+      "entry": "writer:atomic_publish",
+      "source": "fixtures/v05",
+      "tags": [
+        "with anidados",
+        "return",
+        "excepción"
+      ]
+    },
+    {
+      "id": "v06",
+      "domain": "telemática",
+      "entry": "receiver:consume_packets",
+      "source": "fixtures/v06",
+      "tags": [
+        "async for",
+        "async with",
+        "await",
+        "else"
+      ]
+    },
+    {
+      "id": "v07",
+      "domain": "control energético",
+      "entry": "dispatch:refresh",
+      "source": "fixtures/v07",
+      "tags": [
+        "await",
+        "cancelación",
+        "try/except/finally",
+        "async with"
+      ]
+    },
+    {
+      "id": "v08",
+      "domain": "geometría procedural",
+      "entry": "vertices:stream_vertices",
+      "source": "fixtures/v08",
+      "tags": [
+        "generator",
+        "yield from",
+        "try/finally"
+      ]
+    },
+    {
+      "id": "v09",
+      "domain": "ciencia de materiales",
+      "entry": "specimens:receive_samples",
+      "source": "fixtures/v09",
+      "tags": [
+        "yield",
+        "send",
+        "return",
+        "except"
+      ]
+    },
+    {
+      "id": "v10",
+      "domain": "recomendaciones",
+      "entry": "filtering:find_match",
+      "source": "fixtures/v10",
+      "tags": [
+        "walrus",
+        "and/or",
+        "llamadas en condiciones"
+      ]
+    },
+    {
+      "id": "v11",
+      "domain": "instrumentación",
+      "entry": "probe:activate",
+      "source": "fixtures/v11",
+      "tags": [
+        "resolución por receptor",
+        "llamadas anidadas",
+        "argumentos"
+      ]
+    },
+    {
+      "id": "v12",
+      "domain": "álgebra simbólica",
+      "entry": "expr:evaluate",
+      "source": "fixtures/v12",
+      "tags": [
+        "recursión mutua",
+        "funciones locales",
+        "nonlocal"
+      ]
+    },
+    {
+      "id": "v13",
+      "domain": "meteorología",
+      "entry": "weather:decide",
+      "source": "fixtures/v13",
+      "tags": [
+        "propiedades",
+        "getattr",
+        "despacho dinámico"
+      ]
+    },
+    {
+      "id": "v14",
+      "domain": "consolas de operación",
+      "entry": "command:interpret_twice",
+      "source": "fixtures/v14",
+      "tags": [
+        "dos match",
+        "guardas en ambos",
+        "variables capturadas"
+      ]
+    },
+    {
+      "id": "v15",
+      "domain": "cobro de tasas",
+      "entry": "fees:calculate_fee",
+      "source": "fixtures/v15",
+      "tags": [
+        "herencia múltiple",
+        "MRO",
+        "super",
+        "métodos"
+      ]
+    },
+    {
+      "id": "v16",
+      "domain": "trazabilidad",
+      "entry": "tracker:perform",
+      "source": "fixtures/v16",
+      "tags": [
+        "decoradores apilados",
+        "wrapper",
+        "finally"
+      ]
+    },
+    {
+      "id": "v17",
+      "domain": "microservicio modular",
+      "entry": "main:process_message",
+      "source": "fixtures/v17",
+      "tags": [
+        "paquete multimódulo",
+        "alias import",
+        "excepciones",
+        "método"
+      ]
+    },
+    {
+      "id": "v18",
+      "domain": "sistemas acústicos",
+      "entry": "accumulator:configure",
+      "source": "fixtures/v18",
+      "tags": [
+        "closure",
+        "nonlocal",
+        "callbacks",
+        "función devuelta"
+      ]
+    },
+    {
+      "id": "v19",
+      "domain": "validación masiva",
+      "entry": "bulk:verify_all",
+      "source": "fixtures/v19",
+      "tags": [
+        "exception groups",
+        "except*",
+        "finally"
+      ]
+    },
+    {
+      "id": "v20",
+      "domain": "configuración de recursos",
+      "entry": "gate:operate",
+      "source": "fixtures/v20",
+      "tags": [
+        "__exit__ dinámico",
+        "with",
+        "except",
+        "return"
+      ]
+    },
+    {
+      "id": "v21",
+      "domain": "colas de impresión",
+      "entry": "spool:drain",
+      "source": "fixtures/v21",
+      "tags": [
+        "for",
+        "try/except/else/finally",
+        "break",
+        "continue"
+      ]
+    },
+    {
+      "id": "v22",
+      "domain": "procesamiento espacial",
+      "entry": "cloud:cluster",
+      "source": "fixtures/v22",
+      "tags": [
+        "comprensiones anidadas",
+        "filtros",
+        "generador diferido"
+      ]
+    },
+    {
+      "id": "v23",
+      "domain": "mensajería de red",
+      "entry": "schema:decode",
+      "source": "fixtures/v23",
+      "tags": [
+        "match mapping",
+        "OR",
+        "sequence",
+        "guardas"
+      ]
+    },
+    {
+      "id": "v24",
+      "domain": "sesiones de usuario",
+      "entry": "sessions:choose",
+      "source": "fixtures/v24",
+      "tags": [
+        "walrus",
+        "ternario",
+        "cortocircuito",
+        "llamadas con side effects"
+      ]
+    },
+    {
+      "id": "v25",
+      "domain": "biometría experimental",
+      "entry": "samples:validate_bounds",
+      "source": "fixtures/v25",
+      "tags": [
+        "assert",
+        "optimización",
+        "mensaje con efectos"
+      ]
+    },
+    {
+      "id": "v26",
+      "domain": "planificación de lotes",
+      "entry": "scheduler:execute_chain",
+      "source": "fixtures/v26",
+      "tags": [
+        "async def",
+        "await en argumento",
+        "try/finally",
+        "raise"
+      ]
+    },
+    {
+      "id": "v27",
+      "domain": "registros notariales",
+      "entry": "registry:extract",
+      "source": "fixtures/v27",
+      "tags": [
+        "unpacking",
+        "match",
+        "except",
+        "raise from"
+      ]
+    },
+    {
+      "id": "v28",
+      "domain": "estadística incremental",
+      "entry": "stream:measure",
+      "source": "fixtures/v28",
+      "tags": [
+        "async generator",
+        "async for",
+        "yield",
+        "finally"
+      ]
+    },
+    {
+      "id": "v29",
+      "domain": "ensamblado industrial",
+      "entry": "assembly:run_build",
+      "source": "fixtures/v29",
+      "tags": [
+        "módulos con nombres repetidos",
+        "alias",
+        "fábrica"
+      ]
+    },
+    {
+      "id": "v30",
+      "domain": "gestión de incidencias",
+      "entry": "incident:resolve",
+      "source": "fixtures/v30",
+      "tags": [
+        "except as",
+        "raise",
+        "finally",
+        "match"
+      ]
+    }
+  ]
+}
