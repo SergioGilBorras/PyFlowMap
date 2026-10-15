@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from html import escape
 from pathlib import Path
 
@@ -63,7 +63,7 @@ def generate_gallery(source: str, entry: str, output_parent: str) -> dict:
         })
     common = root / "common"
     common.mkdir()
-    generated = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    generated = datetime.now(UTC).isoformat(timespec="seconds")
     manifest = {
         "version": 1, "generated_utc": generated, "inference": "none",
         "semantic_provider": "disabled", "diagrams": items,

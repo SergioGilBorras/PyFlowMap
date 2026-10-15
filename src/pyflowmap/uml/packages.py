@@ -150,12 +150,12 @@ def to_dot(diagram: PackageDiagram, direction: str = "TD") -> str:
     nodes = {pkg.id: f"P{i + 1}" for i, pkg in enumerate(diagram.packages)}
     lines = [
         "digraph uml_packages {",
-        '  graph [bgcolor="white", pad=0.32, nodesep=1.0, ranksep=1.15, '
-        'splines=polyline, outputorder=edgesfirst];',
+        ('  graph [bgcolor="white", pad=0.32, nodesep=1.0, ranksep=1.15, '
+         'splines=polyline, outputorder=edgesfirst];'),
         f"  rankdir={'TB' if direction == 'TD' else 'LR'};",
         '  node [shape=plain, fontname="Helvetica", fontsize=14];',
-        '  edge [style=dashed, arrowhead=vee, color="#4A6079", '
-        'penwidth=1.2, arrowsize=0.9];',
+        ('  edge [style=dashed, arrowhead=vee, color="#4A6079", '
+         'penwidth=1.2, arrowsize=0.9];'),
     ]
     for package in diagram.packages:
         # Namespaced UML package names; no unproven package import stereotypes.
