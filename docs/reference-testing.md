@@ -253,3 +253,22 @@ managed-run pruning function is available only behind the explicit
 `--prune-managed-history` opt-in. The standard command shown in this guide
 does not include that flag. Offline tests verify that a simulated successful
 run cannot silently delete a prior marked run.
+
+
+## Final 81-case semantic review: AST literal quote-style normalization
+
+The authenticated 15 October full run passed all 81 technical tests with
+540 real Codex labels. Human review identified a remaining typographic error
+in independent-v2-v26: the `RuntimeError("missing")` literal had been
+normalized by `ast.unparse` to `RuntimeError('missing')`, whereas Codex
+returned `Call RuntimeError with literal argument "missing` without the
+closing double quote. The earlier source-verified correction only handled
+the exact quote style reproduced by `ast.unparse`.
+
+The repair now accepts either simple quote delimiter, but only if the
+output ends in a quote followed by the **exact decoded string value**
+verified from an AST constant. It refuses a different literal value,
+multi-argument calls, keywords, and control characters; it records the
+existing `pyflowmap_source_literal_quote_closed` audit warning and
+enforces length limits. This adjustment cannot retroactively change
+the previously generated JSON or CSV; those remain original evidence.

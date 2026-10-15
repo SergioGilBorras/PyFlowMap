@@ -36,6 +36,14 @@ def _close_verified_literal_quote(
         return label, False
     if label.endswith(literal[:-1]) and not label.endswith(literal):
         return label + literal[-1], True
+    # ast.unparse normalizes quote style: source code using "missing" can
+    # become RuntimeError('missing') in the call-site expression. A model
+    # can quote the same AST-verified string with either convention.
+    value = parsed.args[0].value
+    for quote in ("'", '"'):
+        if (quote not in value and not any(ord(char) < 32 for char in value)
+                and label.endswith(quote + value)):
+            return label + quote, True
     return label, False
 
 
