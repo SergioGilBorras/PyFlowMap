@@ -8,10 +8,12 @@ All scratch directories live in the OS temporary directory, never in Git.
 import os
 import tempfile
 import uuid
+import warnings
 from pathlib import Path
 
 import pytest
 from portable_tempdirs import temporary_directory
+from portable_tempdirs.errors import TemporaryDirectoryError
 
 _OWNER = None
 _PREVIOUS_TEMP_ROOT: str | None = None
@@ -72,7 +74,25 @@ def pytest_unconfigure(config):
     _OWNER = None
     try:
         if owner is not None:
-            owner.cleanup()
+            try:
+                owner.cleanup()
+            except TemporaryDirectoryError as exc:
+                # GitHub-hosted Windows sandboxes may block final removal.
+                # Only opt-in to this exact code, never to arbitrary failures.
+                sandbox_skip = (
+                    os.name == "nt"
+                    and os.environ.get("GITHUB_ACTIONS") == "true"
+                    and os.environ.get("PYFLOWMAP_CI_SKIP_TEMP_CLEANUP") == "1"
+                    and getattr(exc, "code", None) == "CLEANUP_INCOMPLETE"
+                )
+                if not sandbox_skip:
+                    raise
+                warnings.warn(
+                    "SKIP final workspace cleanup verification on hosted "
+                    "Windows sandbox (CLEANUP_INCOMPLETE); inspect CI diagnostics",
+                    pytest.PytestWarning,
+                    stacklevel=1,
+                )
     finally:
         if _PREVIOUS_TEMP_ROOT is None:
             os.environ.pop("PYFLOWMAP_TEMP_ROOT", None)

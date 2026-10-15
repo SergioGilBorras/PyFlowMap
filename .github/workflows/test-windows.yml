@@ -61,6 +61,10 @@ jobs:
           python -m pip install -e '.[dev,mcp]'
 
       - name: Unit and regression tests
+        # Only waive final workspace deletion on hosted Windows sandboxes
+        # for portable-tempdirs CLEANUP_INCOMPLETE; other failures stay fatal.
+        env:
+          PYFLOWMAP_CI_SKIP_TEMP_CLEANUP: '1'
         run: python -m pytest -q
 
       - name: Ruff
