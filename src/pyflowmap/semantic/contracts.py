@@ -19,6 +19,7 @@ class LabelRequest:
     source_snippet: str
     preceding: tuple[str, ...]
     following: tuple[str, ...]
+    call_site_expression: str | None = None
 
 
 class SemanticLabelProvider(Protocol):

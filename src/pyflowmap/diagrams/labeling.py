@@ -1,7 +1,7 @@
 """Generic, deterministic labels for code symbols; no project-specific lookup tables.
 
 Source identifiers and docstrings provide suggestions, not a translation of
-arbitrary domain terminology. A future optional LLM may refine labels, never
+arbitrary domain terminology. An optional semantic provider may refine labels but cannot
 edit graph topology.
 """
 

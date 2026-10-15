@@ -1,56 +1,67 @@
 # Architecture
 
-```mermaid
-flowchart TD
-  CLI[CLI] --> Service[Application service]
-  MCP[MCP stdio server] --> Service
-  Service --> Loader[Directory / Python file / ZIP loader]
-  Loader --> AST[AST and symbol index]
-  AST --> Flow[Control-flow builder]
-  Flow --> Simple[Topology-preserving simplifier]
-  Simple --> Mermaid[Mermaid serializer]
-  Mermaid --> MMD[.mmd + provenance JSON]
-  MMD --> Render[Optional mmdc renderer]
-  Render --> SVG[.svg / .png]
-```
-
-Modules:
-
-- `project.py`: file enumeration, archive safety, `ast.parse`, top-level symbols, best-effort imports and call resolution.
-- `analysis.py`: ordered statements, conditional/loop paths, selective orchestrator inlining, `FlowGraph` operations.
-- `models.py`: portable intermediate representation (`Node`, `Edge`, `FlowGraph`), each activity carries source symbol(s) and file location(s).
-- `mermaid.py`: pure serializer; no source-specific heuristics.
-- `render.py`: optional subprocess invocation of an installed Mermaid CLI without shell interpolation.
-- `service.py`: single API used by all entry points.
-- `cli.py`, `mcp_server.py`: thin interfaces. MCP checks allowed workspace roots.
-
-## Non-goals for V1
-
-Full language-level dataflow, precise type inference, exact exception semantics, branch feasibility, fully qualified import graphs, and executing untrusted source. These should not be silently claimed as supported.
-
-## Design constraints
-
-- Deterministic: no LLM required.
-- Conservative: when simplification cannot retain decision topology, keep nodes above budget and warn.
-- Traceable: stable intermediate graph plus original file/line references.
-- Safe by default: inspect source as text, refuse ZIP traversal, keep MCP filesystem operations inside configured workspace roots.
-
-## Extension point: multiple diagram types (planned, not implemented)
-
-Keep the current activity pipeline unchanged while V1.1 improves its UML-like semantics. Future `diagram_type` selection should happen at the application service boundary (and be exposed identically by CLI and MCP). A selected analyzer produces a **diagram-specific intermediate representation** with source provenance; an associated serializer generates suitable Mermaid syntax (or another renderer if necessary). Do not force class, sequence and package models through the activity-only `FlowGraph` structure.
+PyFlowMap separates **source inspection**, **static-flow construction**,
+**presentation**, and **optional label enrichment**. Parsing analyzed projects
+does not import or execute them.
 
 ```mermaid
 flowchart TD
-    API["CLI / MCP / Python service"] --> Type{"diagram_type (future)"}
-    Type -->|activity| CFG["Control-flow model (current)"]
-    Type -->|class| Classes["Class relationship model (future)"]
-    Type -->|package| Packages["Import dependency model (future)"]
-    Type -->|sequence| Calls["Interaction trace model (future)"]
-    CFG --> Render["Type-aware Mermaid serializer"]
-    Classes --> Render
-    Packages --> Render
-    Calls --> Render
-    Render --> Artifacts[".mmd / optional SVG or PNG"]
+    CLI["CLI"] --> Service["Application service"]
+    MCP["MCP stdio server"] --> Service
+    Service --> Loader["Project loader and AST index"]
+    Loader --> Flow["Python activity-flow analysis"]
+    Flow --> Graph["Source-linked graph + warnings"]
+    Graph --> Views{"Selected view"}
+    Views --> Detailed["Detailed activity"]
+    Views --> Overview["Process/call overview"]
+    Views --> Hier["Hierarchical activity + links"]
+    Detailed --> Output["Mermaid + JSON"]
+    Overview --> Output
+    Hier --> Output
+    Output --> Renderer["Graphviz or Mermaid CLI"]
+    Renderer --> Images["SVG / PNG"]
+    Graph --> Labels["Optional semantic label adapter"]
+    Labels --> Output
 ```
 
-See [diagram types](diagram-types.md). Unsupported types should fail with a clear error until actually implemented.
+## Main responsibilities
+
+| Module | Responsibility |
+| --- | --- |
+| `project.py` | Source files, ZIP safety, Python AST, symbols and best-effort call lookup |
+| `analysis.py`, `diagrams/activity.py` | Branch/exception/loop flow and bounded interprocedural expansion |
+| `models.py` | Graph nodes, edges, source locations and metadata |
+| `overview.py`, `hierarchy.py` | Summaries and navigable hierarchical views |
+| `mermaid.py`, `dot.py`, `render.py` | Mermaid serialization and optional Graphviz/Mermaid image rendering |
+| `semantic/`, `integrations/` | Optional activity-label enrichment; never changes graph topology |
+| `service.py` | Shared application API for inspection/generation |
+| `cli.py`, `mcp_server.py` | CLI and stdio MCP; MCP enforces allowed workspace roots |
+
+The base analysis is deterministic and usable without a language model.
+The optional labeler is activated explicitly. Provider results can change
+only permitted activity text and label metadata; flow edges, decision semantics
+and provenance are not delegated to inference.
+
+## Generated artifacts
+
+A normal analysis emits source-linked `.json` and editable `.mmd`.
+Graphviz or Mermaid CLI may additionally generate `.svg` and `.png`.
+Hierarchical runs can generate indexes and subdiagram links. `overview`
+describes possible call relationships: an overview edge is not necessarily
+an unconditional execution order.
+
+## Boundaries
+
+- **Source:** no source execution, best-effort imports/calls, conservative
+  uncertainty for dynamic Python features.
+- **Filesystem:** safe extraction and bounded temporary paths; MCP source and
+  output paths must be within `PYFLOWMAP_ALLOWED_ROOTS`.
+- **Presentation:** no destructive simplification to satisfy an exact
+  node budget.
+- **Release:** the installed package contains the runtime, not `tests/`,
+  `benchmark/`, temporary outputs, development reports, or credentials.
+- **Evaluation:** test suites, semantic oracles, and independent banks are
+  developer tooling, not runtime dependencies.
+
+See [analysis rules](analysis-rules.md), [diagram types](diagram-types.md) and
+[semantic labeling](semantic-labeling.md).

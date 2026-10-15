@@ -5,10 +5,13 @@ PyFlowMap remains usable with zero optional dependencies when disabled.
 """
 
 import asyncio
+import os
+from dataclasses import replace
 from functools import lru_cache
 from typing import Any
 
 PROVIDERS = ("disabled", "mock", "codex")
+DEFAULT_CODEX_TIMEOUT_SECONDS = 180.0
 
 
 def _imports():
@@ -46,8 +49,23 @@ class SemanticLabelerTools:
             raise ValueError("Semantic labeling is disabled; explicitly select mock or codex")
         if self._labeler is None:
             _, Labeler, _, _, Settings, _ = _imports()
-            self._labeler = Labeler(settings=Settings(
-                provider=self.provider, reduction_attempts=self.reduction_attempts))
+            # P4's default provider timeout is 20s. Honor the documented
+            # P4_LABELER_PROVIDER_TIMEOUT (and other validated settings)
+            # while keeping the caller's explicit provider selection.
+            base = Settings.from_env()
+            if (self.provider == "codex"
+                    and "P4_LABELER_PROVIDER_TIMEOUT" not in os.environ):
+                # The P4 library defaults to 20 seconds; a real Codex
+                # one-shot request needs a practical bound by default.
+                # Explicit operator settings always win.
+                base = replace(
+                    base, provider_timeout_seconds=DEFAULT_CODEX_TIMEOUT_SECONDS,
+                )
+            config = replace(
+                base, provider=self.provider,
+                reduction_attempts=self.reduction_attempts,
+            )
+            self._labeler = Labeler(settings=config)
         return self._labeler
 
     @staticmethod
@@ -57,7 +75,7 @@ class SemanticLabelerTools:
                  after: str | None = None, purpose: str | None = None,
                  module: str | None = None, class_name: str | None = None,
                  signature: str | None = None, max_chars: int = 80,
-                 language: str = "es", style: str = "neutral",
+                 language: str = "en", style: str = "neutral",
                  output_type: str = "title"):
         Context, _, LabelRequest, Subject, _, _ = _imports()
         return LabelRequest(
@@ -69,7 +87,7 @@ class SemanticLabelerTools:
 
     def generate_label(self, *, name: str, kind: str = "function",
                        documentation: str | None = None, source_code: str | None = None,
-                       max_chars: int = 80, language: str = "es",
+                       max_chars: int = 80, language: str = "en",
                        style: str = "neutral", **context):
         client = self._client()
         request = self._request(name=name, kind=kind, documentation=documentation,
@@ -79,7 +97,7 @@ class SemanticLabelerTools:
 
     def generate_summary(self, *, name: str, kind: str = "concept",
                          documentation: str | None = None, source_code: str | None = None,
-                         max_chars: int = 160, language: str = "es",
+                         max_chars: int = 160, language: str = "en",
                          style: str = "neutral", **context):
         client = self._client()
         request = self._request(name=name, kind=kind, documentation=documentation,
@@ -89,7 +107,7 @@ class SemanticLabelerTools:
 
     async def agenerate_label(self, *, name: str, kind: str = "function",
                               documentation: str | None = None, source_code: str | None = None,
-                              max_chars: int = 80, language: str = "es",
+                              max_chars: int = 80, language: str = "en",
                               style: str = "neutral", **context):
         client = self._client()
         request = self._request(name=name, kind=kind, documentation=documentation,

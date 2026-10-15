@@ -136,6 +136,13 @@ def _probe_process(command: list[str | Path], *, cwd: Path, env: dict[str, str],
     }
 
 
+def _status_for_summary(verified: bool, launcher_status: str) -> str:
+    """Only a successful executable launcher makes the full installation PASS."""
+    if not verified or launcher_status not in {"PASS", "BLOCKED"}:
+        return "FAIL"
+    return "PARTIAL" if launcher_status == "BLOCKED" else "PASS"
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--wheel", type=Path, required=True)
@@ -275,13 +282,12 @@ def main(argv: list[str] | None = None) -> int:
     artifacts = report.get("runtime_artifacts", {})
     verified = not failed and all(artifacts.get(key) for key in (
         "required_formats_present", "json_has_nodes_and_edges", "svg_xml_valid", "png_signature_valid"))
-    report["status"] = "PARTIAL" if verified and report["console_launcher"]["status"] == "BLOCKED" else (
-        "PASS" if verified else "FAIL")
+    report["status"] = _status_for_summary(verified, report["console_launcher"]["status"])
     output.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps({"status": report["status"], "output": str(output),
                       "stages": [(stage.get("stage"), stage.get("returncode")) for stage in report["stages"]]},
                      ensure_ascii=False))
-    return 0 if report["status"] in {"PASS", "PARTIAL"} else 1
+    return 0 if report["status"] == "PASS" else 1
 
 
 if __name__ == "__main__":

@@ -52,6 +52,10 @@ def fake_p4(monkeypatch):
         provider: str = "disabled"
         reduction_attempts: int = 1
 
+        @classmethod
+        def from_env(cls):
+            return cls()
+
     @dataclass
     class BatchRequest:
         items: list = field(default_factory=list)
@@ -108,7 +112,7 @@ def test_library_sync_summary_async_and_batch(fake_p4):
     assert request.max_chars == 50 and request.style == "formal"
     assert instance.settings.reduction_attempts == 0
     summary = tools.generate_summary(name="archive", text="Some text", max_chars=40)
-    assert summary.output_type == "summary"
+    assert summary.output_type == "summary" and summary.language == "en"
     assert asyncio.run(tools.agenerate_label(name="archive")).output_type == "title"
     batch = tools.generate_labels_batch([{"name": "one"}, {"name": "two"}])
     assert batch.success_count == 2
@@ -186,3 +190,133 @@ def test_cli_provider_option_is_explicit(fake_p4, tmp_path, capsys):
                  "--semantic-provider", "mock", "--format", "mmd",
                  "--output", str(tmp_path / "cli")]) == 0
     assert '"semantic_provider": "mock"' in capsys.readouterr().out
+
+
+
+def test_p4_prompt_targets_one_graph_activity_not_its_containing_function():
+    from types import SimpleNamespace
+
+    from pyflowmap.semantic.contracts import LabelRequest as ActivityLabelRequest
+    from pyflowmap.semantic.p4_provider import P4SemanticLabelProvider
+
+    class RecordingTools:
+        def generate_label(self, **kwargs):
+            self.request = kwargs
+            return SimpleNamespace(
+                label="Append item to selected values", provider="codex",
+                warnings=[], char_count=30, output_type="title",
+                language="en", style="neutral",
+            )
+
+    tools = RecordingTools()
+    provider = P4SemanticLabelProvider(provider="codex", tools=tools)
+    request = ActivityLabelRequest(
+        node_id="a1", current_label="Call selected.append(item)",
+        symbols=("pipeline:main",), filename="pipeline.py",
+        language="en", docstring=None,
+        source_snippet="def main():\n    selected.append(item)",
+        preceding=("Only if valid",), following=("Next item",),
+    )
+    result = provider.label(request)
+    assert result.provider == "codex"
+    assert tools.request["name"] == "Call selected.append(item)"
+    assert tools.request["kind"] == "activity"
+    assert "ONE static-flow node" in tools.request["purpose"]
+    assert "specific existing graph activity" in tools.request["text"]
+    assert "def main()" in tools.request["source_code"]
+
+
+def test_codex_timeout_gets_one_retry_without_mock_fallback(monkeypatch):
+    from types import SimpleNamespace
+
+    from pyflowmap.semantic.contracts import LabelRequest as ActivityLabelRequest
+    from pyflowmap.semantic.p4_provider import P4SemanticLabelProvider
+
+    class ProviderTimeout(Exception):
+        pass
+
+    class RecoveringTools:
+        attempts = 0
+
+        def generate_label(self, **kwargs):
+            self.attempts += 1
+            if self.attempts == 1:
+                raise ProviderTimeout()
+            return SimpleNamespace(
+                label="Save selected items", provider="codex",
+                warnings=[], char_count=19, output_type="title",
+                language="en", style="neutral",
+            )
+
+    tools = RecoveringTools()
+    monkeypatch.setattr("pyflowmap.semantic.p4_provider.time.sleep", lambda _: None)
+    provider = P4SemanticLabelProvider(provider="codex", tools=tools)
+    request = ActivityLabelRequest(
+        node_id="node1", current_label="Save selected items",
+        symbols=("pipeline:main",), filename="pipeline.py",
+        language="en", docstring=None,
+        source_snippet="def main():\n    save(items)",
+        preceding=(), following=(),
+    )
+    outcome = provider.label(request)
+    assert tools.attempts == 2
+    assert outcome.provider == "codex"
+    assert "pyflowmap_codex_timeout_retried" in outcome.warnings
+
+
+def test_codex_timeout_retry_is_bounded_and_does_not_mask_failure(monkeypatch):
+    from pyflowmap.semantic.contracts import LabelRequest as ActivityLabelRequest
+    from pyflowmap.semantic.p4_provider import P4SemanticLabelProvider
+
+    class ProviderTimeout(Exception):
+        pass
+
+    class AlwaysSlow:
+        attempts = 0
+
+        def generate_label(self, **kwargs):
+            self.attempts += 1
+            raise ProviderTimeout()
+
+    tools = AlwaysSlow()
+    monkeypatch.setattr("pyflowmap.semantic.p4_provider.time.sleep", lambda _: None)
+    provider = P4SemanticLabelProvider(provider="codex", tools=tools)
+    request = ActivityLabelRequest(
+        node_id="node2", current_label="Collect pending items",
+        symbols=("pipeline:main",), filename="pipeline.py",
+        language="en", docstring=None, source_snippet="def main():\n    run()",
+        preceding=(), following=(),
+    )
+    with pytest.raises(RuntimeError, match="ProviderTimeout"):
+        provider.label(request)
+    assert tools.attempts == 2
+
+
+def test_p4_prompt_uses_call_site_arguments_not_just_callee_summary():
+    from types import SimpleNamespace
+
+    from pyflowmap.semantic.contracts import LabelRequest as ActivityLabelRequest
+    from pyflowmap.semantic.p4_provider import P4SemanticLabelProvider
+
+    class Recorder:
+        def generate_label(self, **kwargs):
+            self.kwargs = kwargs
+            return SimpleNamespace(
+                label="Emit the halt marker", provider="codex",
+                warnings=[], char_count=20, output_type="title",
+                language="en", style="neutral",
+            )
+
+    tools = Recorder()
+    provider = P4SemanticLabelProvider(provider="codex", tools=tools)
+    request = ActivityLabelRequest(
+        node_id="n1", current_label="Emit", symbols=("signal:emit",),
+        filename="signal.py", language="en", docstring=None,
+        source_snippet="def emit(code):\n    return code",
+        preceding=(), following=("Return emit('halt')",),
+        call_site_expression="emit('halt')",
+    )
+    provider.label(request)
+    assert tools.kwargs["kind"] == "activity"
+    assert tools.kwargs["name"] == "Call emit('halt')"
+    assert "distinguish literal arguments" in tools.kwargs["text"]

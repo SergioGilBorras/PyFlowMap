@@ -7,10 +7,23 @@ __pycache__/
 *.egg-info/
 build/
 dist/
-pyflowmap-output/
+pyflowmap-output/*
+!pyflowmap-output/README.md
 benchmark-results/
 *.zip
 pytest-cache-files-*/
 .pytest-tmp-*/
 pyflowmap-tmp-*/
 .DS_Store
+.serena/
+examples/results/
+benchmark-results*/
+pyflowmap-*.egg-info/
+*.whl
+*.tar.gz
+
+# Generated outputs are local and never belong in source distributions.
+output_validacion/*
+!output_validacion/README.md
+output_graphs/*
+!output_graphs/README.md

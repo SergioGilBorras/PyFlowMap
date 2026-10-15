@@ -1,6 +1,12 @@
-"""Give every pytest frontend a private, owned basetemp in this checkout."""
+"""Shared pytest fixtures and test isolation for tests/ and benchmark/.
+
+Pytest automatically loads a root-level conftest.py. Keep this file at the
+repository root so both test collections use the same temporary-space policy.
+All scratch directories live in the OS temporary directory, never in Git.
+"""
 
 import os
+import tempfile
 import uuid
 from pathlib import Path
 
@@ -9,51 +15,58 @@ from portable_tempdirs import temporary_directory
 
 _OWNER = None
 _PREVIOUS_TEMP_ROOT: str | None = None
+_PREVIOUS_SYSTEM_TEMP: dict[str, str | None] = {}
+
+
+def _temporary_parent() -> Path:
+    """Use the user's %TEMP% on Windows, or the configured POSIX temp root."""
+    if os.name == "nt":
+        selected = os.environ.get("TEMP")
+        if not selected:
+            raise RuntimeError("TEMP must name an existing writable directory on Windows")
+    else:
+        selected = tempfile.gettempdir()
+    parent = Path(selected).expanduser().resolve()
+    if not parent.is_dir():
+        raise RuntimeError(f"System temporary directory does not exist: {parent}")
+    return parent
 
 
 def pytest_configure(config):
-    """Allocate before pytest's tmp_path plugin initializes its factory."""
+    """Allocate one managed test workspace outside the source checkout."""
     global _OWNER, _PREVIOUS_TEMP_ROOT
     if _OWNER is not None:
         return
-    # The checkout is explicitly writable in the active sandbox, so it is the
-    # authorized parent for this run's owned directory and nested basetemp.
-    project_root = Path(__file__).resolve().parent
-    _OWNER = temporary_directory("pyflowmap-pytest", parent=project_root)
+    parent = _temporary_parent()
+    # tempfile prefers TMPDIR/TEMP/TMP in that order. Do not let an inherited
+    # TMPDIR or TMP pointing at the checkout create test scratch in source.
+    for key in ("TMPDIR", "TMP"):
+        _PREVIOUS_SYSTEM_TEMP[key] = os.environ.get(key)
+        os.environ[key] = str(parent)
+    _OWNER = temporary_directory("pyflowmap-pytest", parent=parent)
     _PREVIOUS_TEMP_ROOT = os.environ.get("PYFLOWMAP_TEMP_ROOT")
     os.environ["PYFLOWMAP_TEMP_ROOT"] = str(_OWNER.path)
     config.option.basetemp = str(_OWNER.path / "basetemp")
 
 
-def pytest_sessionstart(session):
-    """Bind pytest's already-created tmp_path factory to our owned directory."""
-    if _OWNER is None:
-        return
-    basetemp = _OWNER.path / "basetemp"
-    basetemp.mkdir()
-    # The tmpdir plugin constructs its factory before conftest's configure
-    # hook runs, so changing config.option alone does not update that factory.
-    session.config._tmp_path_factory._basetemp = basetemp
-
-
 @pytest.fixture
-def tmp_path(request):
-    """Create an isolated test directory inheriting the managed run's ACL.
+def tmp_path():
+    """Each test gets a unique disposable directory under the OS temp root.
 
-    pytest's Windows tmp_path factory requests owner-only mode (0700). The
-    Codex workspace sandbox denies writes to such child directories even when
-    their portable-tempdirs parent is authorized. A unique default-mode child
-    inherits the managed parent's ACL and remains private to this run.
+    Default-mode directories inherit Windows TEMP ACLs rather than forcing
+    pytest's restrictive owner-only ACL inside constrained environments.
     """
     if _OWNER is None:
         raise RuntimeError("pytest temporary directory owner is unavailable")
-    path = _OWNER.path / "basetemp" / f"t-{uuid.uuid4().hex[:10]}"
-    path.mkdir(parents=True)
+    parent = _OWNER.path / "test-workspaces"
+    parent.mkdir(exist_ok=True)
+    path = parent / f"t-{uuid.uuid4().hex}"
+    path.mkdir()
     return path
 
 
 def pytest_unconfigure(config):
-    """Restore process state and propagate cleanup errors to pytest's caller."""
+    """Release the managed temporary workspace and restore environment."""
     global _OWNER, _PREVIOUS_TEMP_ROOT
     owner = _OWNER
     _OWNER = None
@@ -66,3 +79,9 @@ def pytest_unconfigure(config):
         else:
             os.environ["PYFLOWMAP_TEMP_ROOT"] = _PREVIOUS_TEMP_ROOT
         _PREVIOUS_TEMP_ROOT = None
+        for key, old in _PREVIOUS_SYSTEM_TEMP.items():
+            if old is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = old
+        _PREVIOUS_SYSTEM_TEMP.clear()

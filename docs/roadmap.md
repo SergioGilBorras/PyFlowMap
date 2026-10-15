@@ -1,48 +1,51 @@
-# Roadmap
+# Future directions
 
-## V1 — executable preview
-- [x] Local directory, .py file and ZIP inputs
-- [x] Inspect entry candidates and select a method/function
-- [x] AST-based lightweight flow extraction for conditionals and loops
-- [x] Conservative diagram simplification with provenance
-- [x] `.mmd` and `.json` outputs; optional SVG/PNG through Mermaid CLI
-- [x] CLI and local stdio MCP tools
-- [x] Regression fixture tests and GitHub Actions
+This document lists **optional future work**, without promised release dates.
+Current supported features and limits are documented in the
+[README](../README.md) and
+[analysis rules](analysis-rules.md).
 
-## V1.1 — UML-inspired activity diagrams (current priority)
-- [ ] Add UML-style initial (filled circle) and activity-final (bullseye) nodes
-- [ ] Correct decision guard polarity and make Yes/No labels match the actual predicate
-- [ ] Merge equivalent terminal outcomes with a single shared end, preserving path semantics
-- [ ] Improve semantic action/decision labels without fabricating paths
-- [ ] Keep read-only P4-Planning-Agent as an acceptance/regression test, comparing generated diagrams with reviewed references
+## Release engineering and quality
 
-## V1.x — more faithful flow selection
-- [ ] Improve cross-module and relative-import resolution
-- [ ] Branch handling for `break`, `continue`, `match` and exceptions
-- [ ] Fixture-based comparisons against hand-curated ideal diagrams
-- [ ] Configurable call/noise inclusion filters and humanized labels
-- [ ] Structural grouping with real subgraphs, rather than only linear merging
+- Keep the wheel/sdist reproducible and free of benchmark, test, gallery,
+  local-workspace and temporary files.
+- Validate the installed command-line launcher, Python-module CLI, MCP and
+  rendering on Windows, Ubuntu and macOS.
+- Retain independent test banks, semantic oracles, adversarial regressions
+  and mutation/metamorphic checks for future releases.
+- Ensure GitHub Actions tests exactly the released commit, not a different
+  local working tree.
+- Evaluate optional real-provider labeling only with authorized synthetic or
+  explicitly approved source and a separate quality rubric.
 
-## V2 — selectable diagram types (not yet implemented)
-- [ ] Introduce explicit `diagram_type` to the service, CLI and MCP API (default: `activity`)
-- [ ] Add class diagrams from class definitions, inheritance, attributes and high-confidence associations
-- [ ] Add package/module dependency diagrams from imports, with boundaries/filters
-- [ ] Explore component diagrams from project modules and exposed interfaces (often approximate rather than strict UML)
-- [ ] Dispatch renderers by diagram type; keep source references and confidence/warnings
-- [ ] Reject unsupported types explicitly; do not silently produce an activity diagram in their place
+## Analysis and presentation improvements
 
-## V3 — deeper behavioral diagrams (subject to feasibility)
-- [ ] Sequence diagrams for a selected entry point when call ordering and participants can be resolved
-- [ ] State-machine diagrams only where states/transitions are expressed clearly in code or annotations
-- [ ] Optional non-UML data/pipeline diagrams for projects that benefit from them
-- [ ] Explicitly report dynamic-dispatch, asynchronous and reflection limitations
-- [ ] Keep the user's chosen scope, max detail and output format across diagram types
+Pursue only general Python-language counterexamples or broadly useful
+presentation improvements:
 
-See [diagram types](diagram-types.md) for requirements and implementation constraints.
+- Improve navigation and readability of complex exception/context-manager
+  diagrams without deleting legal routes.
+- Extend conservative call resolution where sound static evidence exists.
+- Make dynamic uncertainty, call-summary boundaries and source provenance
+  easier to inspect.
 
-## V2 — integration and semantic enhancement
-- [ ] Direct GitHub repository source selection with branch/commit options
-- [ ] Class collaboration and project overview modes
-- [ ] Optional LLM-generated **labels only**, never unconstrained edges
-- [ ] MCP resource exposure of rendered diagrams
-- [ ] Remote MCP transport with authentication and explicit workspace policies
+Do **not** treat unavoidable runtime uncertainty as an open defect; the
+analyzer should represent possible paths and document what it cannot know.
+
+## Optional future capabilities
+
+- Additional diagram families (class, package, sequence, state), each with a
+  dedicated semantic model and evaluation strategy.
+- More flexible but bounded output navigation and serialization.
+- Optional caching and efficiency controls for explicitly enabled labelers.
+
+None of these ideas is a claim of present support.
+See [diagram types](diagram-types.md) for the current type/view contract.
+
+## Development policy
+
+Each proposed feature must have a source-independent Python semantics
+justification, regression tests, packaging checks, and clear documentation.
+An independent evaluation bank must not be used to engineer domain-specific
+special cases. Do not publish new capabilities solely because diagram files
+were generated successfully.

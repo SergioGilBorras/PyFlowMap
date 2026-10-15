@@ -80,18 +80,178 @@ def test_images_format_exports_both_images_and_editable_sources(tmp_path):
     assert Path(result["files"]["svg"]).read_text().find("<svg") >= 0
     assert Path(result["files"]["png"]).read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
 
+def test_reusable_pipeline_fixture_generates_own_artifacts(tmp_path):
+    fixture = Path(__file__).parent / "fixtures" / "sample_project" / "pipeline.py"
+    result = generate_diagram(
+        str(fixture), entry="pipeline:main", format="mmd",
+        output=str(tmp_path / "diagrams"),
+    )
+    assert set(result["files"]) == {"mmd", "json"}
+    assert all(Path(filename).is_file() for filename in result["files"].values())
+    graph = json.loads(Path(result["files"]["json"]).read_text(encoding="utf-8"))
+    assert graph["nodes"] and graph["edges"]
 
-def test_result_readmes_have_previews_and_separate_text():
-    root = Path(__file__).parents[1] / "examples" / "results"
-    for folder in sorted(p for p in root.iterdir() if p.is_dir()):
-        readmes = list(folder.glob("README*.md"))
-        assert readmes, folder
-        for readme in readmes:
-            text = readme.read_text(encoding="utf-8")
-            assert "```mermaid" not in text
-            assert "![" in text and ".svg)" in text
-            assert ".png)" in text and ".txt)" in text
-        for mmd in folder.glob("*.mmd"):
-            assert mmd.with_suffix(".txt").read_bytes() == mmd.read_bytes()
-            assert mmd.with_suffix(".svg").is_file()
-            assert mmd.with_suffix(".png").read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+
+
+def test_control_transfer_labels_remain_exact_under_external_provider(tmp_path):
+    source = tmp_path / "control.py"
+    source.write_text(
+        "def main(value):\n"
+        "    if value is None:\n"
+        "        raise ValueError('missing')\n"
+        "    return value.lower()\n",
+        encoding="utf-8",
+    )
+
+    class AllLabels:
+        def label(self, request):
+            return "Generic whole-function summary"
+
+    path = tmp_path / "enriched"
+    result = generate_diagram(
+        str(source), entry="control:main", format="mmd",
+        output=str(path), max_nodes=40, max_depth=3,
+        label_provider=AllLabels(),
+    )
+    graph = json.loads(Path(result["files"]["json"]).read_text(encoding="utf-8"))
+    transfers = [node for node in graph["nodes"]
+                 if node["kind"] == "activity"
+                 and ("control_transfer" in node["label_metadata"]
+                      or "generator_event" in node["label_metadata"])]
+    assert transfers, "The regression fixture must cover an activity transfer"
+    assert all(node["label_source"] == "deterministic" for node in transfers)
+    assert all(node["label"] != "Generic whole-function summary" for node in transfers)
+    assert any(node["label_source"] == "external" for node in graph["nodes"])
+
+
+def test_real_call_site_context_distinguishes_pattern_branches(tmp_path):
+    """Real AST provenance, no model inference: four calls need four subjects."""
+    example = (Path(__file__).resolve().parents[1]
+               / "benchmark/independent-v1/fixtures/c02/signal.py")
+
+    class Spy:
+        def __init__(self):
+            self.requests = []
+
+        def label(self, request):
+            self.requests.append(request)
+            return "Readable activity"
+
+    spy = Spy()
+    result = generate_diagram(
+        str(example), entry="signal:interpret", max_nodes=30, max_depth=3,
+        format="mmd", output=str(tmp_path / "signal-labeled"),
+        label_provider=spy,
+    )
+    graph = json.loads(Path(result["files"]["json"]).read_text(encoding="utf-8"))
+    calls = [request.call_site_expression for request in spy.requests
+             if request.symbols[0] == "signal:emit"]
+    assert sorted(calls) == sorted([
+        "emit(('north_east', x, y))",
+        "emit(('other_quadrant', x, y))",
+        "emit('halt')",
+        "emit('unreadable')",
+    ])
+    assert any(node["label"] == "Propagate exception" for node in graph["nodes"])
+
+
+def test_ambiguous_multiple_same_calls_are_not_attributed_wrongly(tmp_path):
+    from pyflowmap.models import Node
+    from pyflowmap.project import ProjectIndex
+    from pyflowmap.semantic.enrich import _call_site_expression
+
+    source = tmp_path / "ambiguity.py"
+    source.write_text(
+        "def act(x):\n    return x\n"
+        "def main():\n    return act('first') + act('second')\n",
+        encoding="utf-8",
+    )
+    index = ProjectIndex(tmp_path)
+    node = Node(
+        id="test", kind="activity", label="Act",
+        symbols=["ambiguity:act"], locations=["ambiguity.py:4"],
+        label_metadata={"call_expression": "act"},
+    )
+    assert _call_site_expression(index, node) is None
+
+
+
+def test_comparison_labels_are_allowed_and_safely_rendered():
+    from pyflowmap.dot import to_dot
+    from pyflowmap.mermaid import to_mermaid
+    from pyflowmap.models import FlowGraph
+    from pyflowmap.semantic.enrich import _invalid_label_reason, _valid_label
+
+    assert _valid_label("Check temp > 90 and amount <= 0")
+    assert _valid_label("Keep x < 0 or count >= 3")
+    assert _invalid_label_reason("<script>alert(1)</script>") == "possible_markup"
+    assert _invalid_label_reason("line 1\nline 2") == "multiline"
+    assert _invalid_label_reason("a" * 81) == "length_limit"
+
+    graph = FlowGraph(entry="demo:main")
+    graph.add("Check x < 0 or temp > 90", "activity", "demo:main", "demo.py:1")
+    assert "Check x &lt; 0 or temp &gt; 90" in to_mermaid(graph)
+    assert "Check x &lt; 0 or temp &gt; 90" in to_dot(graph)
+
+
+def test_real_external_comparison_caption_retains_provenance(tmp_path):
+    from pyflowmap.semantic.enrich import _invalid_label_reason
+
+    source = tmp_path / "limits.py"
+    source.write_text(
+        "def notify():\n    return 3\n"
+        "def main():\n    return notify()\n",
+        encoding="utf-8",
+    )
+
+    class Comparisons:
+        def label(self, request):
+            return "Check amount <= 0 or temperature > 90"
+
+    output = generate_diagram(
+        str(source), entry="limits:main", format="mmd",
+        output=str(tmp_path / "labels"), label_provider=Comparisons(),
+    )
+    graph = json.loads(Path(output["files"]["json"]).read_text(encoding="utf-8"))
+    enriched = [node for node in graph["nodes"] if node["label_source"] == "external"]
+    assert enriched
+    assert all(_invalid_label_reason(node["label"]) is None for node in enriched)
+    assert all(node["label"] == "Check amount <= 0 or temperature > 90"
+               for node in enriched)
+
+
+
+def test_pending_returns_in_finally_are_not_relabelled_as_cleanup(tmp_path):
+    """Regression from the real v07 pilot: -1, 1, 0 are distinct returns."""
+    example = (Path(__file__).resolve().parents[1]
+               / "benchmark/independent-v2/fixtures/v07/dispatch.py")
+
+    class Misleading:
+        def label(self, request):
+            return "Call sensor.mark_access() in the finally block"
+
+    base = generate_diagram(
+        str(example), entry="dispatch:refresh", max_nodes=30, max_depth=3,
+        format="mmd", output=str(tmp_path / "disabled"),
+    )
+    enriched = generate_diagram(
+        str(example), entry="dispatch:refresh", max_nodes=30, max_depth=3,
+        format="mmd", output=str(tmp_path / "semantic"),
+        label_provider=Misleading(),
+    )
+    raw = json.loads(Path(base["files"]["json"]).read_text(encoding="utf-8"))
+    labels = json.loads(Path(enriched["files"]["json"]).read_text(encoding="utf-8"))
+    by_id = {node["id"]: node for node in raw["nodes"]}
+    pending = [
+        node for node in labels["nodes"]
+        if node["kind"] == "activity"
+        and node["label_metadata"].get("pending_control_transfer") == "return"
+    ]
+    assert pending
+    assert {n["label_metadata"].get("return_expression") for n in pending} >= {
+        "-1", "1", "0",
+    }
+    assert all(n["label_source"] == "deterministic" for n in pending)
+    assert all(n["label"] == by_id[n["id"]]["label"] for n in pending)
+    assert any(n["label_source"] == "external" for n in labels["nodes"])
+    assert raw["edges"] == labels["edges"]

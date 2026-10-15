@@ -1,13 +1,12 @@
 {
-  "name": "PyFlowMap — Banco transversal independiente V1",
-  "generated": "2026-10-13",
+  "name": "PyFlowMap regression bank V1",
   "case_count": 28,
   "python_target": "3.13",
-  "kind": "blind-first-run",
+  "kind": "known-regression-corpus",
   "parameters": {
     "max_nodes": 30,
     "max_depth": 3,
-    "language": "es",
+    "language": "en",
     "renderer": "graphviz",
     "format": "all",
     "semantic_provider": "disabled"
@@ -15,42 +14,42 @@
   "cases": [
     {
       "id": "c01",
-      "domain": "comercio",
+      "domain": "commerce",
       "entry": "pricing:compute_offer",
       "source": "fixtures/c01",
       "tags": [
-        "retornos",
-        "if anidados",
-        "expresion condicional"
+        "returns",
+        "nested if statements",
+        "conditional expression"
       ]
     },
     {
       "id": "c02",
-      "domain": "cartografia",
+      "domain": "cartography",
       "entry": "signal:interpret",
       "source": "fixtures/c02",
       "tags": [
         "match/case",
-        "guardas",
-        "capturas",
-        "comodin"
+        "guards",
+        "captures",
+        "wildcard"
       ]
     },
     {
       "id": "c03",
-      "domain": "agricultura",
+      "domain": "agriculture",
       "entry": "harvest:allocate",
       "source": "fixtures/c03",
       "tags": [
         "for/else",
         "break",
         "continue",
-        "acumulacion"
+        "accumulation"
       ]
     },
     {
       "id": "c04",
-      "domain": "mecanica",
+      "domain": "mechanical engineering",
       "entry": "pressure:stabilize",
       "source": "fixtures/c04",
       "tags": [
@@ -61,71 +60,71 @@
     },
     {
       "id": "c05",
-      "domain": "publicacion",
+      "domain": "publishing",
       "entry": "thumbnail:make_preview",
       "source": "fixtures/c05",
       "tags": [
-        "return en try/finally y cleanup"
+        "return through try/finally with cleanup"
       ]
     },
     {
       "id": "c06",
-      "domain": "gestion_documental",
+      "domain": "document management",
       "entry": "archive:publish",
       "source": "fixtures/c06",
       "tags": [
-        "with anidados",
-        "salida temprana"
+        "nested context managers",
+        "early exit"
       ]
     },
     {
       "id": "c07",
-      "domain": "investigacion",
+      "domain": "research",
       "entry": "jobs:run_remote",
       "source": "fixtures/c07",
       "tags": [
         "async with",
         "await",
-        "excepcion"
+        "exception"
       ]
     },
     {
       "id": "c08",
-      "domain": "inventario",
+      "domain": "inventory",
       "entry": "stock:reconcile",
       "source": "fixtures/c08",
       "tags": [
-        "try except else finally",
+        "try/except/else/finally",
         "return",
         "raise"
       ]
     },
     {
       "id": "c09",
-      "domain": "robotica",
+      "domain": "robotics",
       "entry": "motion:step",
       "source": "fixtures/c09",
       "tags": [
-        "cortocircuito",
-        "efectos y ternario"
+        "short-circuit",
+        "side effects and ternary expression"
       ]
     },
     {
       "id": "c10",
-      "domain": "astronomia",
+      "domain": "astronomy",
       "entry": "calibration:calibrate",
       "source": "fixtures/c10",
       "tags": [
-        "llamadas entre modulos y alias de importacion"
+        "cross-module calls and import aliases"
       ]
     },
     {
       "id": "c11",
-      "domain": "transporte",
+      "domain": "transport",
       "entry": "ticket:allocate_seats",
       "source": "fixtures/c11",
       "tags": [
-        "funcion local",
+        "local function",
         "nonlocal",
         "while",
         "return"
@@ -133,42 +132,42 @@
     },
     {
       "id": "c12",
-      "domain": "contabilidad",
+      "domain": "accounting",
       "entry": "ledger:transfer",
       "source": "fixtures/c12",
       "tags": [
-        "decorador y wrapper con rutas"
+        "decorator and wrapper with branches"
       ]
     },
     {
       "id": "c13",
-      "domain": "educacion",
+      "domain": "education",
       "entry": "scores:build_index",
       "source": "fixtures/c13",
       "tags": [
-        "lista/dict comprension y generador perezoso"
+        "list/dict comprehensions and lazy generator"
       ]
     },
     {
       "id": "c14",
-      "domain": "musica",
+      "domain": "music",
       "entry": "queue:iterate_tracks",
       "source": "fixtures/c14",
       "tags": [
         "yield",
         "yield from",
-        "return en generador"
+        "return in generator"
       ]
     },
     {
       "id": "c15",
-      "domain": "ciencias",
+      "domain": "sciences",
       "entry": "tree:aggregate",
       "source": "fixtures/c15",
       "tags": [
         "recursion",
-        "nodo base",
-        "excepcion"
+        "base case",
+        "exception"
       ]
     },
     {
@@ -177,62 +176,62 @@
       "entry": "events:handle_event",
       "source": "fixtures/c16",
       "tags": [
-        "dos match anidados",
-        "guardas y retornos"
+        "two nested match statements",
+        "guards and returns"
       ]
     },
     {
       "id": "c17",
-      "domain": "bibliografia",
+      "domain": "bibliography",
       "entry": "parser:parse_item",
       "source": "fixtures/c17",
       "tags": [
-        "operador walrus",
+        "assignment expression",
         "assert",
-        "excepcion"
+        "exception"
       ]
     },
     {
       "id": "c18",
-      "domain": "laboratorio",
+      "domain": "laboratory",
       "entry": "tests:finalize",
       "source": "fixtures/c18",
       "tags": [
-        "return en finally sustituye excepcion/return"
+        "return in finally overrides pending exception/return"
       ]
     },
     {
       "id": "c19",
-      "domain": "flota",
+      "domain": "fleet management",
       "entry": "vehicles:ElectricVan.operate",
       "source": "fixtures/c19",
       "tags": [
-        "herencia",
-        "super y override"
+        "inheritance",
+        "super and method override"
       ]
     },
     {
       "id": "c20",
-      "domain": "matematicas",
+      "domain": "mathematics",
       "entry": "boundaries:clip_range",
       "source": "fixtures/c20",
       "tags": [
-        "comparacion encadenada",
-        "multiples retornos"
+        "chained comparisons",
+        "multiple returns"
       ]
     },
     {
       "id": "c21",
-      "domain": "extensibilidad",
+      "domain": "extensibility",
       "entry": "router:dispatch_action",
       "source": "fixtures/c21",
       "tags": [
-        "getattr dinamico y destino ambiguo"
+        "dynamic getattr and ambiguous target"
       ]
     },
     {
       "id": "c22",
-      "domain": "telemetria",
+      "domain": "telemetry",
       "entry": "batch:consume_stream",
       "source": "fixtures/c22",
       "tags": [
@@ -243,7 +242,7 @@
     },
     {
       "id": "c23",
-      "domain": "prevencion",
+      "domain": "prevention",
       "entry": "emergency:shutdown",
       "source": "fixtures/c23",
       "tags": [
@@ -255,52 +254,52 @@
     },
     {
       "id": "c24",
-      "domain": "geometria",
+      "domain": "geometry",
       "entry": "shapes:classify",
       "source": "fixtures/c24",
       "tags": [
-        "patrones de clase",
-        "OR",
-        "guardas"
+        "class patterns",
+        "OR patterns",
+        "guards"
       ]
     },
     {
       "id": "c25",
-      "domain": "mensajeria",
+      "domain": "messaging",
       "entry": "delivery:flush_messages",
       "source": "fixtures/c25",
       "tags": [
-        "bucle anidado con break",
+        "nested loop with break",
         "for/else",
         "finally"
       ]
     },
     {
       "id": "c26",
-      "domain": "datos_clinicos_sinteticos",
+      "domain": "synthetic clinical records",
       "entry": "records:export_data",
       "source": "fixtures/c26",
       "tags": [
         "async with",
-        "retorno temprano y limpieza"
+        "early return and cleanup"
       ]
     },
     {
       "id": "c27",
-      "domain": "ensamblado_modular",
+      "domain": "modular assembly",
       "entry": "launcher:launch",
       "source": "fixtures/c27",
       "tags": [
-        "importaciones desde paquetes y alias de funcion"
+        "package imports and function aliases"
       ]
     },
     {
       "id": "c28",
-      "domain": "analisis_numerico",
+      "domain": "numerical analysis",
       "entry": "analysis:metrics",
       "source": "fixtures/c28",
       "tags": [
-        "generador perezoso frente a lista eager"
+        "lazy generator versus eager list"
       ]
     }
   ]

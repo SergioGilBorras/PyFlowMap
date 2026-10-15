@@ -9,6 +9,7 @@ from pathlib import Path
 from .diagrams.activity import analyze as analyze_activity
 from .hierarchy import build_hierarchical_outline
 from .mermaid import to_mermaid
+from .output_paths import next_graph_directory
 from .overview import function_overview
 from .project import load_project
 from .render import render
@@ -159,7 +160,8 @@ def generate_diagram(source: str, *, entry: str | None = None, scope: str | None
     if view == "overview":
         graph = function_overview(graph)
     label = re.sub(r"[^a-zA-Z0-9_-]+", "_", symbol.id).strip("_")[:100] or "flow"
-    target = Path(output).expanduser() if output else Path.cwd() / "pyflowmap-output"
+    target = (Path(output).expanduser() if output else
+              next_graph_directory(Path.cwd() / "output_graphs"))
     # --output supports an explicit file when there is one output format, or a directory.
     if target.suffix.lower() in (".mmd", ".svg", ".png", ".json"):
         if format in ("all", "images"):
