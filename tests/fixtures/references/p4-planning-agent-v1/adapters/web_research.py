@@ -1,6 +1,4 @@
-from typing import Protocol
-class WebResearchAdapter(Protocol):
-    def search(self, query: str) -> list[dict[str, str]]: ...
-class MockWebResearchAdapter:
-    def search(self, query: str) -> list[dict[str, str]]:
-        return []
+"""No HTTP calls: fixed test-only responses."""
+class LocalSearchAdapter:
+    def search(self, query):
+        return [{"title": "synthetic", "query": query}]

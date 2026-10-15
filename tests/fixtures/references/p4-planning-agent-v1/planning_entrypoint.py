@@ -1,22 +1,18 @@
+"""Synthetic console entry for static call-resolution tests."""
 import json
-import logging
 import sys
 from planning.coordinator import PlanningCoordinator
 from planning.models import PlanningRequest
 
-logging.basicConfig(stream=sys.stderr, level=logging.INFO, format="%(levelname)s: %(message)s")
-
 def main():
     try:
-        request = PlanningRequest.from_dict(json.load(sys.stdin))
+        payload = json.load(sys.stdin)
+        request = PlanningRequest.from_dict(payload)
+        # The next call intentionally occurs on line 12.
         result = PlanningCoordinator().plan(request)
-        sys.stdout.write(json.dumps(result.to_dict(), ensure_ascii=False) + "\n")
+        sys.stdout.write(json.dumps(result.to_dict()) + "\n")
         return 0
-    except (ValueError, json.JSONDecodeError) as exc:
-        logging.error("Invalid request: %s", exc)
-        return 1
-    except Exception:
-        logging.exception("Planning failed")
+    except (ValueError, json.JSONDecodeError):
         return 1
 
 if __name__ == "__main__":
