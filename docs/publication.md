@@ -19,7 +19,7 @@ commits are free of sensitive information.
 reference files have been replaced in the current `main` tree with
 independently authored synthetic fixtures. The replacement passed Windows,
 Linux and macOS CI; see
-[`HISTORY-AUDIT.md`](../tests/fixtures/references/HISTORY-AUDIT.md).
+[`HISTORY-AUDIT.md`](https://github.com/SergioGilBorras/PyFlowMap/blob/main/tests/fixtures/references/HISTORY-AUDIT.md).
 **The original private blobs remain reachable through historical Git commits**
 and possibly other refs. The old history, backup branch, Actions logs and
 artifacts have not been fully audited. Neither this change nor the successful
