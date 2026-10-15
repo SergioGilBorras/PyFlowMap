@@ -7,8 +7,15 @@ source references, and warnings where runtime behavior is uncertain.
 
 Activity and class diagrams export editable Mermaid (`.mmd`); package diagrams
 export editable Graphviz (`.dot`). All three include source-linked JSON and
-can render SVG and PNG using a suitable backend. The UML families are currently
-staged in draft feature branches, not yet released on the default branch.
+can render SVG and PNG using a suitable backend. All three families are
+integrated on `main`. GitHub Pages, tagged releases and PyPI publication
+are separate operations and have **not yet been carried out**.
+**Public-visibility blocker:** PR #11 has replaced the ten private-origin
+fixture files in the current `main` tree with synthetic examples and passed
+cross-platform CI. The original blobs remain reachable through earlier
+commits; historical refs, logs and artifacts still require security review.
+See the [publication checklist](docs/publication.md) before making the
+repository public.
 The analyzer is domain-independent: it does not require an agent framework,
 a particular application, or a semantic language model.
 
@@ -151,10 +158,9 @@ local artifacts; it does **not** publish them.
 - [`output_graphs/`](output_graphs/README.md) is the consumer's diagram history.
   Without `--output`, each analysis creates a separate dated folder under
   the **current working directory**. Explicit `--output` remains supported.
-- [`output_validacion/`](output_validacion/README.md) is developer-only
-  validation evidence. It holds a clearly named dated run, 81 preserved
-  benchmark cases in deterministic and real-Codex mode, all test reports,
-  semantic review and built packages. No mock is part of the global command.
+- [`output_validacion/`](output_validacion/README.md) retains dated developer
+  validation runs; each report identifies its actual inference mode.
+  The normal offline run uses no Codex and preserves previous results.
 - [`benchmark/`](benchmark/README.md) supplies the 81 retained source
   cases and evaluation criteria. [`scripts/`](scripts/README.md) contains
   only developer tools; both are excluded from the installed distribution.
@@ -162,9 +168,21 @@ local artifacts; it does **not** publish them.
   generated end-user diagrams. `dist/` remains the optional ignored
   destination of a separately requested local package build.
 
-After installing `.[dev,mcp,labeler-codex]`, authenticating the Codex CLI,
-and reviewing its inherited MCP connectors, **one command** runs the full
-live evaluation on the authorized local machine:
+For the final **offline, no-Codex** validation, install `.[dev,mcp]`,
+verify Graphviz (`dot -V`) and run:
+
+```bash
+python scripts/run_full_validation.py --output-parent ./output_validacion
+```
+
+This runs pytest (including the 21-case diagram-family bank), Ruff, all
+81 activity regression cases, metamorphic checks and package build/smoke.
+To generate its separate visual gallery run
+`python scripts/validate_diagram_families.py`.
+
+For separately authorized **real Codex inference**, install
+`.[dev,mcp,labeler-codex]`, authenticate Codex, inspect inherited connectors
+and explicitly run:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\validate_all.py --acknowledge-source-transmission
@@ -201,13 +219,15 @@ Technical documentation:
 - [UML class diagrams](docs/uml-classes.md)
 - [UML package diagrams](docs/uml-packages.md)
 - [Three-family offline gallery](docs/offline-gallery.md)
+- [Diagram-family validation bank](docs/diagram-family-banks.md)
+- [Public release checklist](docs/publication.md)
 
 ## License
 
 MIT. See [LICENSE](LICENSE).
 
 
-## UML class and package diagrams (draft feature branches)
+## UML class and package diagrams
 
 The `class` family extracts declared classes, annotated attributes, methods,
 and verifiable local inheritance with correct UML generalization arrows.
@@ -231,11 +251,11 @@ Use `--package-style strict` for the traditional UML package shape. Visible
 package names begin with a capital letter for presentation only; the Python
 identifiers and JSON dependency endpoints retain their original case.
 
-See [UML package documentation](docs/uml-packages.md). An offline GitHub
-Pages preview already exists in the draft `site/` directory; no Pages
-deployment has been enabled. The stacked feature PRs must be reviewed and
-merged in their dependency order before the examples become available on
-the default branch.
+See [UML package documentation](docs/uml-packages.md). The static website
+in `site/` and the focused 21-case validation suite in
+`benchmark/diagram-families/` are also integrated. Pages is **not deployed**.
+See the [publication checklist](docs/publication.md) before making the
+repository public, enabling Pages or distributing packages.
 
 ## Galería offline: actividad, clases y paquetes
 

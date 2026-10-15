@@ -16,11 +16,12 @@ A continuación visita `http://localhost:8000/`.
 
 ## Estado de publicación
 
-**Sin desplegar.** Esta carpeta `site/` no se publica automáticamente con
-GitHub Pages en modo branch source; publicar requerirá una configuración o
-workflow de despliegue revisado y activado expresamente después de aprobar
-el diseño, fusionar las ramas previstas y validar el commit definitivo.
-No se incluye por ahora ninguna acción de publicación automática.
+**Sin desplegar.** Esta carpeta ya está en `main`, pero Pages no puede
+elegir directamente `site/` como origen de una rama: solo admite `/` o
+`/docs`. El workflow `.github/workflows/deploy-pages.yml` carga exclusivamente
+el contenido de `site/` y **solo se ejecuta manualmente** desde `main`.
+Antes de ejecutarlo se debe elegir Settings → Pages → Source: GitHub Actions.
+No se publica nada en cada push o PR.
 
 ## Procedencia y alcance
 
@@ -37,15 +38,6 @@ completa, con el nombre en su interior, sin tarjeta externa ni icono pequeño.
 La forma `modern` es una presentación alternativa, no la notación normativa
 UML de pestaña. Los SVG deben regenerarse cuando cambien los ejemplos.
 
-Los enlaces del pie apuntan al repositorio y al texto de la licencia MIT,
-no a rutas de ramas que podrían desaparecer o a archivos que aún no existen
-en `main`. Los comandos UML solo estarán en `main` tras integrar sus PR.
-No desplegar Pages antes de esa fase.
-
-## Synchronization before publishing
-
-The live website has **not** been deployed. This preview belongs to stacked
-draft feature branches; its installation commands require the UML branches
-to be integrated into the default branch first. Regenerate package preview
-SVG from the final `modern` renderer before publication; do not replace
-a real generated SVG with hand-edited shapes or text.
+Los comandos UML y los enlaces están disponibles en `main`. Antes de
+desplegar, revisar los tres SVG reales generados por PyFlowMap y no inventar
+relaciones gráficas. Consulta la [lista de publicación](../docs/publication.md).
