@@ -1,6 +1,4 @@
-from typing import Any, Protocol
-class ProjectContextAdapter(Protocol):
-    def get_context(self, workspace: str) -> dict[str, Any]: ...
-class MockProjectContextAdapter:
-    def get_context(self, workspace: str) -> dict[str, Any]:
-        return {}
+"""No filesystem or external context access."""
+class StaticContextAdapter:
+    def get_context(self, name):
+        return {"name": name, "synthetic": True}
