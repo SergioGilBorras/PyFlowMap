@@ -50,7 +50,7 @@ def test_package_model_has_correct_clients_suppliers_and_nesting(tmp_path):
     assert "shape=plain" in dot
     assert 'SIDES="LTR"' in dot
     assert "style=dashed, arrowhead=vee" in dot
-    assert ">myapp::feature</B></FONT>" in dot
+    assert ">Myapp::Feature</B></FONT>" in dot
     assert "arrowhead=empty" not in dot
     assert diagram.to_dict()["uml_version"] == "2.5.1"
 

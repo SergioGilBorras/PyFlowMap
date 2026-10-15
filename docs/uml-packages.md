@@ -83,3 +83,11 @@ the same open-arrow dashed edges. The exported JSON and CLI result record
 **Standards distinction:** `strict` follows the traditional UML package
 shape; `modern` is a clearly identified visual alternative and does not
 claim strict compliance of its pictogram with OMG glyph notation.
+
+## Caption capitalization
+
+The first letter of each displayed package namespace segment is capitalized:
+`reports` → `Reports`; `myapp.feature` → `Myapp::Feature`.
+This is **display only**, in both styles. Python module names, source
+locations, JSON package identifiers, dependency endpoints and tooltips retain
+their original case and are not modified.

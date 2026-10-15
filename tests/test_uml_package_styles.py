@@ -21,9 +21,9 @@ def test_package_styles_share_exact_dependency_edges():
     strict = to_dot(model, "LR", style="strict")
     assert "shape=folder" in modern
     assert 'orientation=90' in modern
-    assert 'label="reports"' in modern
-    assert 'label="orders"' in modern
-    assert 'label="inventory"' in modern
+    assert 'label="Reports"' in modern
+    assert 'label="Orders"' in modern
+    assert 'label="Inventory"' in modern
     assert 'WIDTH="39" HEIGHT="26"' not in modern
     assert 'shape=box' not in modern
     assert 'SIDES="LTR"' in strict
@@ -58,7 +58,9 @@ def test_styles_generate_self_contained_vector_svg_and_equivalent_json(tmp_path)
             assert "<image " not in svg and "xlink:href=" not in svg
             assert "<polygon" in svg or "<path" in svg
             assert "<text" in svg
-            assert ">reports</text>" in svg
+            assert ">Reports</text>" in svg
+            assert ">Orders</text>" in svg
+            assert ">Inventory</text>" in svg
     for payload in models.values():
         payload.pop("package_style")
     assert models["modern"] == models["strict"]
