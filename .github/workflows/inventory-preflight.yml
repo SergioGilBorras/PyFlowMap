@@ -40,6 +40,28 @@ jobs:
           assert report["reviewed"] is False
           assert unreviewed == len(files)
           assert not blocked, "Blocked file types: inspect private report locally"
+          categories = {
+              "runtime": ("src/",),
+              "tests": ("tests/",),
+              "benchmarks": ("benchmark/",),
+              "website": ("site/",),
+              "documentation": ("docs/",),
+              "automation": (".github/",),
+              "scripts": ("scripts/",),
+              "generated-output-placeholders": ("output_graphs/", "output_validacion/"),
+          }
+          counts = {category: 0 for category in categories}
+          counts["other-root-and-config"] = 0
+          for item in files:
+              matched = next(
+                  (name for name, prefixes in categories.items()
+                   if item["path"].startswith(prefixes)), "other-root-and-config"
+              )
+              counts[matched] += 1
+          assert sum(counts.values()) == len(files)
+          # Only safe aggregate counts: never print paths, hashes, blob IDs or file contents.
+          for category, count in counts.items():
+              print(f"Inventory category {category}: {count} files; review required")
           PY
       - name: Remove temporary report from runner workspace
         if: always()
