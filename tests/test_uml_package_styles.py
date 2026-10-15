@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 
 import pytest
-
 from pyflowmap.cli import main
 from pyflowmap.project import load_project
 from pyflowmap.service import generate_diagram
