@@ -171,7 +171,11 @@ def to_dot(diagram: PackageDiagram, direction: str = "TD", *,
         )
     for package in diagram.packages:
         # Namespaced UML package names; no unproven package import stereotypes.
-        name = escape(package.id.replace(".", "::"), quote=True)
+        # Presentation only: Python identifiers and dependency IDs keep their case.
+        display = "::".join(
+            part[:1].upper() + part[1:] for part in package.id.split(".")
+        )
+        name = escape(display, quote=True)
         if style == "strict":
             # The original left-tab UML notation is preserved unchanged.
             html = (
@@ -188,7 +192,7 @@ def to_dot(diagram: PackageDiagram, direction: str = "TD", *,
         else:
             # Large and elongated native folder, not a card with a tiny icon.
             # The full namespace sits inside the folder silhouette.
-            title = package.id.replace(".", "::")
+            title = display
             tooltip = f"{package.id} ({package.location})"
             lines.append(f"  {nodes[package.id]} [label={json.dumps(title)}, "
                          f"tooltip={json.dumps(tooltip)}];")
