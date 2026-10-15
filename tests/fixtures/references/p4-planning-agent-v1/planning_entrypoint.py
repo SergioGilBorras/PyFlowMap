@@ -1,4 +1,4 @@
-"""Synthetic console adapter used only as static-analysis fixture."""
+"""Synthetic console entry for static call-resolution tests."""
 import json
 import sys
 from planning.coordinator import PlanningCoordinator
@@ -6,10 +6,11 @@ from planning.models import PlanningRequest
 
 def main():
     try:
-        source = json.load(sys.stdin)
-        request = PlanningRequest.from_dict(source)
-        coordinator = PlanningCoordinator()
-\n        result = coordinator.plan(request)
+        payload = json.load(sys.stdin)
+        request = PlanningRequest.from_dict(payload)
+        # The next call intentionally occurs on line 12.
+        payload.setdefault("fixture", True)
+        result = PlanningCoordinator().plan(request)
         sys.stdout.write(json.dumps(result.to_dict()) + "\n")
         return 0
     except (ValueError, json.JSONDecodeError):
