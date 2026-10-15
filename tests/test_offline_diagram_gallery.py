@@ -39,6 +39,8 @@ def test_three_distinct_families_and_preserved_history(tmp_path, monkeypatch):
         else:
             assert model["dependencies"] and item["files"].get("dot")
             assert "mmd" not in item["files"]
+            assert item["package_style"] == "modern"
+            assert model["package_style"] == "modern"
     html = (root / "index.html").read_text(encoding="utf-8")
     assert "common/gallery.css" in html and "<script" not in html
     before = (root / "common/manifest.json").read_bytes()

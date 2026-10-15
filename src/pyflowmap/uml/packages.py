@@ -143,10 +143,13 @@ def analyze_package_diagram(index: ProjectIndex, scope: str | None = None, *,
     return result
 
 
-def to_dot(diagram: PackageDiagram, direction: str = "TD") -> str:
-    """Draw a UML package with its small tab at the upper-left, not a file icon."""
+def to_dot(diagram: PackageDiagram, direction: str = "TD", *,
+           style: str = "modern") -> str:
+    """Render UML dependencies with formal tabs or one-piece vector folders."""
     if direction not in ("TD", "LR"):
         raise ValueError("direction must be TD or LR")
+    if style not in ("modern", "strict"):
+        raise ValueError("package style must be modern or strict")
     nodes = {pkg.id: f"P{i + 1}" for i, pkg in enumerate(diagram.packages)}
     lines = [
         "digraph uml_packages {",
@@ -157,20 +160,42 @@ def to_dot(diagram: PackageDiagram, direction: str = "TD") -> str:
         ('  edge [style=dashed, arrowhead=vee, color="#526D87", '
          'penwidth=1.3, arrowsize=0.8];'),
     ]
+    if style == "modern":
+        # The folder outline IS the complete node. The name sits inside it.
+        # Graphviz renders identical self-contained vectors in SVG and PNG.
+        lines[3] = (
+            '  node [shape=folder, style=filled, fillcolor="#E2F0FC", '
+            'color="#557998", fontcolor="#18354F", penwidth=1.65, '
+            'width=2.85, height=1.05, orientation=90, margin="0.28,0.23", '
+            'fontname="Helvetica", fontsize=17];'
+        )
     for package in diagram.packages:
         # Namespaced UML package names; no unproven package import stereotypes.
-        name = escape(package.id.replace(".", "::"), quote=True)
-        html = (
-            '<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">'
-            '<TR><TD BORDER="1" SIDES="LTR" COLOR="#344F6D" BGCOLOR="#DFEAF6" WIDTH="88" HEIGHT="18"></TD>'
-            '<TD BORDER="0" WIDTH="137"></TD></TR>'
-            '<TR><TD COLSPAN="2" BORDER="1" COLOR="#344F6D" BGCOLOR="#F7FAFE" WIDTH="225" HEIGHT="68" CELLPADDING="16">'
-            f'<FONT FACE="Helvetica" COLOR="#18324E" POINT-SIZE="16"><B>{name}</B></FONT>'
-            '</TD></TR></TABLE>'
+        # Presentation only: Python identifiers and dependency IDs keep their case.
+        display = "::".join(
+            part[:1].upper() + part[1:] for part in package.id.split(".")
         )
-        tooltip = f"{package.id} ({package.location})"
-        lines.append(f"  {nodes[package.id]} [label=<{html}>, "
-                     f"tooltip={json.dumps(tooltip)}];")
+        name = escape(display, quote=True)
+        if style == "strict":
+            # The original left-tab UML notation is preserved unchanged.
+            html = (
+                '<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">'
+                '<TR><TD BORDER="1" SIDES="LTR" COLOR="#344F6D" BGCOLOR="#DFEAF6" WIDTH="88" HEIGHT="18"></TD>'
+                '<TD BORDER="0" WIDTH="137"></TD></TR>'
+                '<TR><TD COLSPAN="2" BORDER="1" COLOR="#344F6D" BGCOLOR="#F7FAFE" WIDTH="225" HEIGHT="68" CELLPADDING="16">'
+                f'<FONT FACE="Helvetica" COLOR="#18324E" POINT-SIZE="16"><B>{name}</B></FONT>'
+                '</TD></TR></TABLE>'
+            )
+            tooltip = f"{package.id} ({package.location})"
+            lines.append(f"  {nodes[package.id]} [label=<{html}>, "
+                         f"tooltip={json.dumps(tooltip)}];")
+        else:
+            # Large and elongated native folder, not a card with a tiny icon.
+            # The full namespace sits inside the folder silhouette.
+            title = display
+            tooltip = f"{package.id} ({package.location})"
+            lines.append(f"  {nodes[package.id]} [label={json.dumps(title)}, "
+                         f"tooltip={json.dumps(tooltip)}];")
     for dependency in diagram.dependencies:
         lines.append(f"  {nodes[dependency.client]} -> {nodes[dependency.supplier]};")
     lines.append("}")

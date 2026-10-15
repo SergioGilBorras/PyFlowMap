@@ -40,7 +40,11 @@ def generate_diagram(source: str, *, entry: str | None = None, scope: str | None
                      semantic_max_chars: int = 70,
                      semantic_reduction_attempts: int = 1,
                      view: str = "detailed", max_classes: int = 250,
-                     max_packages: int = 250) -> dict:
+                     max_packages: int = 250, package_style: str = "modern") -> dict:
+    if package_style not in ("modern", "strict"):
+        raise ValueError("package style must be modern or strict")
+    if diagram_type != "package" and package_style != "modern":
+        raise ValueError("--package-style applies only to package diagrams")
     if format not in FORMATS:
         raise ValueError(f"format must be one of {', '.join(sorted(FORMATS))}")
     if diagram_type not in ("activity", "class", "package"):
@@ -67,6 +71,7 @@ def generate_diagram(source: str, *, entry: str | None = None, scope: str | None
         return generate_package_diagram(
             source, scope=scope, format=format, output=output,
             direction=direction, renderer=renderer, max_packages=max_packages,
+            package_style=package_style,
         )
     if diagram_type == "class":
         if entry is not None:
