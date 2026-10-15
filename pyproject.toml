@@ -46,5 +46,5 @@ addopts = "-p no:cacheprovider"
 
 [tool.ruff]
 line-length = 100
-# Preserve upstream P4 Git blobs byte-for-byte; these files are fixtures, not project code.
+# Static-analysis fixtures are independently authored synthetic source; excluded from lint as test data.
 extend-exclude = ["tests/fixtures/references/**"]
