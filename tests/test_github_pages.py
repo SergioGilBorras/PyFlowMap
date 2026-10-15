@@ -41,7 +41,7 @@ def test_three_real_svg_and_folder_is_one_piece():
         assert root.tag.endswith("svg")
         assert "<image" not in data and "xlink:href=" not in data
     svg = (SITE / "assets/packages.svg").read_text(encoding="utf-8")
-    assert ">inventory</text>" in svg
+    assert ">Inventory</text>" in svg
     assert ">orders</text>" in svg
     assert ">reports</text>" in svg
     assert "<polygon" in svg
