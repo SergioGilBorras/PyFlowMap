@@ -1,6 +1,6 @@
 # Synthetic reference fixtures and disclosure status
 
-The ten Python files in `p4-planning-agent-v1/` were **replaced in the current branch** with independently authored, offline synthetic examples. The directory name is a legacy compatibility path, **not** an indication of current code origin. See `manifest.json`.
+The ten Python files in `p4-planning-agent-v1/` were **replaced in the current branch** with independently authored, offline synthetic examples. The directory name is a fixture identifier, not an indication of source origin. See `manifest.json`.
 
 The fixtures are data for PyFlowMap's static analyzer: do **not** import or execute them as part of visual validation. They deliberately preserve tested shape, not real application logic: local calls, one decision on `NEEDS_CLARIFICATION`, affirmative/negative edges, returns, provenance symbols and the entrypoint call at line 12.
 
