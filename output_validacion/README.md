@@ -47,6 +47,3 @@ unchanged graph structure. Their meaning requires manual review. V1/V2
 generation is not an independent semantic PASS; unresolved cases remain
 NOT_EVALUATED or REVIEW. The global command will not pretend otherwise.
 
-The old `pyflowmap-output/final-validation-1.0`, `history`, and other legacy
-folders are not managed by this runner. Inspect them before manual migration
-or deletion; the ongoing 2026-10-14 Windows run must remain undisturbed.
