@@ -63,9 +63,7 @@ technically successful run, **all earlier validation evidence is preserved
 by default**, including previous failed runs. Deletion of older marked,
 recognized generated runs is available only with the optional, explicit
 `--prune-managed-history` flag; unknown directories, symlinks and protected
-paths are never pruned. If a step fails, all previous results remain intact. No
-unknown or legacy `pyflowmap-output/` directory is automatically cleaned.
-The running old Windows validation is not modified.
+paths are never pruned. If a step fails, all previous results remain intact. Unrecognized paths and protected directories are never automatically removed.
 
 ## Report statuses
 
