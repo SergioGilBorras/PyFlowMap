@@ -27,7 +27,7 @@ On Linux/macOS it is `.venv/bin/python`.
 For Windows commands and installed launchers, see
 [Windows setup](windows-local-setup.md).
 
-## Retained tools and why they exist
+## Development tools
 
 | Location | Purpose | Shipping? |
 | --- | --- | --- |
@@ -110,9 +110,8 @@ independent banks, metamorphic checks, real Codex labeling over the same
 Real inference requires a logged-in Codex CLI and may incur usage. Review
 any inherited MCP tools before enabling it.
 
-Only generated, marked previous runs in `output_validacion/` are removed
-after a fully successful replacement. A failed run retains its diagnostics
-and does not destroy the last good evidence. Unrecognized and protected
+Validation outputs are retained by default. Removing managed historical
+runs requires the explicit pruning option; failures retain their diagnostics. Unrecognized and protected
 directories are never forcibly removed. All scratch and caches are under
 system TEMP. The validator does not modify `output_graphs/` (consumer
 history), fixtures, `.serena/`, or `.git/`.
