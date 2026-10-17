@@ -2,9 +2,9 @@
   "schema_version": 2,
   "fixtures": {
     "synthetic-activity-regression-v1": {
-      "origin": "independently authored synthetic test fixtures, not copied from P4-Planning-Agent",
-      "directory": "p4-planning-agent-v1",
-      "note": "Legacy directory name retained temporarily for stable test paths. Every one of the ten source files has been replaced. Historic commits and other refs still contain original blobs; NOT SAFE to make the repository public.",
+      "origin": "independently authored synthetic test fixtures",
+      "directory": "synthetic-activity-regression-v1",
+      "note": "The ten synthetic source files are maintained only as source-analysis test inputs; historic Git objects require separate history remediation.",
       "files": [
         "planning_entrypoint.py",
         "planning/coordinator.py",
