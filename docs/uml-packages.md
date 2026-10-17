@@ -46,9 +46,7 @@ References: [OMG UML 2.5.1](https://www.omg.org/spec/UML/2.5.1/),
 
 ## Publication status and diagram layout
 
-The static Pages site has been merged into `main` under `site/`, but is
-**not yet deployed**. Its publication requires configuring GitHub Pages
-and executing a manual deployment workflow. Context-dependent UML families
+The consumer-facing website is published from the independent `gh-pages` branch at https://sergiogilborras.github.io/PyFlowMap/. The original three-diagram technical reference gallery is kept in `benchmark/gallery-reference/`, not in a root `site/` directory. Context-dependent UML families
 remain distant roadmap ideas, not supported features.
 
 The `strict` variant retains the original upper-left tab. The `modern`
