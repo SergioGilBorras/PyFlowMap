@@ -1,4 +1,4 @@
-# PyFlowMap · borrador del sitio GitHub Pages
+# PyFlowMap · sitio web estático
 
 Sitio **estático y offline** con HTML, CSS y SVG reales producidos desde
 `examples/uml_showcase`. No contiene librerías externas, telemetría, CDNs
@@ -16,7 +16,7 @@ A continuación visita `http://localhost:8000/`.
 
 ## Estado de publicación
 
-**Sin desplegar.** Esta carpeta ya está en `main`, pero Pages no puede
+**Sin desplegar.** El sitio se mantiene en `site/`, pero Pages no puede
 elegir directamente `site/` como origen de una rama: solo admite `/` o
 `/docs`. El workflow `.github/workflows/deploy-pages.yml` carga exclusivamente
 el contenido de `site/` y **solo se ejecuta manualmente** desde `main`.
@@ -38,6 +38,6 @@ completa, con el nombre en su interior, sin tarjeta externa ni icono pequeño.
 La forma `modern` es una presentación alternativa, no la notación normativa
 UML de pestaña. Los SVG deben regenerarse cuando cambien los ejemplos.
 
-Los comandos UML y los enlaces están disponibles en `main`. Antes de
+Antes de
 desplegar, revisar los tres SVG reales generados por PyFlowMap y no inventar
 relaciones gráficas. Consulta la [lista de publicación](../docs/publication.md).
