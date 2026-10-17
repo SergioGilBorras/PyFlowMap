@@ -4,7 +4,7 @@ PyFlowMap is a Python source-code analyzer that produces static activity, UML cl
 
 ## Current distribution status
 
-The source repository is currently **public**. The three-diagram reference gallery is in `benchmark/gallery-reference/`. The consumer website is published separately from the independent-root `gh-pages` branch at https://sergiogilborras.github.io/PyFlowMap/. The project's own Python packages are built and kept locally in each project's `dist/`; they are **not published to PyPI**. No public hosting or GitHub release is authorized by this document.
+The source repository is currently **public**. The three-diagram reference gallery is in `benchmark/gallery-reference/`. The consumer website is published separately from the independent-root `gh-pages` branch at https://sergiogilborras.github.io/PyFlowMap/. The project's own Python packages are built and kept locally in each project's `dist/`; they are **not published to PyPI**. The Pages website is already public; no GitHub source release is created by these instructions.
 
 The application supports Python 3.11+. Its essential dependency is `portable-tempdirs`, currently pinned in `pyproject.toml` to the reviewed Git commit. The optional semantic labeler is installed separately. Check actual package metadata and available wheels before changing version pins: the project's local wheels are separate artifacts and must be checked for compatible metadata and dependency versions.
 
