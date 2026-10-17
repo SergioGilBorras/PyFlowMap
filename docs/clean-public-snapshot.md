@@ -1,6 +1,6 @@
 # Clean public snapshot plan (not a publication authorization)
 
-**Status:** preparation only. The existing `SergioGilBorras/PyFlowMap` repository must stay **private**, preserving all its original refs and the `backup/pre-main-20261015` branch. No public repository, Git tag, Pages deployment, or package upload is created by these instructions.
+**Status:** historical remediation planning. The existing `SergioGilBorras/PyFlowMap` repository is already **public**, and its independent `gh-pages` branch is deployed. `backup/pre-main-20261015` has been deleted. This document does not itself remediate the previously disclosed Git history.
 
 ## Why an ordinary visibility change is unsafe
 
@@ -32,14 +32,14 @@ Review the following groups explicitly:
 | `src/`, CLI and MCP entrypoints | Static-only behavior, paths, outbound connections and licensing |
 | `tests/` including reference fixtures | Synthetic provenance, identifiers, Git blob hashes, and no historical original data |
 | `benchmark/`, `output_graphs/`, `output_validacion/` | Rights to samples, archives, reports and any embedded private source |
-| `site/`, `docs/`, `README.md` | SVG/asset rights, external links, paths, and disclosure of private upstream projects |
+| `benchmark/gallery-reference/`, `docs/`, `README.md` | SVG/asset rights, external links, paths, and disclosure of private upstream projects |
 | `.github/`, packaging manifests and scripts | Least-privilege tokens, CI triggers, dependencies, and distribution file allowlists |
 
 No single successful secrets scan is conclusive: also inspect large/binary files, Git LFS, submodules/symlinks, generated artifacts, author metadata and references in documentation. For the public snapshot, do not include a Git history audit log containing private filenames or original blob identifiers.
 
 ## Dependency-release blockers
 
-Current required dependency: `portable-tempdirs` at a pinned Git commit. Verify an independently redistributable, indexed release and preserve its sandbox, ACL and temporary-directory protections before replacing the direct Git requirement. Optional `labeler` and `labeler-codex` extras point to a private Git repository and must not be advertised as generally installable until reviewed and publicly obtainable.
+Current required dependency: `portable-tempdirs` at a pinned Git commit. Verify an independently redistributable, indexed release and preserve its sandbox, ACL and temporary-directory protections before replacing the direct Git requirement. Optional `labeler` and `labeler-codex` extras point to a public Git repository and must not be advertised as generally installable until reviewed and publicly obtainable.
 
 Publishing a GitHub source release is distinct from PyPI. A public GitHub repository does **not** itself make this project's direct-URL distribution metadata eligible for PyPI.
 
