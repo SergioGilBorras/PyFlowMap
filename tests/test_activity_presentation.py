@@ -14,7 +14,7 @@ from pyflowmap.models import FlowGraph
 from pyflowmap.render import render
 from pyflowmap.service import generate_diagram
 
-P4 = Path(__file__).parent / "fixtures" / "references" / "p4-planning-agent-v1"
+P4 = Path(__file__).parent / "fixtures" / "references" / "synthetic-activity-regression-v1"
 ENTRY = "planning.coordinator:PlanningCoordinator.plan"
 
 
