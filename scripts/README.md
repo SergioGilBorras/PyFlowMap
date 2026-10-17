@@ -10,7 +10,7 @@ renaming it would break CI and existing developer commands.
 | `validate_all.py` | **Canonical global command**: tests, all 81 benchmark cases without and with real Codex, invariant/quality evidence, and package build; historical runs preserved by default |
 | `run_full_validation.py` | Lower-level orchestrator, also usable without the real labeler for CI diagnostics |
 | `compare_real_labeler.py` | Per-case real Codex inference, compare 81 source diagrams, export label review CSV |
-| `compare_labeler_modes.py` | Legacy **mock** integration diagnosis; never evidence of genuine inference |
+| `compare_labeler_modes.py` | Synthetic-label integration diagnosis; not evidence of real inference |
 | `build_release.py` | Build and smoke-test wheel/sdist and record their checksums; defaults to ignored `dist/` |
 | `verify_portable_tempdirs.py` | Check the exact Git-pinned tempdir dependency |
 | `verify_offline_release_install.py` | Windows-only wheel and local wheelhouse diagnostic |
@@ -36,7 +36,7 @@ The inspectable reports go to
 **preserves all previous runs by default**, including successful and failed
 ones. Optional `--prune-managed-history` explicitly opts into removal of older
 self-marked runs after full PASS; avoid that flag when keeping evidence.
-Unknown data, `.serena/`, `.git/`, legacy `pyflowmap-output/` and all
+Unknown data, `.serena/`, `.git/`, unrecognized output folders and all
 protected Windows paths are always preserved. Temporary
 working directories and caches are under `%TEMP%`, outside the repository.
 `_avast_` may be antivirus-owned and is not forcibly removed.

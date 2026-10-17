@@ -1,21 +1,15 @@
 # PyFlowMap
 
+**Author:** Sergio Gil-Borrás. See [AUTHORS.md](AUTHORS.md).
+
 PyFlowMap generates static **activity diagrams and evidence-backed UML class
 and package diagrams** from Python source code, without importing or executing
 the analyzed project. Activity diagrams preserve possible control-flow routes,
 source references, and warnings where runtime behavior is uncertain.
 
 Activity and class diagrams export editable Mermaid (`.mmd`); package diagrams
-export editable Graphviz (`.dot`). All three include source-linked JSON and
-can render SVG and PNG using a suitable backend. All three families are
-integrated on `main`. GitHub Pages, tagged releases and PyPI publication
-are separate operations and have **not yet been carried out**.
-**Public-visibility blocker:** PR #11 has replaced the ten private-origin
-fixture files in the current `main` tree with synthetic examples and passed
-cross-platform CI. The original blobs remain reachable through earlier
-commits; historical refs, logs and artifacts still require security review.
-See the [publication checklist](docs/publication.md) before making the
-repository public.
+export editable Graphviz (`.dot`). All three include source-linked JSON and can render SVG and PNG using a
+suitable backend.
 The analyzer is domain-independent: it does not require an agent framework,
 a particular application, or a semantic language model.
 
@@ -122,6 +116,8 @@ does **not** call Codex, and does not send source code to a model.
 A provider may change permitted node captions and label metadata, **never**
 the graph topology, source symbols, decisions, or routes. Real provider
 quality must be assessed separately from static flow correctness.
+The optional integration uses P4-Semantic-Labeler; Codex communication is
+provided by the separately maintained P4-Codex-Bridge package.
 See [semantic labeling](docs/semantic-labeling.md) and
 [P4-Semantic-Labeler setup](docs/p4-semantic-labeler-integration.md).
 

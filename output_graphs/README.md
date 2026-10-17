@@ -9,7 +9,7 @@ Without `--output`, each CLI or MCP analyze invocation creates a
 ```text
 output_graphs/
   README.md                           # only tracked file in the checkout
-  2026-10-14_17-10-00_a1b2c3d4/
+  YYYY-MM-DD_HH-MM-SS_<id>/
     <entry-stem>.mmd                  # Mermaid source (always written)
     <entry-stem>.json                 # graph/provenance (always written)
     <entry-stem>.svg                  # if images/all/svg is requested
@@ -26,7 +26,7 @@ An explicit `--output path` always takes precedence and is not renamed.
 The exact sanitized stem comes from the resolved entry point; the CLI JSON
 `files` mapping is authoritative. `inspect` only lists symbols on stdout.
 
-Old consumer runs are **never** deleted by the validation script. Source
+Consumer results are not pruned by developer validation. Source
 files are parsed without import or execution.
 
 For real labels with Codex, users first install `.[labeler-codex]`, log into

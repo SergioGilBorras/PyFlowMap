@@ -16,8 +16,9 @@ The Python adapter defaults to English, like the CLI; request `language="es"`
 explicitly when Spanish labels are required. These are two supported output
 languages, not mixed-language project documentation.
 
-The optional package comes from a separately maintained private Git
-repository. The normal PyFlowMap installation and activity extraction
+The optional P4-Semantic-Labeler package is separately maintained.
+The real Codex integration uses P4-Codex-Bridge. Check the currently
+configured optional dependency and its transitive requirements before installing. The normal PyFlowMap installation and activity extraction
 must not depend on Codex.
 
 ## Context and safety

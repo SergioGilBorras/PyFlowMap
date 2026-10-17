@@ -1,4 +1,4 @@
-# Latest full validation (developer-only)
+# Developer validation output
 
 This directory is NOT an application graph destination. The one-command
 validator `python scripts/validate_all.py --acknowledge-source-transmission`
@@ -8,7 +8,7 @@ regression evidence, both deterministic and **real Codex** runs:
 ```text
 output_validacion/
   README.md                            # only tracked file
-  validation-2026-10-14_17-10-00_abcdef/
+  validation-YYYY-MM-DD_HH-MM-SS_<id>/
     validation-summary.json           # provenance, exact commit, step statuses
     semantic-review-queue.md          # unresolved semantic obligations
     logs/                             # stdout/stderr per verification step
@@ -47,6 +47,3 @@ unchanged graph structure. Their meaning requires manual review. V1/V2
 generation is not an independent semantic PASS; unresolved cases remain
 NOT_EVALUATED or REVIEW. The global command will not pretend otherwise.
 
-The old `pyflowmap-output/final-validation-1.0`, `history`, and other legacy
-folders are not managed by this runner. Inspect them before manual migration
-or deletion; the ongoing 2026-10-14 Windows run must remain undisturbed.
