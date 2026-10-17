@@ -4,7 +4,7 @@ PyFlowMap is a Python source-code analyzer that produces static activity, UML cl
 
 ## Current distribution status
 
-The development repository is **private**. The existing three-diagram reference gallery is retained in `benchmark/gallery-reference/`. A consumer-facing website has not been deployed. The eventual Pages website must live in a separate orphan `gh-pages` branch containing only approved public assets. The project's own Python packages are built and kept locally in each project's `dist/`; they are **not published to PyPI**. No public hosting or GitHub release is authorized by this document.
+The source repository is currently **public**. The three-diagram reference gallery is in `benchmark/gallery-reference/`. The consumer website is published separately from the independent-root `gh-pages` branch at https://sergiogilborras.github.io/PyFlowMap/. The project's own Python packages are built and kept locally in each project's `dist/`; they are **not published to PyPI**. No public hosting or GitHub release is authorized by this document.
 
 The application supports Python 3.11+. Its essential dependency is `portable-tempdirs`, currently pinned in `pyproject.toml` to the reviewed Git commit. The optional semantic labeler is installed separately. Check actual package metadata and available wheels before changing version pins: the project's local wheels are separate artifacts and must be checked for compatible metadata and dependency versions.
 
@@ -12,12 +12,12 @@ Run `python scripts/build_release.py` in an approved development environment to 
 
 ## Security and publishing prerequisites
 
-The current branch contains synthetic reference fixtures. **The original development repository must remain private**: some reachable historical Git objects contain material from a separate private project. A public distribution must use an independently reviewed clean snapshot without importing this repository's Git ancestry. The restricted internal audit record is in `tests/fixtures/references/HISTORY-AUDIT.md`; it is not a public-distribution document.
+The current branch contains synthetic reference fixtures. **Security warning:** earlier commits in this currently public repository still contain material from a separate private project. The current synthetic fixtures do not remediate exposed Git history. Preserve an access-controlled backup, then carry out a dedicated history and GitHub cached-object remediation. The restricted internal audit record is in `tests/fixtures/references/HISTORY-AUDIT.md`; it is not a public-distribution document.
 
-Review every exported file's license and provenance, the clean source history, secrets, CI artifacts, website assets, dependency availability and installed-package contents. Preserve the restricted development repository and backups.
+Review every exported file's license and provenance, the clean source history, secrets, CI artifacts, website assets, dependency availability and installed-package contents. Preserve access-controlled backups and review all historical exposures.
 
 ## Publication approval
 
-Visibility changes, GitHub Pages deployment, Git tags/releases and PyPI uploads require **separate explicit owner approval**. Do not deploy from the private development tree. A separate, explicitly approved and clean `gh-pages` branch is required. Git references in the current metadata require access to their GitHub repositories for normal dependency resolution; local offline distribution requires an explicitly prepared compatible wheelhouse.
+The owner has enabled the consumer website on an unrelated-root `gh-pages` branch. Further visibility changes, Git tags/releases and package uploads require explicit approval. Do not publish benchmark reports as the consumer website. Git references in the current metadata require access to their GitHub repositories for normal dependency resolution; local offline distribution requires an explicitly prepared compatible wheelhouse.
 
 Future distribution improvements are in the [roadmap](roadmap.md).
