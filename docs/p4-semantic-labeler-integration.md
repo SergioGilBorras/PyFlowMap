@@ -4,9 +4,11 @@ P4-Semantic-Labeler is an **optional external Python library** for enriching
 existing activity labels. It is not required for static analysis, is not
 embedded into PyFlowMap and never builds or changes the control-flow graph.
 
-The integration targets the library's tagged API `v0.1.0` in the private
-GitHub repository `SergioGilBorras/P4-Semantic-Labeler`. Installation of
-optional extras requires Git access to that repository.
+The current PyFlowMap extra references P4-Semantic-Labeler tag `v0.1.0`.
+The real-provider stack also uses the separately maintained
+`p4-codex-bridge` distribution (`P4-Codex-Bridge` on GitHub).
+Installing the declared optional extras requires access to their configured
+Git references and transitive dependencies.
 
 ## Install an optional provider
 
