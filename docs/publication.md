@@ -12,7 +12,7 @@ Run `python scripts/build_release.py` in an approved development environment to 
 
 ## Security and publishing prerequisites
 
-The current branch contains synthetic reference fixtures. **Security warning:** earlier commits in this currently public repository still contain material from a separate private project. The current synthetic fixtures do not remediate exposed Git history. Preserve an access-controlled backup, then carry out a dedicated history and GitHub cached-object remediation. The restricted internal audit record is in `tests/fixtures/references/HISTORY-AUDIT.md`; it is not a public-distribution document.
+The current branch contains synthetic reference fixtures. **Security warning:** earlier commits in this currently public repository still contain material from a separate private project. The current synthetic fixtures do not remediate exposed Git history. Preserve an access-controlled backup, then carry out a dedicated history and GitHub cached-object remediation. The historical audit record is tracked at `tests/fixtures/references/HISTORY-AUDIT.md` in the currently public repository; it documents earlier findings and is not a current security certification.
 
 Review every exported file's license and provenance, the clean source history, secrets, CI artifacts, website assets, dependency availability and installed-package contents. Preserve access-controlled backups and review all historical exposures.
 
