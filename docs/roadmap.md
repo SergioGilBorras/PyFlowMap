@@ -37,8 +37,8 @@ analyzer should represent possible paths and document what it cannot know.
 - Preserve and extend cross-platform tests for the three already-integrated
   diagram families without changing their conservative AST semantics.
 - Audit all reachable history, old branches, CI logs and artifacts, licenses
-  and third-party fixtures before making the repository public.
-- Design a concise consumer-facing GitHub Pages site on an unrelated-root `gh-pages` branch; deploy only approved public assets, independently of the private benchmark gallery.
+  and third-party fixtures to remediate historical exposure in the public repository.
+- Maintain the published consumer-facing GitHub Pages website on its independent `gh-pages` branch; keep benchmark galleries separate.
 - Keep local wheel and source-distribution builds reproducible and verify
   compatible versions of the separately maintained local dependency wheels.
 - Sequence, state, component and other context-dependent diagrams: distant roadmap only;
