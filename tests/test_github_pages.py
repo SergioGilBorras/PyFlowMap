@@ -30,7 +30,7 @@ def test_site_links_assets_and_editorial_copy():
     assert "sin inventar relaciones" in html
     assert "trazabilidad al código fuente" in html
     assert "Sin inferencia semántica por defecto" in html
-    assert "no está disponible" in html
+    assert "no se publican en PyPI" in html
     assert "carpeta" in html.lower()
 
 
