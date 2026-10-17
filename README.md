@@ -250,7 +250,7 @@ package names begin with a capital letter for presentation only; the Python
 identifiers and JSON dependency endpoints retain their original case.
 
 See [UML package documentation](docs/uml-packages.md). The static website
-in `site/` and the focused 21-case validation suite in
+in `benchmark/gallery-reference/` and the focused 21-case validation suite in
 `benchmark/diagram-families/` are also integrated. Pages is **not deployed**.
 See the [publication checklist](docs/publication.md) before making the
 repository public, enabling Pages or distributing packages.
