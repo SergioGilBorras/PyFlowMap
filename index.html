@@ -1,1 +1,40 @@
-﻿<!doctype html><html lang="es"><head><meta charset="utf-8"><title>PyFlowMap</title></head><body></body></html>
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101c32">
+<meta name="description" content="PyFlowMap analiza código Python sin ejecutarlo y genera diagramas de actividad, clases UML y paquetes UML, con trazabilidad al código.">
+<title>PyFlowMap — Convierte código Python en diagramas explicables</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<a class="skip" href="#principal">Saltar al contenido</a>
+<header class="header"><div class="wrap nav"><a class="brand" href="#inicio"><span class="monogram">P<span>.</span></span>PyFlowMap</a><nav aria-label="Navegación"><a href="#capacidades">Capacidades</a><a href="#ejemplos">Ejemplos</a><a href="#uso">Cómo usarlo</a><a href="#limites">Alcance</a></nav></div></header>
+<main id="principal">
+<section class="hero" id="inicio"><div class="wrap hero-grid"><div><div class="eyebrow"><span class="green-dot"></span> Análisis estático · Python 3.11+</div><h1>Tu código tiene una estructura.<br><em>Hazla visible.</em></h1><p class="lead">Explora el flujo y la arquitectura de proyectos Python con diagramas de actividad, clases y paquetes UML. Sin ejecutar el código analizado, con referencias a su origen.</p><div class="actions"><a href="#ejemplos" class="button primary">Ver ejemplos reales <span aria-hidden="true">↘</span></a><a href="#uso" class="button secondary">Cómo funciona</a></div><div class="facts"><span>01 / Sin ejecutar código</span><span>02 / Resultados editables</span><span>03 / CLI + MCP</span></div></div><div class="code-card"><div class="code-top"><span>PYFLOWMAP / SOURCE VIEW</span><span class="live">● AST analysis</span></div><pre><code><span class="dim">01</span>  <span class="kw">def</span> <span class="fn">process</span>(order):
+<span class="dim">02</span>      <span class="kw">if</span> order.is_valid():
+<span class="dim">03</span>          <span class="kw">try</span>:
+<span class="dim">04</span>              <span class="kw">return</span> submit(order)
+<span class="dim">05</span>          <span class="kw">except</span> TimeoutError:
+<span class="dim">06</span>              <span class="kw">return</span> retry(order)
+<span class="dim">07</span>      <span class="kw">return</span> None</code></pre><div class="code-bottom"><span>Python source → AST → diagram</span><span class="pill">No runtime required</span></div></div></div></section>
+<section class="section" id="capacidades"><div class="wrap"><div class="section-top"><span class="kicker">QUÉ HACE PYFLOWMAP</span><h2>Tres perspectivas. Un mismo código.</h2><p>Una herramienta para entender decisiones, declaraciones y dependencias sin perder la referencia al código fuente.</p></div><div class="features"><article><span class="feature-num">01 / FLOW</span><h3>Actividad</h3><p>Visualiza ramificaciones, bucles, excepciones y recorridos posibles del programa.</p></article><article><span class="feature-num">02 / STRUCTURE</span><h3>Clases UML</h3><p>Extrae clases, atributos, métodos, herencia y relaciones respaldadas por evidencias.</p></article><article><span class="feature-num">03 / ARCHITECTURE</span><h3>Paquetes UML</h3><p>Representa paquetes e importaciones para explorar dependencias entre módulos.</p></article></div></div></section>
+<section class="section showcase" id="ejemplos"><div class="wrap"><div class="section-top"><span class="kicker">SALIDA REAL DEL GENERADOR</span><h2>Del archivo Python al mapa visual.</h2><p>Una selección de tres diagramas generados a partir de código de demostración. No son dibujos recreados a mano.</p></div>
+<article class="sample"><div class="sample-heading"><div><span class="feature-num">01 — ACTIVIDAD</span><h3>Entiende el camino de ejecución posible</h3><p>Decisiones y rutas conservadoras vinculadas al origen.</p></div><a href="assets/activity.svg" target="_blank" rel="noopener">Abrir SVG ↗</a></div><a class="sample-image" href="assets/activity.svg" target="_blank" rel="noopener"><img src="assets/activity.svg" loading="lazy" alt="Diagrama real de actividad producido por PyFlowMap"></a></article>
+<article class="sample"><div class="sample-heading"><div><span class="feature-num">02 — CLASES UML</span><h3>Lee la estructura de las clases</h3><p>Declaraciones, generalizaciones y dependencias que el análisis puede justificar.</p></div><a href="assets/classes.svg" target="_blank" rel="noopener">Abrir SVG ↗</a></div><a class="sample-image" href="assets/classes.svg" target="_blank" rel="noopener"><img src="assets/classes.svg" loading="lazy" alt="Diagrama real de clases UML producido por PyFlowMap"></a></article>
+<article class="sample"><div class="sample-heading"><div><span class="feature-num">03 — PAQUETES UML</span><h3>Comprende las dependencias del proyecto</h3><p>Imports estáticos y organización de paquetes con notación visual moderna.</p></div><a href="assets/packages.svg" target="_blank" rel="noopener">Abrir SVG ↗</a></div><a class="sample-image" href="assets/packages.svg" target="_blank" rel="noopener"><img src="assets/packages.svg" loading="lazy" alt="Diagrama real de paquetes UML producido por PyFlowMap"></a></article>
+</div></section>
+<section class="section usage" id="uso"><div class="wrap usage-grid"><div><span class="kicker">USO DE LA HERRAMIENTA</span><h2>Del proyecto al diagrama en un comando.</h2><p>PyFlowMap ofrece una interfaz de línea de comandos y un servidor MCP opcional. Requiere Python 3.11+ y Graphviz para renderizar SVG/PNG con ese backend.</p><p class="note">Distribución: los wheels se construyen localmente en <code>dist/</code>; no hay paquetes publicados en PyPI. El repositorio de desarrollo permanece privado durante la preparación de la distribución pública.</p></div><div class="terminal"><div class="terminal-head">TERMINAL <span>CLI</span></div><pre><code><span class="comment"># Inspecciona un proyecto</span>
+pyflowmap inspect ./my_project
+
+<span class="comment"># Diagrama de actividad</span>
+pyflowmap analyze ./my_project --format all
+
+<span class="comment"># Clases UML</span>
+pyflowmap analyze ./my_project --diagram-type class --format all --renderer graphviz
+
+<span class="comment"># Paquetes UML</span>
+pyflowmap analyze ./my_project --diagram-type package --format all --renderer graphviz</code></pre></div></div></section>
+<section class="section values" id="limites"><div class="wrap"><div class="section-top"><span class="kicker">ANÁLISIS EXPLICABLE</span><h2>Sin inventar lo que Python no demuestra.</h2></div><div class="features"><article><h3>Sin ejecución</h3><p>Se analiza el AST. No se importa ni ejecuta el código fuente del proyecto.</p></article><article><h3>Con trazabilidad</h3><p>La salida JSON conserva símbolos y referencias para interpretar los diagramas.</p></article><article><h3>Con límites claros</h3><p>El comportamiento dinámico desconocido no se adivina. UML representa un subconjunto estático conservador.</p></article></div></div></section>
+</main><footer class="footer"><div class="wrap footer-grid"><div><div class="brand"><span class="monogram">P<span>.</span></span>PyFlowMap</div><p>Diagramas de Python con contexto técnico.</p></div><div><span>PROYECTO</span><p>© 2026 Sergio Gil-Borrás</p><p>MIT · Proyecto en preparación para distribución pública</p></div><a href="#inicio">Volver arriba ↑</a></div></footer>
+</body></html>
