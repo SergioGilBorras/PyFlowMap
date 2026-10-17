@@ -17,7 +17,7 @@ explicitly when Spanish labels are required. These are two supported output
 languages, not mixed-language project documentation.
 
 The optional P4-Semantic-Labeler package is separately maintained.
-The real Codex integration uses P4-Codex-Bridge. Check the currently
+The real Codex integration uses `p4-codex-bridge`. Check the currently
 configured optional dependency and its transitive requirements before installing. The normal PyFlowMap installation and activity extraction
 must not depend on Codex.
 
