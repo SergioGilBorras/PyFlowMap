@@ -6,9 +6,9 @@
 
 Historic commits still contain ten verbatim source snapshots from a separate private repository. The current default branch contains independent synthetic replacements, but earlier Git objects remain reachable. Renaming or deleting paths in the latest commit does not solve that problem.
 
-## Recommended publication architecture
+## Recommended historical remediation approach
 
-Keep this development repository private as the restricted archive. Make a **separate, initially private** repository for a **single clean-source snapshot** once content review is complete, and only then seek explicit approval to switch the new repository public.
+The existing repository is already public. Before any history replacement, preserve a restricted, verified backup; prepare an independently reviewed clean-root replacement history; inspect GitHub PR refs, Actions artifacts, cached objects and forks; and coordinate removal of obsolete exposed objects with GitHub Support where required. Publishing a replacement root alone does not erase existing copies. The public `gh-pages` branch is already independent and should be preserved.
 
 **Do not** use GitHub's fork, template-from-history, mirror, push --all, push --mirror, a normal checkout with existing `.git`, or history transplant for the clean repository. All of these may carry unwanted ancestry or refs. A new unrelated root commit is required. Preserve attribution/license notices and identify a release provenance record that maps the reviewed snapshot to its private source commit without copying private history.
 
@@ -18,7 +18,7 @@ Keep this development repository private as the restricted archive. Make a **sep
 2. Check all exported files and paths, including hidden files, workflow YAML, docs, site assets, test fixtures, benchmark data, build metadata and packaging inclusion/exclusion. Review copyrights and redistribution rights.
 3. Run secret and sensitive-data scans against **both** the full private history and the clean snapshot; separately review GitHub Actions logs, artifacts and PR text. Keep logs and findings private.
 4. Confirm the synthetic fixture hashes and source-linked regression results. Preserve AST-only semantics, 81 activity cases and the 21 focused family cases.
-5. Assess the direct Git dependency on `portable-tempdirs`, and the optional private `P4-Semantic-Labeler` extras. PyPI upload is separately blocked; do not remove security-relevant tempdir behavior to bypass metadata restrictions.
+5. Assess the direct Git dependency on public `portable-tempdirs` and the optional public `P4-Semantic-Labeler` extras. PyPI upload is separately blocked; do not remove security-relevant tempdir behavior to bypass metadata restrictions.
 6. Confirm the exact allowed public assets and the target repository name, license, branch-protection settings, GitHub Pages plan and release policy with the owner.
 
 ## Export manifest and provenance requirements
@@ -39,7 +39,7 @@ No single successful secrets scan is conclusive: also inspect large/binary files
 
 ## Dependency-release blockers
 
-Current required dependency: `portable-tempdirs` at a pinned Git commit. Verify an independently redistributable, indexed release and preserve its sandbox, ACL and temporary-directory protections before replacing the direct Git requirement. Optional `labeler` and `labeler-codex` extras point to a public Git repository and must not be advertised as generally installable until reviewed and publicly obtainable.
+Current required dependency: `portable-tempdirs` at a pinned Git commit. Verify an independently redistributable, indexed release and preserve its sandbox, ACL and temporary-directory protections before replacing the direct Git requirement. Optional `labeler` and `labeler-codex` extras reference publicly accessible Git repositories, but pip installations still depend on their pinned commit/tag and transitive requirements. They are not PyPI-distributed wheels.
 
 Publishing a GitHub source release is distinct from PyPI. A public GitHub repository does **not** itself make this project's direct-URL distribution metadata eligible for PyPI.
 
