@@ -251,9 +251,8 @@ identifiers and JSON dependency endpoints retain their original case.
 
 See [UML package documentation](docs/uml-packages.md). The static website
 in `benchmark/gallery-reference/` and the focused 21-case validation suite in
-`benchmark/diagram-families/` are also integrated. Pages is **not deployed**.
-See the [publication checklist](docs/publication.md) before making the
-repository public, enabling Pages or distributing packages.
+`benchmark/diagram-families/` are also integrated. The consumer website is published separately from the source tree on the unrelated-root `gh-pages` branch: https://sergiogilborras.github.io/PyFlowMap/.
+The source repository is public; historical Git-source remediation remains an outstanding security task. The installed packages are built locally in `dist/`, not uploaded to PyPI.
 
 ## Galería offline: actividad, clases y paquetes
 
