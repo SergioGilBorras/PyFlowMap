@@ -1,4 +1,8 @@
-# PyFlowMap · sitio web estático
+# PyFlowMap · página de presentación
+
+Página de producto para GitHub Pages, con tres ejemplos representativos de
+las capacidades actuales. Los bancos de validación y las galerías extensas
+permanecen en `benchmark/` y `output_graphs/`, respectivamente.
 
 Sitio **estático y offline** con HTML, CSS y SVG reales producidos desde
 `examples/uml_showcase`. No contiene librerías externas, telemetría, CDNs
@@ -25,7 +29,7 @@ No se publica nada en cada push o PR.
 
 ## Procedencia y alcance
 
-Los tres SVG se generaron a partir de `examples/uml_showcase` con
+Los tres ejemplos SVG se generaron a partir de `examples/uml_showcase` con
 `semantic_provider=disabled`:
 
 - `activity.svg`: diagrama de actividad, sin inferencia.
