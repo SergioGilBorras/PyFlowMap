@@ -220,11 +220,6 @@ Technical documentation:
 - [Diagram-family validation bank](docs/diagram-family-banks.md)
 - [Public release checklist](docs/publication.md)
 
-## License
-
-MIT. See [LICENSE](LICENSE).
-
-
 ## UML class and package diagrams
 
 The `class` family extracts declared classes, annotated attributes, methods,
@@ -254,6 +249,10 @@ in `benchmark/gallery-reference/` and the focused 21-case validation suite in
 `benchmark/diagram-families/` are also integrated. The consumer website is published separately from the source tree on the unrelated-root `gh-pages` branch: https://sergiogilborras.github.io/PyFlowMap/.
 The source repository is public; historical Git-source remediation remains an outstanding security task. The installed packages are built locally in `dist/`, not uploaded to PyPI.
 
-## Galería offline: actividad, clases y paquetes
+## Offline gallery: activity, classes and packages
 
-Ejecuta `python scripts/offline_diagram_gallery.py` con el entorno de desarrollo instalado y Graphviz. Obtendrás una carpeta nueva con diagramas separados en `activity/`, `classes/`, `packages/` y recursos comunes en `common/`, más un `index.html` local profesional. Sin Codex ni LLM. [Instrucciones](docs/offline-gallery.md).
+Run `python scripts/offline_diagram_gallery.py` with the development environment and Graphviz installed. Each run writes a new local gallery with separate `activity/`, `classes/` and `packages/` diagrams, common assets and an `index.html`. It does not use Codex or another LLM. See the [gallery guide](docs/offline-gallery.md).
+
+## License
+
+MIT. See [LICENSE](LICENSE).
