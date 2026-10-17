@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pyflowmap"
 dynamic = ["version"]
-description = "Static Python activity, UML class and package diagrams with source traceability"
+description = "A Python tool that automatically analyzes source code and generates simplified workflow and activity diagrams using Mermaid. Supports CLI and MCP integration, with SVG, PNG, and Mermaid output."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
