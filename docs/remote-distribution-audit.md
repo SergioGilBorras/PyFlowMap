@@ -1,3 +1,9 @@
+# Historical distribution audit (2026-10-15)
+
+**Archived audit record — not a description of the current release state.** This report was written before PyFlowMap became public, before the independent `gh-pages` website was published, and before synthetic fixture paths were renamed. Its original observations are preserved below for historical evidence. The source repository is now public, and the historical Git-object exposure described here remains a separate remediation task.
+
+---
+
 # Remote distribution audit — preliminary and private
 
 **Candidate source commit:** `5aeb441aaf01ebb9ee036bfdc7178816eab2c742` (post-PR #14). **Decision: BLOCKED; NOT approved for export or publication.**
