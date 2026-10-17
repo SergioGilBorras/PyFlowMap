@@ -1,10 +1,10 @@
-"""Offline Pages contract: genuine static examples and valid local references."""
+"""Offline benchmark gallery contract: genuine SVG examples and valid local references."""
 
 from html.parser import HTMLParser
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
-SITE = Path(__file__).resolve().parents[1] / "site"
+SITE = Path(__file__).resolve().parents[1] / "benchmark" / "gallery-reference"
 
 
 class Links(HTMLParser):
@@ -20,7 +20,7 @@ class Links(HTMLParser):
                 self.internal.append(ref)
 
 
-def test_site_links_assets_and_editorial_copy():
+def test_benchmark_gallery_links_assets_and_editorial_copy():
     html = (SITE / "index.html").read_text(encoding="utf-8")
     parser = Links()
     parser.feed(html)
