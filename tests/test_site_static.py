@@ -1,10 +1,10 @@
-"""The Pages draft is fully local and uses real SVG generator outputs."""
+"""Benchmark reference gallery uses real self-contained SVG generator outputs."""
 
 from html.parser import HTMLParser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SITE = ROOT / "site"
+SITE = ROOT / "benchmark" / "gallery-reference"
 
 
 class _Resources(HTMLParser):
@@ -24,7 +24,7 @@ class _Resources(HTMLParser):
             self.scripts.append(data)
 
 
-def test_pages_site_contains_three_real_self_contained_svgs():
+def test_reference_gallery_contains_three_real_self_contained_svgs():
     html = (SITE / "index.html").read_text(encoding="utf-8")
     resources = _Resources()
     resources.feed(html)
@@ -45,10 +45,10 @@ def test_pages_site_contains_three_real_self_contained_svgs():
     assert (SITE / "assets/site.css").is_file()
 
 
-def test_pages_not_published_and_semantic_limitations_explained():
+def test_reference_gallery_is_not_consumer_pages_and_explains_limitations():
     readme = (SITE / "README.md").read_text(encoding="utf-8")
     html = (SITE / "index.html").read_text(encoding="utf-8")
-    assert "Sin desplegar" in readme
+    assert "benchmark reference material" in readme
     assert "UML 2.5.1" in html
     assert "strict" in html and "modern" in html
     assert "--diagram-type package" in html

@@ -19,7 +19,7 @@ renaming it would break CI and existing developer commands.
 
 Install `.[dev,mcp,labeler-codex]`, check Graphviz (`dot -V`),
 authenticate the Codex CLI (`codex login`) and review any MCP connectors
-inherited by the P4 Codex Bridge. From the repository root:
+inherited by the p4-codex-bridge. From the repository root:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\validate_all.py --acknowledge-source-transmission

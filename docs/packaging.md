@@ -1,4 +1,4 @@
-# Build and distribute PyFlowMap
+# Local package builds
 
 The source repository includes engineering tools; the **installed
 distribution contains only runtime code, Python packaging metadata, README,
@@ -51,7 +51,7 @@ than `bin/`. Use the actual wheel filename present in `dist/`, not
 a guessed path. Graphviz (`dot`) must be installed separately for
 `--renderer graphviz`.
 
-## GitHub Actions artifacts
+## Continuous integration artifacts
 
 The Linux release job builds and smoke-tests wheel/sdist from the
 exact remote commit, then uploads both files and the build report
@@ -60,16 +60,9 @@ commit rather than GitHub's temporary merge commit. The report records
 that Git SHA when the Git checkout is available. Download these from the successful workflow run.
 A job that is still queued or failed is **not** package validation.
 
-## Important publishing limitation
+## Local-only distribution policy
 
-The current `pyproject.toml` declares `portable-tempdirs` by an exact
-Git commit URL, and optional P4-Semantic-Labeler extras from a separate
-Git repository. A local wheel for an upstream package is not proof of an
-index-published version. These can be used in authorized Git/local installs;
-they are **direct URL dependencies incompatible with public PyPI uploaded
-metadata**. Before any PyPI publication, replace them with suitable
-versioned packages or a separately tested and approved solution. GitHub
-source releases and package-index publishing are distinct operations.
+The project's own packages are built as local wheels in each project's `dist/` directory. **They are not published to PyPI.** PyFlowMap currently declares Git-pinned dependencies; a wheel present on disk is not automatically used by pip to satisfy those requirements. For an offline install, prepare an approved local wheelhouse containing compatible wheels and install with `--no-index --find-links` only after reviewing the wheel metadata. Do not silently remove or alter security dependencies to make an install pass.
 
 Do not silently remove the temporary-directory dependency: it
 provides a safety/ACL contract used by ZIP input handling and

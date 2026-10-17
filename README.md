@@ -30,8 +30,10 @@ python -m pip install -e '.[mcp]'      # only if MCP is needed
 python -m pip check
 ```
 
-For ordinary use, install the built wheel instead of installing development
-extras. Benchmarks, test fixtures, result galleries, and validation tools are
+For ordinary use, install a locally built wheel instead of development
+extras. Project-owned packages are built under each project's `dist/` and
+are not published to PyPI. Git-pinned requirements still require access to
+their configured source repositories unless an approved wheelhouse is used. Benchmarks, test fixtures, result galleries, and validation tools are
 **not required by the installed product**.
 
 See the [Windows setup guide](docs/windows-local-setup.md) for PowerShell
@@ -248,7 +250,7 @@ package names begin with a capital letter for presentation only; the Python
 identifiers and JSON dependency endpoints retain their original case.
 
 See [UML package documentation](docs/uml-packages.md). The static website
-in `site/` and the focused 21-case validation suite in
+in `benchmark/gallery-reference/` and the focused 21-case validation suite in
 `benchmark/diagram-families/` are also integrated. Pages is **not deployed**.
 See the [publication checklist](docs/publication.md) before making the
 repository public, enabling Pages or distributing packages.

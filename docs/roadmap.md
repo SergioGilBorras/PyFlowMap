@@ -38,11 +38,9 @@ analyzer should represent possible paths and document what it cannot know.
   diagram families without changing their conservative AST semantics.
 - Audit all reachable history, old branches, CI logs and artifacts, licenses
   and third-party fixtures before making the repository public.
-- Publish the ready `site/` site only through an explicitly authorized
-  manual GitHub Pages workflow; Pages has not yet been enabled.
-- Verify a tagged GitHub source release separately from the blocked PyPI
-  upload, which requires removing direct Git references in distribution
-  metadata without weakening dependency safety.
+- Design a concise consumer-facing GitHub Pages site on an unrelated-root `gh-pages` branch; deploy only approved public assets, independently of the private benchmark gallery.
+- Keep local wheel and source-distribution builds reproducible and verify
+  compatible versions of the separately maintained local dependency wheels.
 - Sequence, state, component and other context-dependent diagrams: distant roadmap only;
   no implementation commitment without evidence-based UML semantics.
 - More flexible but bounded output navigation and serialization.
