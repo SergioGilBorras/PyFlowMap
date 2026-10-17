@@ -63,8 +63,9 @@ A job that is still queued or failed is **not** package validation.
 ## Important publishing limitation
 
 The current `pyproject.toml` declares `portable-tempdirs` by an exact
-Git commit URL, and an optional P4-Semantic-Labeler extra from a private
-Git repository. These can be used in authorized Git/local installs;
+Git commit URL, and optional P4-Semantic-Labeler extras from a separate
+Git repository. A local wheel for an upstream package is not proof of an
+index-published version. These can be used in authorized Git/local installs;
 they are **direct URL dependencies incompatible with public PyPI uploaded
 metadata**. Before any PyPI publication, replace them with suitable
 versioned packages or a separately tested and approved solution. GitHub
