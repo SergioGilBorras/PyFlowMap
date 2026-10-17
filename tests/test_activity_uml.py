@@ -13,7 +13,7 @@ from pyflowmap.mcp_server import generate_activity_diagram
 from pyflowmap.project import load_project
 from pyflowmap.service import generate_diagram
 
-P4 = Path(__file__).parent / "fixtures" / "references" / "p4-planning-agent-v1"
+P4 = Path(__file__).parent / "fixtures" / "references" / "synthetic-activity-regression-v1"
 ENTRY = "planning.coordinator:PlanningCoordinator.plan"
 
 
