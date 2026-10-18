@@ -31,7 +31,7 @@ may transmit source excerpts and incur provider usage, it requires the
 transmission acknowledgement flag. It never starts in GitHub CI.
 
 The inspectable reports go to
-[`output_validacion/`](../output_validacion/README.md), under a dated
+[`output_validation/`](../output_validation/README.md), under a dated
 `validation-YYYY-MM-DD_HH-MM-SS_<id>` directory. The global command now
 **preserves all previous runs by default**, including successful and failed
 ones. Optional `--prune-managed-history` explicitly opts into removal of older
