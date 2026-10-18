@@ -9,7 +9,7 @@ Run from the PyFlowMap repository root:
 ```bash
 python benchmark/independent-v1/run.py --list
 python benchmark/independent-v1/run.py --validate-only
-python benchmark/independent-v1/run.py --project-root . --output pyflowmap-output/bank-v1
+python benchmark/independent-v1/run.py --project-root . --output output_validation/bank-v1
 ```
 
 Install PyFlowMap in the Python environment used by the runner first.
@@ -27,6 +27,6 @@ The paths and parameters are controlled by `cases.json`.
 
 This is a **known regression bank**. Do
 not change input fixtures to hide analyzer defects. New outputs belong
-in the ignored `pyflowmap-output/` directory, not in the source bank.
+in the ignored `output_validation/` directory, not in the source bank.
 
 See the [benchmark overview](../README.md).
