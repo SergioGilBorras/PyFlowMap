@@ -24,11 +24,11 @@ Install the development extras and Graphviz first (see
 python -m pytest -q
 python -m ruff check src tests scripts
 
-python -m benchmark.runners.run --output output_validacion/manual-baseline --render
-python -m benchmark.runners.run --cases-file benchmark/control-flow/cases.json --fixtures-root benchmark/control-flow/fixtures --output output_validacion/manual-control-flow --render
-python -m benchmark.runners.metamorphic --output output_validacion/manual-metamorphic
-python benchmark/independent-v1/run.py --project-root . --output output_validacion/manual-bank-v1
-python benchmark/independent-v2/run.py --project-root . --output output_validacion/manual-bank-v2
+python -m benchmark.runners.run --output output_validation/manual-baseline --render
+python -m benchmark.runners.run --cases-file benchmark/control-flow/cases.json --fixtures-root benchmark/control-flow/fixtures --output output_validation/manual-control-flow --render
+python -m benchmark.runners.metamorphic --output output_validation/manual-metamorphic
+python benchmark/independent-v1/run.py --project-root . --output output_validation/manual-bank-v1
+python benchmark/independent-v2/run.py --project-root . --output output_validation/manual-bank-v2
 ```
 
 Add `--python /path/to/python` to either independent-bank runner if the
@@ -69,7 +69,7 @@ reports or duplicate launchers.
   into `src/pyflowmap/`.
 - Do not automatically activate `--semantic-provider codex` or transmit
   private source code.
-- Generated outputs go to ignored `output_validacion/manual-`; do not commit ZIPs,
+- Generated outputs go to ignored `output_validation/manual-`; do not commit ZIPs,
   PNGs, SVGs, JSON results, or local validation manifests.
 - Development scripts and banks are never requirements for using the
   installed PyFlowMap package.
@@ -98,6 +98,6 @@ Use `python scripts/validate_all.py --acknowledge-source-transmission`
 instead of launching separate bank commands for release validation. It runs
 the complete corpus once with deterministic labels and again with the
 real Codex provider and saves comparable output under
-[`output_validacion/`](../output_validacion/README.md). Do not use
+[`output_validation/`](../output_validation/README.md). Do not use
 `mock` to claim real semantic quality. Separate generation from flow-oracle
 PASS and manual label review.
