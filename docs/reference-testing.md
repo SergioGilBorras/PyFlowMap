@@ -37,10 +37,10 @@ with its read-only filesystem sandbox: inspect that configuration and only
 run on code you are authorized to transmit.
 
 The validator uses one dated directory beneath
-[`output_validacion/`](../output_validacion/README.md):
+[`output_validation/`](../output_validation/README.md):
 
 ```text
-output_validacion/validation-YYYY-MM-DD_HH-MM-SS_<id>/
+output_validation/validation-YYYY-MM-DD_HH-MM-SS_<id>/
   validation-summary.json
   semantic-review-queue.md
   logs/
