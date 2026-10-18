@@ -135,7 +135,7 @@ def collect_review(output: Path) -> tuple[list[str], dict]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Fresh validation: scratch in OS TEMP; outputs in TEMP or output_validacion"
+        description="Fresh validation: scratch in OS TEMP; outputs in TEMP or output_validation"
     )
     parser.add_argument(
         "--with-labeler", action="store_true",
@@ -146,7 +146,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--acknowledge-source-transmission", action="store_true",
                         help="Explicit authorization for sending source excerpts to Codex")
     parser.add_argument("--output-parent", type=Path,
-                        help="Results parent: OS TEMP, or repo output_validacion/")
+                        help="Results parent: OS TEMP, or repo output_validation/")
     parser.add_argument("--result-name", help="Date-stamped destination name (for global validation)")
     args = parser.parse_args(argv)
     if args.with_real_labeler and args.with_labeler:
@@ -167,9 +167,9 @@ def main(argv: list[str] | None = None) -> int:
     system_temp = original_system_temp()
     parent = (args.output_parent.expanduser().resolve() if args.output_parent
               else system_temp / "pyflowmap-output")
-    checkout_outputs = (ROOT / "output_validacion").resolve()
+    checkout_outputs = (ROOT / "output_validation").resolve()
     if parent != checkout_outputs and not parent.is_relative_to(system_temp):
-        parser.error("Output parent must be in OS TEMP or repo output_validacion/")
+        parser.error("Output parent must be in OS TEMP or repo output_validation/")
     parent.mkdir(parents=True, exist_ok=True)
     if args.result_name:
         if not re.fullmatch(r"validation-\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}_[0-9a-f]{6}", args.result_name):
