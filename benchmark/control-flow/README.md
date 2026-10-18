@@ -9,7 +9,7 @@ the cases and `fixtures/` holds their Python source. The programs are
 only parsed, never imported/executed.
 
 ```bash
-python -m benchmark.runners.run --cases-file benchmark/control-flow/cases.json --fixtures-root benchmark/control-flow/fixtures --output pyflowmap-output/control-flow --render
+python -m benchmark.runners.run --cases-file benchmark/control-flow/cases.json --fixtures-root benchmark/control-flow/fixtures --output output_validation/control-flow --render
 ```
 
 This is now a *known* regression corpus; it cannot serve as a blind
