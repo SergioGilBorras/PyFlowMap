@@ -253,8 +253,6 @@ The source repository is public; historical Git-source remediation remains an ou
 
 Run `python scripts/offline_diagram_gallery.py` with the development environment and Graphviz installed. Each run writes a new local gallery with separate `activity/`, `classes/` and `packages/` diagrams, common assets and an `index.html`. It does not use Codex or another LLM. See the [gallery guide](docs/offline-gallery.md).
 
-## License and credits
+## License
 
-Licensed under the MIT License. See [LICENSE](LICENSE).
-
-Created by Sergio Gil-Borrás. See [AUTHORS.md](AUTHORS.md) for attribution.
+MIT. See [LICENSE](LICENSE).
