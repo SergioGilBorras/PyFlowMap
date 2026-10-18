@@ -1,0 +1,50 @@
+name: Private source inventory preflight (no publication)
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/inventory_public_snapshot.py'
+      - '.github/workflows/inventory-preflight.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact reviewed source commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Generate private report outside checkout
+        env:
+          REPORT_PATH: ${{ runner.temp }}/pyflowmap-inventory.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/inventory_public_snapshot.py --commit HEAD --output "$REPORT_PATH"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          report = json.loads(Path(os.environ["REPORT_PATH"]).read_text(encoding="utf-8"))
+          files = report["files"]
+          blocked = sum("blocked" in item for item in files)
+          unreviewed = sum(item["review"] == "required" for item in files)
+          print(f"Private inventory preflight: {len(files)} tracked entries, "
+                f"{blocked} unsupported types, {unreviewed} require review.")
+          assert report["safe_to_publish"] is False
+          assert report["reviewed"] is False
+          assert unreviewed == len(files)
+          assert not blocked, "Blocked file types: inspect private report locally"
+          PY
+      - name: Remove temporary report from runner workspace
+        if: always()
+        shell: bash
+        env:
+          REPORT_PATH: ${{ runner.temp }}/pyflowmap-inventory.json
+        run: |
+          if [ -f "$REPORT_PATH" ]; then rm -- "$REPORT_PATH"; fi

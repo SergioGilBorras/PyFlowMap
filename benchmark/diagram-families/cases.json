@@ -1,0 +1,331 @@
+{
+  "schema_version": 1,
+  "purpose": "Independent visual/structural oracles for the three offline diagram families",
+  "cases": [
+    {
+      "id": "branch",
+      "family": "activity",
+      "title": "Decisiones y retornos",
+      "source": "fixtures/activity/branch",
+      "expect": {
+        "min_nodes": 3,
+        "min_edges": 2
+      },
+      "entry": "main:main"
+    },
+    {
+      "id": "loops",
+      "family": "activity",
+      "title": "Bucles y transferencias",
+      "source": "fixtures/activity/loops",
+      "expect": {
+        "min_nodes": 3,
+        "min_edges": 2
+      },
+      "entry": "main:main"
+    },
+    {
+      "id": "exceptions",
+      "family": "activity",
+      "title": "Excepciones y finally",
+      "source": "fixtures/activity/exceptions",
+      "expect": {
+        "min_nodes": 3,
+        "min_edges": 2
+      },
+      "entry": "main:main"
+    },
+    {
+      "id": "matching",
+      "family": "activity",
+      "title": "Pattern matching con guardas",
+      "source": "fixtures/activity/matching",
+      "expect": {
+        "min_nodes": 3,
+        "min_edges": 2
+      },
+      "entry": "main:main"
+    },
+    {
+      "id": "async_flow",
+      "family": "activity",
+      "title": "Async y await",
+      "source": "fixtures/activity/async_flow",
+      "expect": {
+        "min_nodes": 3,
+        "min_edges": 2
+      },
+      "entry": "main:main"
+    },
+    {
+      "id": "generator",
+      "family": "activity",
+      "title": "Yield y yield from",
+      "source": "fixtures/activity/generator",
+      "expect": {
+        "min_nodes": 3,
+        "min_edges": 2
+      },
+      "entry": "main:main"
+    },
+    {
+      "id": "calls",
+      "family": "activity",
+      "title": "Llamada interna",
+      "source": "fixtures/activity/calls",
+      "expect": {
+        "min_nodes": 3,
+        "min_edges": 2
+      },
+      "entry": "main:main"
+    },
+    {
+      "id": "simple",
+      "family": "class",
+      "title": "Generalización",
+      "source": "fixtures/class/simple",
+      "expect": {
+        "class_count": 2,
+        "generalizations": [
+          [
+            "model:PhysicalItem",
+            "model:Item"
+          ]
+        ],
+        "dependencies": []
+      }
+    },
+    {
+      "id": "multiple",
+      "family": "class",
+      "title": "Herencia múltiple",
+      "source": "fixtures/class/multiple",
+      "expect": {
+        "class_count": 3,
+        "generalizations": [
+          [
+            "model:Device",
+            "model:Readable"
+          ],
+          [
+            "model:Device",
+            "model:Writable"
+          ]
+        ],
+        "dependencies": []
+      }
+    },
+    {
+      "id": "dependencies",
+      "family": "class",
+      "title": "Dependencia de tipos declarados",
+      "source": "fixtures/class/dependencies",
+      "expect": {
+        "class_count": 3,
+        "generalizations": [],
+        "dependencies": [
+          [
+            "model:Checkout",
+            "model:Stock"
+          ],
+          [
+            "model:Checkout",
+            "model:Receipt"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "visibility",
+      "family": "class",
+      "title": "Visibilidad por convención Python",
+      "source": "fixtures/class/visibility",
+      "expect": {
+        "class_count": 1,
+        "generalizations": [],
+        "dependencies": [],
+        "visibility": {
+          "User": {
+            "name": "+",
+            "_cache": "#",
+            "__token": "-",
+            "_count": "#"
+          }
+        }
+      }
+    },
+    {
+      "id": "abstract",
+      "family": "class",
+      "title": "Operación abstracta y método estático",
+      "source": "fixtures/class/abstract",
+      "expect": {
+        "class_count": 2,
+        "generalizations": [
+          [
+            "model:MemoryStore",
+            "model:Store"
+          ]
+        ],
+        "dependencies": [],
+        "abstract": [
+          "Store"
+        ]
+      }
+    },
+    {
+      "id": "independent",
+      "family": "class",
+      "title": "Clases legítimamente aisladas",
+      "source": "fixtures/class/independent",
+      "expect": {
+        "class_count": 2,
+        "generalizations": [],
+        "dependencies": []
+      }
+    },
+    {
+      "id": "external",
+      "family": "class",
+      "title": "Base externa no inferida",
+      "source": "fixtures/class/external",
+      "expect": {
+        "class_count": 1,
+        "generalizations": [],
+        "dependencies": [],
+        "external_warning": true
+      }
+    },
+    {
+      "id": "relative",
+      "family": "package",
+      "title": "Import relativo entre subpaquetes",
+      "source": "fixtures/package/relative",
+      "expect": {
+        "packages": [
+          "app",
+          "app.api",
+          "app.core"
+        ],
+        "dependencies": [
+          [
+            "app.api",
+            "app.core"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "independent",
+      "family": "package",
+      "title": "Paquetes sin dependencias",
+      "source": "fixtures/package/independent",
+      "expect": {
+        "packages": [
+          "alpha",
+          "beta"
+        ],
+        "dependencies": []
+      }
+    },
+    {
+      "id": "cycle",
+      "family": "package",
+      "title": "Dependencia cíclica explícita",
+      "source": "fixtures/package/cycle",
+      "expect": {
+        "packages": [
+          "left",
+          "right"
+        ],
+        "dependencies": [
+          [
+            "left",
+            "right"
+          ],
+          [
+            "right",
+            "left"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "external",
+      "family": "package",
+      "title": "Imports externos y dinámicos omitidos",
+      "source": "fixtures/package/external",
+      "expect": {
+        "packages": [
+          "adapters",
+          "core"
+        ],
+        "dependencies": []
+      }
+    },
+    {
+      "id": "nested",
+      "family": "package",
+      "title": "Paquetes anidados",
+      "source": "fixtures/package/nested",
+      "expect": {
+        "packages": [
+          "retail",
+          "retail.inventory",
+          "retail.sales"
+        ],
+        "dependencies": [
+          [
+            "retail.sales",
+            "retail.inventory"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "crossroot",
+      "family": "package",
+      "title": "Dependencias cruzadas",
+      "source": "fixtures/package/crossroot",
+      "expect": {
+        "packages": [
+          "catalog",
+          "dashboard",
+          "payments"
+        ],
+        "dependencies": [
+          [
+            "payments",
+            "catalog"
+          ],
+          [
+            "dashboard",
+            "payments"
+          ],
+          [
+            "dashboard",
+            "catalog"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "display",
+      "family": "package",
+      "title": "Nombre visible vs. identidad Python",
+      "source": "fixtures/package/display",
+      "expect": {
+        "packages": [
+          "order_management",
+          "product_inventory"
+        ],
+        "dependencies": [
+          [
+            "order_management",
+            "product_inventory"
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "schema_version": 2,
+  "fixtures": {
+    "synthetic-activity-regression-v1": {
+      "origin": "independently authored synthetic test fixtures",
+      "directory": "synthetic-activity-regression-v1",
+      "note": "The ten synthetic source files are maintained only as source-analysis test inputs.",
+      "files": [
+        "planning_entrypoint.py",
+        "planning/coordinator.py",
+        "planning/models.py",
+        "planning/requirement_agent.py",
+        "planning/reuse_research_agent.py",
+        "planning/decomposition_agent.py",
+        "planning/technical_planning_agent.py",
+        "adapters/llm.py",
+        "adapters/project_context.py",
+        "adapters/web_research.py"
+      ],
+      "properties": [
+        "AST-only static graph",
+        "one NEEDS_CLARIFICATION decision",
+        "resolved module references",
+        "positive/negative decision routes",
+        "return nodes",
+        "entrypoint call at planning_entrypoint.py:12"
+      ],
+      "blobs": {
+        "planning_entrypoint.py": "65864e2cdef634fada571aac1a2d0c8d66810323",
+        "planning/coordinator.py": "83f34cfa5f0468ac7f607717ba3a8c88d08e52f6",
+        "planning/models.py": "3a4dd34f267a29edfe9c6e101f2c5488f26e1895",
+        "planning/requirement_agent.py": "b9196129a8eb5dd498e83f96e676e47c1e236ad2",
+        "planning/reuse_research_agent.py": "cacdeb2aed92b3d69b8b8d0613614ac9a85cf163",
+        "planning/decomposition_agent.py": "974cca51fd50432e201350b5116d63fc56d0ade7",
+        "planning/technical_planning_agent.py": "2b3fe2f57d1eb2d8b3ddf7ba23f8b82f1c24510b",
+        "adapters/llm.py": "14bbfc5e32499c2923bb731b2b257c8f67036022",
+        "adapters/project_context.py": "67d5bb120f40d8d6dabbdb26ed29d2e59bd8a17a",
+        "adapters/web_research.py": "567b0ef3cc1de169e169f6035846e20421a03b0f"
+      }
+    }
+  }
+}

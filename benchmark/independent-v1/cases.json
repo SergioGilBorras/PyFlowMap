@@ -1,0 +1,306 @@
+{
+  "name": "PyFlowMap regression bank V1",
+  "case_count": 28,
+  "python_target": "3.13",
+  "kind": "known-regression-corpus",
+  "parameters": {
+    "max_nodes": 30,
+    "max_depth": 3,
+    "language": "en",
+    "renderer": "graphviz",
+    "format": "all",
+    "semantic_provider": "disabled"
+  },
+  "cases": [
+    {
+      "id": "c01",
+      "domain": "commerce",
+      "entry": "pricing:compute_offer",
+      "source": "fixtures/c01",
+      "tags": [
+        "returns",
+        "nested if statements",
+        "conditional expression"
+      ]
+    },
+    {
+      "id": "c02",
+      "domain": "cartography",
+      "entry": "signal:interpret",
+      "source": "fixtures/c02",
+      "tags": [
+        "match/case",
+        "guards",
+        "captures",
+        "wildcard"
+      ]
+    },
+    {
+      "id": "c03",
+      "domain": "agriculture",
+      "entry": "harvest:allocate",
+      "source": "fixtures/c03",
+      "tags": [
+        "for/else",
+        "break",
+        "continue",
+        "accumulation"
+      ]
+    },
+    {
+      "id": "c04",
+      "domain": "mechanical engineering",
+      "entry": "pressure:stabilize",
+      "source": "fixtures/c04",
+      "tags": [
+        "while/else",
+        "continue",
+        "break"
+      ]
+    },
+    {
+      "id": "c05",
+      "domain": "publishing",
+      "entry": "thumbnail:make_preview",
+      "source": "fixtures/c05",
+      "tags": [
+        "return through try/finally with cleanup"
+      ]
+    },
+    {
+      "id": "c06",
+      "domain": "document management",
+      "entry": "archive:publish",
+      "source": "fixtures/c06",
+      "tags": [
+        "nested context managers",
+        "early exit"
+      ]
+    },
+    {
+      "id": "c07",
+      "domain": "research",
+      "entry": "jobs:run_remote",
+      "source": "fixtures/c07",
+      "tags": [
+        "async with",
+        "await",
+        "exception"
+      ]
+    },
+    {
+      "id": "c08",
+      "domain": "inventory",
+      "entry": "stock:reconcile",
+      "source": "fixtures/c08",
+      "tags": [
+        "try/except/else/finally",
+        "return",
+        "raise"
+      ]
+    },
+    {
+      "id": "c09",
+      "domain": "robotics",
+      "entry": "motion:step",
+      "source": "fixtures/c09",
+      "tags": [
+        "short-circuit",
+        "side effects and ternary expression"
+      ]
+    },
+    {
+      "id": "c10",
+      "domain": "astronomy",
+      "entry": "calibration:calibrate",
+      "source": "fixtures/c10",
+      "tags": [
+        "cross-module calls and import aliases"
+      ]
+    },
+    {
+      "id": "c11",
+      "domain": "transport",
+      "entry": "ticket:allocate_seats",
+      "source": "fixtures/c11",
+      "tags": [
+        "local function",
+        "nonlocal",
+        "while",
+        "return"
+      ]
+    },
+    {
+      "id": "c12",
+      "domain": "accounting",
+      "entry": "ledger:transfer",
+      "source": "fixtures/c12",
+      "tags": [
+        "decorator and wrapper with branches"
+      ]
+    },
+    {
+      "id": "c13",
+      "domain": "education",
+      "entry": "scores:build_index",
+      "source": "fixtures/c13",
+      "tags": [
+        "list/dict comprehensions and lazy generator"
+      ]
+    },
+    {
+      "id": "c14",
+      "domain": "music",
+      "entry": "queue:iterate_tracks",
+      "source": "fixtures/c14",
+      "tags": [
+        "yield",
+        "yield from",
+        "return in generator"
+      ]
+    },
+    {
+      "id": "c15",
+      "domain": "sciences",
+      "entry": "tree:aggregate",
+      "source": "fixtures/c15",
+      "tags": [
+        "recursion",
+        "base case",
+        "exception"
+      ]
+    },
+    {
+      "id": "c16",
+      "domain": "interfaces",
+      "entry": "events:handle_event",
+      "source": "fixtures/c16",
+      "tags": [
+        "two nested match statements",
+        "guards and returns"
+      ]
+    },
+    {
+      "id": "c17",
+      "domain": "bibliography",
+      "entry": "parser:parse_item",
+      "source": "fixtures/c17",
+      "tags": [
+        "assignment expression",
+        "assert",
+        "exception"
+      ]
+    },
+    {
+      "id": "c18",
+      "domain": "laboratory",
+      "entry": "tests:finalize",
+      "source": "fixtures/c18",
+      "tags": [
+        "return in finally overrides pending exception/return"
+      ]
+    },
+    {
+      "id": "c19",
+      "domain": "fleet management",
+      "entry": "vehicles:ElectricVan.operate",
+      "source": "fixtures/c19",
+      "tags": [
+        "inheritance",
+        "super and method override"
+      ]
+    },
+    {
+      "id": "c20",
+      "domain": "mathematics",
+      "entry": "boundaries:clip_range",
+      "source": "fixtures/c20",
+      "tags": [
+        "chained comparisons",
+        "multiple returns"
+      ]
+    },
+    {
+      "id": "c21",
+      "domain": "extensibility",
+      "entry": "router:dispatch_action",
+      "source": "fixtures/c21",
+      "tags": [
+        "dynamic getattr and ambiguous target"
+      ]
+    },
+    {
+      "id": "c22",
+      "domain": "telemetry",
+      "entry": "batch:consume_stream",
+      "source": "fixtures/c22",
+      "tags": [
+        "async for",
+        "try/except",
+        "await"
+      ]
+    },
+    {
+      "id": "c23",
+      "domain": "prevention",
+      "entry": "emergency:shutdown",
+      "source": "fixtures/c23",
+      "tags": [
+        "with",
+        "raise",
+        "catch",
+        "return"
+      ]
+    },
+    {
+      "id": "c24",
+      "domain": "geometry",
+      "entry": "shapes:classify",
+      "source": "fixtures/c24",
+      "tags": [
+        "class patterns",
+        "OR patterns",
+        "guards"
+      ]
+    },
+    {
+      "id": "c25",
+      "domain": "messaging",
+      "entry": "delivery:flush_messages",
+      "source": "fixtures/c25",
+      "tags": [
+        "nested loop with break",
+        "for/else",
+        "finally"
+      ]
+    },
+    {
+      "id": "c26",
+      "domain": "synthetic clinical records",
+      "entry": "records:export_data",
+      "source": "fixtures/c26",
+      "tags": [
+        "async with",
+        "early return and cleanup"
+      ]
+    },
+    {
+      "id": "c27",
+      "domain": "modular assembly",
+      "entry": "launcher:launch",
+      "source": "fixtures/c27",
+      "tags": [
+        "package imports and function aliases"
+      ]
+    },
+    {
+      "id": "c28",
+      "domain": "numerical analysis",
+      "entry": "analysis:metrics",
+      "source": "fixtures/c28",
+      "tags": [
+        "lazy generator versus eager list"
+      ]
+    }
+  ]
+}

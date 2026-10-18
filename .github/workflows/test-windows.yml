@@ -1,0 +1,104 @@
+name: PyFlowMap Windows validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'release/**'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-package-smoke:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.13']
+
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Configure Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Graphviz
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $dot = $null
+          for ($attempt = 1; $attempt -le 3; $attempt++) {
+            choco install graphviz --no-progress -y
+            $candidate = 'C:\Program Files\Graphviz\bin\dot.exe'
+            if (Test-Path $candidate) {
+              $dot = $candidate
+              break
+            }
+            $command = Get-Command dot -ErrorAction SilentlyContinue
+            if ($command) {
+              $dot = $command.Source
+              break
+            }
+            Write-Warning "Graphviz is not available after attempt $attempt"
+            if ($attempt -lt 3) { Start-Sleep -Seconds (10 * $attempt) }
+          }
+          if (-not $dot) { throw 'Graphviz installation failed; dot.exe is unavailable' }
+          Add-Content -Path $env:GITHUB_PATH -Value (Split-Path $dot)
+          & $dot -V
+          if ($LASTEXITCODE -ne 0) { throw 'Graphviz dot -V failed' }
+
+      - name: Install development dependencies
+        run: |
+          python -m pip install --upgrade pip build
+          python -m pip install -e '.[dev,mcp]'
+
+      - name: Unit and regression tests
+        # Only waive final workspace deletion on hosted Windows sandboxes
+        # for portable-tempdirs CLEANUP_INCOMPLETE; other failures stay fatal.
+        env:
+          PYFLOWMAP_CI_SKIP_TEMP_CLEANUP: '1'
+        run: python -m pytest -q
+
+      - name: Ruff
+        run: ruff check src tests scripts
+
+      - name: Build wheel and sdist
+        run: python -m build --wheel --sdist --outdir dist
+
+      - name: Install wheel and smoke-test installed commands
+        shell: pwsh
+        run: |
+          $wheel = Get-ChildItem dist -Filter '*.whl' | Select-Object -First 1
+          if (-not $wheel) { throw 'Wheel was not built.' }
+          $venv = Join-Path $env:RUNNER_TEMP 'pyflowmap-wheel'
+          python -m venv $venv
+          $python = Join-Path $venv 'Scripts/python.exe'
+          $command = Join-Path $venv 'Scripts/pyflowmap.exe'
+          & $python -m pip install --upgrade pip
+          & $python -m pip install "$($wheel.FullName)[mcp]"
+          & $python -m pip check
+          & $python -m pyflowmap.cli --help
+          & $python -m pyflowmap.cli --version
+          & $command --help
+          & $command --version
+          @'
+          def demo(value):
+              if value:
+                  return "yes"
+              return "no"
+          '@ | Set-Content -Encoding utf8 (Join-Path $env:RUNNER_TEMP 'demo.py')
+          $output = Join-Path $env:RUNNER_TEMP 'diagrams'
+          & $command analyze (Join-Path $env:RUNNER_TEMP 'demo.py') --format all --renderer graphviz --output $output
+          foreach ($format in @('json', 'mmd', 'svg', 'png')) {
+            if (-not (Get-ChildItem $output -Filter "*.$format" -Recurse)) { throw "Missing $format output" }
+          }
+          & $python -c 'import pyflowmap.mcp_server; import importlib.metadata as m; print(m.version("pyflowmap"))'
+          dot -V

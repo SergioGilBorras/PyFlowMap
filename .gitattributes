@@ -1,0 +1,2 @@
+# Pinned upstream Git blobs must stay byte-for-byte identical on Windows.
+tests/fixtures/references/** -text

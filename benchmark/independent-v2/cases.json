@@ -1,0 +1,363 @@
+{
+  "name": "PyFlowMap regression bank V2",
+  "case_count": 30,
+  "python_target": "3.13",
+  "kind": "known-regression-corpus",
+  "parameters": {
+    "max_nodes": 30,
+    "max_depth": 3,
+    "language": "en",
+    "renderer": "graphviz",
+    "format": "all",
+    "semantic_provider": "disabled"
+  },
+  "cases": [
+    {
+      "id": "v01",
+      "domain": "digital libraries",
+      "entry": "catalog:route_request",
+      "source": "fixtures/v01",
+      "tags": [
+        "match/case",
+        "AS capture",
+        "guards",
+        "returns"
+      ]
+    },
+    {
+      "id": "v02",
+      "domain": "hydroponics",
+      "entry": "nutrients:select_formula",
+      "source": "fixtures/v02",
+      "tags": [
+        "for/else",
+        "try/except",
+        "break",
+        "return"
+      ]
+    },
+    {
+      "id": "v03",
+      "domain": "railway operations",
+      "entry": "switches:move_train",
+      "source": "fixtures/v03",
+      "tags": [
+        "while/else",
+        "nested loops",
+        "break",
+        "continue"
+      ]
+    },
+    {
+      "id": "v04",
+      "domain": "audio",
+      "entry": "mixer:render_sample",
+      "source": "fixtures/v04",
+      "tags": [
+        "try/finally",
+        "pending return",
+        "finally override"
+      ]
+    },
+    {
+      "id": "v05",
+      "domain": "file management",
+      "entry": "writer:atomic_publish",
+      "source": "fixtures/v05",
+      "tags": [
+        "nested context managers",
+        "return",
+        "exception"
+      ]
+    },
+    {
+      "id": "v06",
+      "domain": "telematics",
+      "entry": "receiver:consume_packets",
+      "source": "fixtures/v06",
+      "tags": [
+        "async for",
+        "async with",
+        "await",
+        "else"
+      ]
+    },
+    {
+      "id": "v07",
+      "domain": "energy control",
+      "entry": "dispatch:refresh",
+      "source": "fixtures/v07",
+      "tags": [
+        "await",
+        "cancellation",
+        "try/except/finally",
+        "async with"
+      ]
+    },
+    {
+      "id": "v08",
+      "domain": "procedural geometry",
+      "entry": "vertices:stream_vertices",
+      "source": "fixtures/v08",
+      "tags": [
+        "generator",
+        "yield from",
+        "try/finally"
+      ]
+    },
+    {
+      "id": "v09",
+      "domain": "materials science",
+      "entry": "specimens:receive_samples",
+      "source": "fixtures/v09",
+      "tags": [
+        "yield",
+        "send",
+        "return",
+        "except"
+      ]
+    },
+    {
+      "id": "v10",
+      "domain": "recommendation systems",
+      "entry": "filtering:find_match",
+      "source": "fixtures/v10",
+      "tags": [
+        "assignment expression",
+        "and/or",
+        "calls in conditions"
+      ]
+    },
+    {
+      "id": "v11",
+      "domain": "instrumentation",
+      "entry": "probe:activate",
+      "source": "fixtures/v11",
+      "tags": [
+        "receiver-based resolution",
+        "nested calls",
+        "arguments"
+      ]
+    },
+    {
+      "id": "v12",
+      "domain": "symbolic algebra",
+      "entry": "expr:evaluate",
+      "source": "fixtures/v12",
+      "tags": [
+        "mutual recursion",
+        "local functions",
+        "nonlocal"
+      ]
+    },
+    {
+      "id": "v13",
+      "domain": "meteorology",
+      "entry": "weather:decide",
+      "source": "fixtures/v13",
+      "tags": [
+        "properties",
+        "getattr",
+        "dynamic dispatch"
+      ]
+    },
+    {
+      "id": "v14",
+      "domain": "operations consoles",
+      "entry": "command:interpret_twice",
+      "source": "fixtures/v14",
+      "tags": [
+        "two match statements",
+        "guards in both",
+        "captured variables"
+      ]
+    },
+    {
+      "id": "v15",
+      "domain": "fee processing",
+      "entry": "fees:calculate_fee",
+      "source": "fixtures/v15",
+      "tags": [
+        "multiple inheritance",
+        "MRO",
+        "super",
+        "methods"
+      ]
+    },
+    {
+      "id": "v16",
+      "domain": "traceability",
+      "entry": "tracker:perform",
+      "source": "fixtures/v16",
+      "tags": [
+        "stacked decorators",
+        "wrapper",
+        "finally"
+      ]
+    },
+    {
+      "id": "v17",
+      "domain": "modular microservice",
+      "entry": "main:process_message",
+      "source": "fixtures/v17",
+      "tags": [
+        "multimodule package",
+        "import alias",
+        "exceptions",
+        "method"
+      ]
+    },
+    {
+      "id": "v18",
+      "domain": "acoustics",
+      "entry": "accumulator:configure",
+      "source": "fixtures/v18",
+      "tags": [
+        "closure",
+        "nonlocal",
+        "callbacks",
+        "returned function"
+      ]
+    },
+    {
+      "id": "v19",
+      "domain": "bulk validation",
+      "entry": "bulk:verify_all",
+      "source": "fixtures/v19",
+      "tags": [
+        "exception groups",
+        "except*",
+        "finally"
+      ]
+    },
+    {
+      "id": "v20",
+      "domain": "resource configuration",
+      "entry": "gate:operate",
+      "source": "fixtures/v20",
+      "tags": [
+        "dynamic __exit__",
+        "with",
+        "except",
+        "return"
+      ]
+    },
+    {
+      "id": "v21",
+      "domain": "print queues",
+      "entry": "spool:drain",
+      "source": "fixtures/v21",
+      "tags": [
+        "for",
+        "try/except/else/finally",
+        "break",
+        "continue"
+      ]
+    },
+    {
+      "id": "v22",
+      "domain": "spatial processing",
+      "entry": "cloud:cluster",
+      "source": "fixtures/v22",
+      "tags": [
+        "nested comprehensions",
+        "filters",
+        "deferred generator"
+      ]
+    },
+    {
+      "id": "v23",
+      "domain": "network messaging",
+      "entry": "schema:decode",
+      "source": "fixtures/v23",
+      "tags": [
+        "match mapping",
+        "OR",
+        "sequence",
+        "guards"
+      ]
+    },
+    {
+      "id": "v24",
+      "domain": "user sessions",
+      "entry": "sessions:choose",
+      "source": "fixtures/v24",
+      "tags": [
+        "assignment expression",
+        "ternary",
+        "short-circuit",
+        "calls with side effects"
+      ]
+    },
+    {
+      "id": "v25",
+      "domain": "experimental biometrics",
+      "entry": "samples:validate_bounds",
+      "source": "fixtures/v25",
+      "tags": [
+        "assert",
+        "optimization",
+        "message with side effects"
+      ]
+    },
+    {
+      "id": "v26",
+      "domain": "batch scheduling",
+      "entry": "scheduler:execute_chain",
+      "source": "fixtures/v26",
+      "tags": [
+        "async def",
+        "await in argument",
+        "try/finally",
+        "raise"
+      ]
+    },
+    {
+      "id": "v27",
+      "domain": "notarial records",
+      "entry": "registry:extract",
+      "source": "fixtures/v27",
+      "tags": [
+        "unpacking",
+        "match",
+        "except",
+        "raise from"
+      ]
+    },
+    {
+      "id": "v28",
+      "domain": "incremental statistics",
+      "entry": "stream:measure",
+      "source": "fixtures/v28",
+      "tags": [
+        "async generator",
+        "async for",
+        "yield",
+        "finally"
+      ]
+    },
+    {
+      "id": "v29",
+      "domain": "industrial assembly",
+      "entry": "assembly:run_build",
+      "source": "fixtures/v29",
+      "tags": [
+        "modules with identical names",
+        "aliases",
+        "factory"
+      ]
+    },
+    {
+      "id": "v30",
+      "domain": "incident management",
+      "entry": "incident:resolve",
+      "source": "fixtures/v30",
+      "tags": [
+        "except as",
+        "raise",
+        "finally",
+        "match"
+      ]
+    }
+  ]
+}
