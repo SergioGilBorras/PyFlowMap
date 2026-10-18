@@ -107,6 +107,6 @@ To run ALL 81 benchmark cases in both modes, on your authorized checkout:
 .\.venv\Scripts\python.exe scripts\validate_all.py --acknowledge-source-transmission
 ```
 
-The run creates `output_validacion/validation-<timestamp>_<id>/`.
+The run creates `output_validation/validation-<timestamp>_<id>/`.
 Scratch files and caches stay in `%TEMP%`. A failed run keeps evidence;
 it does not falsely claim semantic correctness or overwrite protected files.
