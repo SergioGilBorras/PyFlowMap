@@ -49,10 +49,10 @@ replacement catches the same regressions.
 ### Regression commands
 
 ```bash
-python -m benchmark.runners.run --output output_validacion/baseline --render
-python benchmark/independent-v1/run.py --project-root . --output output_validacion/v1
-python benchmark/independent-v2/run.py --project-root . --output output_validacion/v2
-python -m benchmark.runners.metamorphic --output output_validacion/metamorphic
+python -m benchmark.runners.run --output output_validation/baseline --render
+python benchmark/independent-v1/run.py --project-root . --output output_validation/v1
+python benchmark/independent-v2/run.py --project-root . --output output_validation/v2
+python -m benchmark.runners.metamorphic --output output_validation/metamorphic
 ```
 
 Benchmark strict mode intentionally treats REVIEW more severely; do not
@@ -61,7 +61,7 @@ present a generated diagram as a semantically validated PASS. See
 
 ## Temporary workspaces and cleanup
 
-`output_validacion/`, `dist/`, Python caches, editable-install metadata,
+`output_validation/`, `dist/`, Python caches, editable-install metadata,
 ZIP archives and Graphviz images are generated, ignored work products.
 Keep the source fixtures, oracles and tests, but do not version their
 outputs. Never delete `.serena/`, `.git/`, the current `.venv/`,
@@ -118,4 +118,4 @@ history), fixtures, `.serena/`, or `.git/`.
 
 A generated diagram or a real-model label is NOT automatic semantic approval.
 Unresolved V1/V2 obligations remain `NOT_EVALUATED` or `REVIEW` pending
-independent checking. See [validation outputs](../output_validacion/README.md).
+independent checking. See [validation outputs](../output_validation/README.md).

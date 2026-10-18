@@ -1,46 +1,50 @@
-# Galería offline: actividad, clases y paquetes
+# Offline gallery: activity, classes, and packages
 
-El comando genera tres diagramas desde un proyecto Python, **sin Codex,
-LLM ni proveedor mock**, en carpetas separadas. Se requiere Graphviz
-(`dot`) para SVG/PNG. El código analizado no se importa ni ejecuta.
+This developer command produces three diagram families from Python source
+**without Codex, another LLM, or a mock semantic provider**. Graphviz (`dot`)
+is required for SVG and PNG generation. Analyzed source is never imported
+or executed.
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\offline_diagram_gallery.py
-.\.venv\Scripts\python.exe scripts\offline_diagram_gallery.py --source .\mi-proyecto --entry modulo:main
+.\.venv\Scripts\python.exe scripts\offline_diagram_gallery.py --source .\my-project --entry module:main
 ```
 
-Cada ejecución crea una carpeta nueva bajo `output_graphs/`:
+Each run creates a new directory under `output_graphs/`:
 
 ```text
-<fecha>-<identificador>/
-  index.html                 # índice local y profesional
+<timestamp>-<identifier>/
+  index.html                 # standalone local index
   README.md
-  activity/                  # actividad: .mmd, .json, .svg, .png
-  classes/                   # clases UML: .mmd, .json, .svg, .png
-  packages/                  # paquetes UML: .dot, .json, .svg, .png
+  activity/                  # .mmd, .json, .svg, .png
+  classes/                   # UML classes: .mmd, .json, .svg, .png
+  packages/                  # UML packages: .dot, .json, .svg, .png
   common/
-    manifest.json            # ficheros, avisos y procedencia
-    gallery.css              # presentación común
+    manifest.json            # artifacts, warnings, provenance
+    gallery.css              # shared presentation
 ```
 
-Los diagramas son diferentes, con modelos y archivos fuente propios. No se
-inventan relaciones UML; la información estática no demostrable se omite.
-Las relaciones de paquetes son dependencias, **no** `«import»` UML.
-El diagrama de actividad conserva su representación existente.
-No se modifican rutas históricas, datos previos ni el CLI actual.
+The three diagram families use separate models and source-backed evidence.
+PyFlowMap does not invent UML relationships: properties that cannot be
+established statically are omitted. Package links indicate dependencies,
+not UML `«import»` relationships. Activity diagrams retain their established
+representation.
 
-Abre el `index.html` generado tras descomprimir la salida para revisar
-las tres imágenes y acceder a fuentes editables. El índice no necesita
-JavaScript, CDNs ni conexión a Internet.
+Open the generated `index.html` to inspect the three renderings and
+access editable sources. The page needs no JavaScript, CDN, or network
+connection. Existing output runs are not overwritten or removed.
 
+## Package style
 
-## Estilo de paquetes
+The default `modern` package style draws one broad vector folder with
+its name inside, without an outer card or miniature icon. Display names
+are title-cased without altering the underlying Python identifiers.
 
-La galería utiliza el estilo vectorial `modern` de manera predeterminada:
-una carpeta horizontal grande y única, con el nombre dentro, sin tarjeta
-exterior ni icono pequeño. Los nombres se muestran con inicial mayúscula
-sin modificar los identificadores Python.
-El estilo `strict` con pestaña UML continúa disponible desde el comando
-`pyflowmap analyze ... --diagram-type package --package-style strict`.
-Ambos representan las mismas dependencias; el manifiesto deja constancia
-del estilo mostrado. No se generan carpetas duplicadas ni se borran salidas.
+The traditional tabbed UML `strict` style is also available:
+
+```bash
+pyflowmap analyze ./my-project --diagram-type package --package-style strict
+```
+
+Both styles represent the same dependencies. The manifest records which
+style was rendered; no duplicate output directories are created.

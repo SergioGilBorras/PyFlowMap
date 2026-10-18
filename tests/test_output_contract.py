@@ -91,7 +91,7 @@ def test_successful_global_validation_preserves_prior_managed_runs_by_default(
     validation_main = util["main"]
     globals_ = validation_main.__globals__
     monkeypatch.setitem(globals_, "ROOT", tmp_path)
-    monkeypatch.setitem(globals_, "OUTPUT", tmp_path / "output_validacion")
+    monkeypatch.setitem(globals_, "OUTPUT", tmp_path / "output_validation")
     monkeypatch.setitem(
         globals_, "report_is_technically_complete",
         lambda path: (True, "TECHNICAL_PASS_SEMANTIC_REVIEW"),
@@ -100,7 +100,7 @@ def test_successful_global_validation_preserves_prior_managed_runs_by_default(
         returncode=0
     ))
 
-    historical = tmp_path / "output_validacion" / "validation-2026-10-14_21-13-07_6698f8"
+    historical = tmp_path / "output_validation" / "validation-2026-10-14_21-13-07_6698f8"
     historical.mkdir(parents=True)
     (historical / ".pyflowmap-managed-validation.json").write_text(
         json.dumps({

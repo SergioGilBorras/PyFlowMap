@@ -19,7 +19,7 @@ from pathlib import Path
 from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / "output_validacion"
+OUTPUT = ROOT / "output_validation"
 RUN_PATTERN = re.compile(r"validation-\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}_[0-9a-f]{6}\Z")
 CONTENTS = {
     ".pyflowmap-managed-validation.json", "validation-summary.json",
@@ -94,7 +94,7 @@ def main(argv: list[str] | None = None) -> int:
             or (OUTPUT.exists() and bool(
                 getattr(OUTPUT.lstat(), "st_file_attributes", 0)
                 & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)))):
-        parser.error("Unsafe output_validacion directory")
+        parser.error("Unsafe output_validation directory")
     OUTPUT.mkdir(exist_ok=True)
     stamp = datetime.now().astimezone().strftime("%Y-%m-%d_%H-%M-%S")
     name = f"validation-{stamp}_{uuid4().hex[:6]}"

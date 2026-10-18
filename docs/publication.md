@@ -12,7 +12,7 @@ Run `python scripts/build_release.py` in an approved development environment to 
 
 ## Security and publishing prerequisites
 
-The current branch contains synthetic reference fixtures. **Security warning:** earlier commits in this currently public repository still contain material from a separate private project. The current synthetic fixtures do not remediate exposed Git history. Preserve an access-controlled backup, then carry out a dedicated history and GitHub cached-object remediation.
+The public `main` branch was rebuilt from an independent clean root commit and contains synthetic reference fixtures. **Security warning:** historical Git objects from before that rewrite may remain available on GitHub by SHA, retained pull-request references, or caches. Replacing the branch did not guarantee their removal. The repository owner must finish the separate GitHub retained-object remediation; private backups must remain access-controlled.
 
 Review every exported file's license and provenance, the clean source history, secrets, CI artifacts, website assets, dependency availability and installed-package contents. Preserve access-controlled backups and review all historical exposures.
 

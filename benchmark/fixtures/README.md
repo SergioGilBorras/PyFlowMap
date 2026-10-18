@@ -9,8 +9,8 @@ The canonical runner discovers these programs using
 benchmark. Only the analyzers' AST traversal and artifact generation run.
 
 ```bash
-python -m benchmark.runners.run --output pyflowmap-output/baseline --render
+python -m benchmark.runners.run --output output_validation/baseline --render
 ```
 
 Keep fixtures source-stable; derived diagrams belong under ignored
-`pyflowmap-output/` and are excluded from packages.
+`output_validation/` and are excluded from packages.

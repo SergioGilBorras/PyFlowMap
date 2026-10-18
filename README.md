@@ -156,7 +156,7 @@ local artifacts; it does **not** publish them.
 - [`output_graphs/`](output_graphs/README.md) is the consumer's diagram history.
   Without `--output`, each analysis creates a separate dated folder under
   the **current working directory**. Explicit `--output` remains supported.
-- [`output_validacion/`](output_validacion/README.md) retains dated developer
+- [`output_validation/`](output_validation/README.md) retains dated developer
   validation runs; each report identifies its actual inference mode.
   The normal offline run uses no Codex and preserves previous results.
 - [`benchmark/`](benchmark/README.md) supplies the 81 retained source
@@ -170,7 +170,7 @@ For the final **offline, no-Codex** validation, install `.[dev,mcp]`,
 verify Graphviz (`dot -V`) and run:
 
 ```bash
-python scripts/run_full_validation.py --output-parent ./output_validacion
+python scripts/run_full_validation.py --output-parent ./output_validation
 ```
 
 This runs pytest (including the 21-case diagram-family bank), Ruff, all
@@ -178,27 +178,10 @@ This runs pytest (including the 21-case diagram-family bank), Ruff, all
 To generate its separate visual gallery run
 `python scripts/validate_diagram_families.py`.
 
-For separately authorized **real Codex inference**, install
-`.[dev,mcp,labeler-codex]`, authenticate Codex, inspect inherited connectors
-and explicitly run:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\validate_all.py --acknowledge-source-transmission
-```
-
-The validator preserves **every historical run by default**, including failed
-diagnostics and previous successful evidence. Removing older recognized runs
-requires the explicit `--prune-managed-history` opt-in; do not use that flag
-when preserving evidence.
-Codex produces real labels but their semantic faithfulness still needs
-independent review. CI never uses the live provider. No package is published
-by this command.
-
-Consumer labeling can be set to Codex as an **explicit, persistent environment
-preference** after setup: `PYFLOWMAP_DEFAULT_SEMANTIC_PROVIDER=codex`.
-An unconfigured installation remains offline to avoid unexpectedly sending
-private source code. Explicit `--semantic-provider disabled` overrides the
-preference.
+Real Codex-based evaluation is available only by explicit opt-in and may
+transmit approved source excerpts. See [reference testing](docs/reference-testing.md)
+and [optional labeling](docs/semantic-labeling.md) for authorization,
+configuration, retention and limitations. Normal validation and CI are offline.
 
 Technical documentation:
 
@@ -212,13 +195,15 @@ Technical documentation:
 - [Building wheel and sdist locally](docs/packaging.md)
 - [Windows setup](docs/windows-local-setup.md)
 - [Consumer diagram output](output_graphs/README.md)
-- [Complete validation output](output_validacion/README.md)
+- [Complete validation output](output_validation/README.md)
 - [Future directions](docs/roadmap.md)
 - [UML class diagrams](docs/uml-classes.md)
 - [UML package diagrams](docs/uml-packages.md)
 - [Three-family offline gallery](docs/offline-gallery.md)
 - [Diagram-family validation bank](docs/diagram-family-banks.md)
 - [Public release checklist](docs/publication.md)
+- [Changelog](CHANGELOG.md)
+- [Security policy](SECURITY.md)
 
 ## UML class and package diagrams
 

@@ -6,7 +6,7 @@ generates a dated `validation-YYYY-MM-DD_HH-MM-SS_<id>/` with complete
 regression evidence, both deterministic and **real Codex** runs:
 
 ```text
-output_validacion/
+output_validation/
   README.md                            # only tracked file
   validation-YYYY-MM-DD_HH-MM-SS_<id>/
     validation-summary.json           # provenance, exact commit, step statuses

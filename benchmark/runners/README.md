@@ -12,9 +12,9 @@ build diagrams, then inspect their results.
 Run modules from the repository root:
 
 ```bash
-python -m benchmark.runners.run --output pyflowmap-output/baseline --render
-python -m benchmark.runners.run --cases-file benchmark/control-flow/cases.json --fixtures-root benchmark/control-flow/fixtures --output pyflowmap-output/control-flow --render
-python -m benchmark.runners.metamorphic --output pyflowmap-output/metamorphic
+python -m benchmark.runners.run --output output_validation/baseline --render
+python -m benchmark.runners.run --cases-file benchmark/control-flow/cases.json --fixtures-root benchmark/control-flow/fixtures --output output_validation/control-flow --render
+python -m benchmark.runners.metamorphic --output output_validation/metamorphic
 ```
 
 All generated reports are in English by default; use `--language es` to
@@ -24,4 +24,4 @@ The `--strict` flag is stronger than ordinary semantic checking: an
 uncertain REVIEW may become a nonzero exit even if no reproducible FAIL is
 present. Source corpora remain unmodified. Temporary transformation
 workspaces use the OS temporary directory; durable outputs go under
-ignored `pyflowmap-output/`.
+ignored `output_validation/`.

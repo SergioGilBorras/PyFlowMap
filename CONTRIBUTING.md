@@ -33,7 +33,7 @@ Before submitting a pull request, run:
 
 ```bash
 python -m pytest -q
-python -m ruff check .
+python -m ruff check src tests scripts
 ```
 
 For diagram, parser, or renderer changes, add targeted regression tests using
@@ -44,7 +44,7 @@ If Graphviz is installed, check `dot -V` before testing SVG/PNG output.
 For a full offline validation pass (which can take longer):
 
 ```bash
-python scripts/run_full_validation.py --output-parent ./output_validacion
+python scripts/run_full_validation.py --output-parent ./output_validation
 ```
 
 See [development guidance](docs/development.md) and
