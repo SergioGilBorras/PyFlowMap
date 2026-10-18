@@ -135,6 +135,8 @@ Successful diagram generation alone is **not** semantic PASS.
 The precise rules and accepted static limits are in
 [analysis rules](docs/analysis-rules.md).
 
+For contributions, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Development, testing, and releases
 
 ```bash
