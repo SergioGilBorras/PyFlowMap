@@ -11,7 +11,7 @@ Run from the repository root:
 ```bash
 python benchmark/independent-v2/run.py --list
 python benchmark/independent-v2/run.py --validate-only
-python benchmark/independent-v2/run.py --project-root . --output pyflowmap-output/bank-v2
+python benchmark/independent-v2/run.py --project-root . --output output_validation/bank-v2
 ```
 
 Install PyFlowMap in the environment running the command, or specify
@@ -25,6 +25,6 @@ a separate semantic assessment is performed.
 This is a **known regression bank**.
 Its fixtures are retained as developer assets and are never shipped
 inside wheel or sdist. Write all outputs below ignored
-`pyflowmap-output/`. Do not change sources to force a PASS.
+`output_validation/`. Do not change sources to force a PASS.
 
 See the [benchmark overview](../README.md).
