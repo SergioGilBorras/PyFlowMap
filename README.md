@@ -156,7 +156,7 @@ local artifacts; it does **not** publish them.
 - [`output_graphs/`](output_graphs/README.md) is the consumer's diagram history.
   Without `--output`, each analysis creates a separate dated folder under
   the **current working directory**. Explicit `--output` remains supported.
-- [`output_validacion/`](output_validacion/README.md) retains dated developer
+- [`output_validation/`](output_validation/README.md) retains dated developer
   validation runs; each report identifies its actual inference mode.
   The normal offline run uses no Codex and preserves previous results.
 - [`benchmark/`](benchmark/README.md) supplies the 81 retained source
@@ -170,7 +170,7 @@ For the final **offline, no-Codex** validation, install `.[dev,mcp]`,
 verify Graphviz (`dot -V`) and run:
 
 ```bash
-python scripts/run_full_validation.py --output-parent ./output_validacion
+python scripts/run_full_validation.py --output-parent ./output_validation
 ```
 
 This runs pytest (including the 21-case diagram-family bank), Ruff, all
@@ -212,7 +212,7 @@ Technical documentation:
 - [Building wheel and sdist locally](docs/packaging.md)
 - [Windows setup](docs/windows-local-setup.md)
 - [Consumer diagram output](output_graphs/README.md)
-- [Complete validation output](output_validacion/README.md)
+- [Complete validation output](output_validation/README.md)
 - [Future directions](docs/roadmap.md)
 - [UML class diagrams](docs/uml-classes.md)
 - [UML package diagrams](docs/uml-packages.md)
