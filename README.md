@@ -178,27 +178,10 @@ This runs pytest (including the 21-case diagram-family bank), Ruff, all
 To generate its separate visual gallery run
 `python scripts/validate_diagram_families.py`.
 
-For separately authorized **real Codex inference**, install
-`.[dev,mcp,labeler-codex]`, authenticate Codex, inspect inherited connectors
-and explicitly run:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\validate_all.py --acknowledge-source-transmission
-```
-
-The validator preserves **every historical run by default**, including failed
-diagnostics and previous successful evidence. Removing older recognized runs
-requires the explicit `--prune-managed-history` opt-in; do not use that flag
-when preserving evidence.
-Codex produces real labels but their semantic faithfulness still needs
-independent review. CI never uses the live provider. No package is published
-by this command.
-
-Consumer labeling can be set to Codex as an **explicit, persistent environment
-preference** after setup: `PYFLOWMAP_DEFAULT_SEMANTIC_PROVIDER=codex`.
-An unconfigured installation remains offline to avoid unexpectedly sending
-private source code. Explicit `--semantic-provider disabled` overrides the
-preference.
+Real Codex-based evaluation is available only by explicit opt-in and may
+transmit approved source excerpts. See [reference testing](docs/reference-testing.md)
+and [optional labeling](docs/semantic-labeling.md) for authorization,
+configuration, retention and limitations. Normal validation and CI are offline.
 
 Technical documentation:
 
@@ -219,6 +202,8 @@ Technical documentation:
 - [Three-family offline gallery](docs/offline-gallery.md)
 - [Diagram-family validation bank](docs/diagram-family-banks.md)
 - [Public release checklist](docs/publication.md)
+- [Changelog](CHANGELOG.md)
+- [Security policy](SECURITY.md)
 
 ## UML class and package diagrams
 
